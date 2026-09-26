@@ -1,0 +1,29 @@
+name: New plugin proposal
+description: Propose a new plugin for the marketplace
+labels: [new-plugin]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Plugin name
+      placeholder: "e.g. bugfix"
+    validations:
+      required: true
+  - type: textarea
+    id: purpose
+    attributes:
+      label: What problem does it solve?
+    validations:
+      required: true
+  - type: textarea
+    id: components
+    attributes:
+      label: Planned components
+      description: Commands, subagents, skills, hooks - and what each does.
+    validations:
+      required: true
+  - type: textarea
+    id: overlap
+    attributes:
+      label: Overlap with existing plugins
+      description: E.g. could it be part of foreman instead?

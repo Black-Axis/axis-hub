@@ -1,0 +1,46 @@
+name: Bug report
+description: A plugin does not work as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Security problem? Do not open an issue - see SECURITY.md.
+  - type: dropdown
+    id: plugin
+    attributes:
+      label: Plugin
+      options: [foreman, marketplace / other]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Plugin version
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: claude
+    attributes:
+      label: Claude Code version and OS
+      placeholder: "claude --version; Windows 11 / macOS 15 / Ubuntu 24.04"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. /foreman:new ...\n2. ..."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Relevant files or output
+      description: Related workbench/ files, error text, or `claude --debug` output. Remove anything private.
