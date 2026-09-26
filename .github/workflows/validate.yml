@@ -8,18 +8,22 @@ on:
 permissions:
   contents: read
 
+env:
+  # Pinned so a new Claude Code release cannot break CI. Bump it on purpose.
+  CLAUDE_CODE_VERSION: 2.1.283
+
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
 
       - name: Install Claude Code
-        run: npm install -g @anthropic-ai/claude-code
+        run: npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
 
       - name: Validate marketplace
         run: claude plugin validate .
