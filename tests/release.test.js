@@ -15,7 +15,7 @@ const version = marketplace.metadata.version;
 test('current marketplace version produces release notes', () => {
   const result = releaseNotes(`v${version}`);
   assert.ifError(result.error);
-  for (const p of marketplace.plugins) assert.match(result.notes, new RegExp(`\\| ${p.name} \\| ${p.version} \\|`));
+  for (const p of marketplace.plugins) assert.ok(result.notes.includes(`| ${p.name} | ${p.version} |`), p.name);
 });
 
 test('tag not matching marketplace version is rejected', () => {
