@@ -22,7 +22,7 @@ Marketplace-level test inside Claude Code: `/plugin marketplace add <repo path>`
 
 ## Branches
 
-Never commit on `main` or push to it; `main` changes only through pull requests (GitHub ruleset in `.github/rulesets/main.json`, requires the `validate` check). Before changing anything, create a branch `<type>/<short-name>` (`feat`, `fix`, `docs`, `test`, `ci`, `chore`, `refactor`; kebab-case, e.g. `feat/foreman-bug-command`). The rules live in `.githooks/guard.js`, used by the git hooks (`git config core.hooksPath .githooks`) and by the PreToolUse hook `.claude/hooks/guard-git.js`, which denies Claude's git commands that break them.
+Never commit on `main` or push to it; `main` changes only through pull requests (GitHub ruleset in `.github/rulesets/main.json`, requires the `validate` check). Before changing anything, create a branch `<type>/<short-name>` (`feat`, `fix`, `docs`, `test`, `ci`, `chore`, `refactor`; kebab-case, e.g. `feat/foreman-bug-command`). The rules live in `.githooks/guard.js`, used by the git hooks (`git config core.hooksPath .githooks`) and by the PreToolUse hook `.claude/hooks/guard-git.js`, which denies Claude's git commands that break them. GitHub deletes merged branches automatically; after a merge, switch to `main`, pull, and `git branch -d` the local branch.
 
 ## Structure
 
