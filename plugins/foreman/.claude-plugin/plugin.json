@@ -1,0 +1,35 @@
+{
+  "name": "foreman",
+  "version": "1.0.0",
+  "description": "Plan, contract, track, delegate, and document feature work in a workbench/ folder.",
+  "author": {
+    "name": "Black-Axis",
+    "email": "black_axis@outlook.com"
+  },
+  "homepage": "https://github.com/Black-Axis/axis-hub",
+  "repository": "https://github.com/Black-Axis/axis-hub",
+  "license": "MIT",
+  "keywords": ["planning", "tasks", "tracking", "workflow", "subagents", "brd"],
+  "userConfig": {
+    "default_output": {
+      "type": "string",
+      "title": "Default output style",
+      "description": "Concise (token-efficient, recommended) or Normal. Offered as the default when foreman sets up a new project.",
+      "default": "Concise"
+    },
+    "default_git": {
+      "type": "string",
+      "title": "Default git choice for workbench/",
+      "description": "committed, ignored, or ask. Offered as the default when foreman sets up a new project.",
+      "default": "ask"
+    },
+    "default_fix_rounds": {
+      "type": "number",
+      "title": "Default fix rounds",
+      "description": "How many times the main agent sends failed verification feedback back to the worker before putting the task on Hold. 0 disables fix rounds.",
+      "default": 4,
+      "min": 0,
+      "max": 10
+    }
+  }
+}
