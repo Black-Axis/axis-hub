@@ -129,7 +129,7 @@ Then check in a Claude Code session that the plugin loads: its commands appear w
 2. Add its components (`commands/`, `agents/`, `skills/`, `hooks/`), a `README.md` explaining what it does, its commands, and how to use it, and a `CHANGELOG.md` with an entry for its first version.
 3. Add an entry to `.claude-plugin/marketplace.json` with `"source": "./plugins/<name>"` and the same `version`, `description`, and `keywords` as `plugin.json`.
 4. Add a row to the Plugins table in the root `README.md`, and an entry in the root `CHANGELOG.md`.
-5. Add it to the `Plugin` dropdowns in `.github/ISSUE_TEMPLATE/bug_report.yml` and `feature_request.yml`, and to the checklist in `.github/pull_request_template.md`.
+5. Add it to the `Plugin` dropdowns in `.github/ISSUE_TEMPLATE/bug_report.yml` and `feature_request.yml`, and to the checklist in `.github/pull_request_template.md`. Create a `plugin: <name>` label on GitHub for its issues and pull requests (maintainers: `gh label create "plugin: <name>" --color 1D76DB --description "The <name> plugin"`).
 6. Add a section to `CLAUDE.md` for any design rule that spans several files and is not obvious from reading one of them.
 7. If it has hook scripts, add tests under `tests/<name>/` (and a sample under `examples/<name>/` if they need fixtures).
 8. Validate and test as described above.
