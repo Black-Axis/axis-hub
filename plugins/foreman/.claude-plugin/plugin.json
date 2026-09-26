@@ -9,7 +9,7 @@
   "homepage": "https://github.com/Black-Axis/axis-hub",
   "repository": "https://github.com/Black-Axis/axis-hub",
   "license": "MIT",
-  "keywords": ["planning", "tasks", "tracking", "workflow", "subagents", "brd"],
+  "keywords": ["planning", "tasks", "tracking", "workflow", "subagents", "features"],
   "userConfig": {
     "default_output": {
       "type": "string",

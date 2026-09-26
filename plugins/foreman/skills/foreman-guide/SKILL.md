@@ -1,6 +1,6 @@
 ---
 name: foreman-guide
-description: Suggests the right /foreman command when the user, without using a /foreman command, asks to build or add a feature, has a BRD or requirements, wants to continue or resume planned work, asks about progress or task status, wants to change scope, pause or cancel work, close/finish a feature, or wants a status report. Suggest only - never runs commands.
+description: Suggests the right /foreman command when the user, without using a /foreman command, asks to build or add a feature, has feature requirements or working files, wants to continue or resume planned work, asks about progress or task status, wants to change scope, pause or cancel work, close/finish a feature, or wants a status report. Suggest only - never runs commands.
 ---
 
 # Foreman guide
@@ -12,7 +12,7 @@ Skip this skill when the user is already running a `/foreman:*` command, or expl
 ## Steps
 
 1. Map the need to a command using the list of commands in `${CLAUDE_PLUGIN_ROOT}/commands/*.md` (read their `description` and `argument-hint`).
-   - Build/add a feature, has a BRD or requirements: `/foreman:new`
+   - Build/add a feature, has requirements or working files: `/foreman:new`
    - Move existing plans/tasks from another workflow into foreman: `/foreman:import`
    - Approve the plan/contract: `/foreman:approve`
    - Implement / continue / next task: `/foreman:run`

@@ -7,7 +7,7 @@ Browse it to see what foreman produces:
 | File | Shows |
 |------|-------|
 | [workbench/INDEX.md](workbench/INDEX.md) | Project settings and feature list |
-| [workbench/plans/P-01-health-endpoint.md](workbench/plans/P-01-health-endpoint.md) | Plan from a text BRD, with review findings |
+| [workbench/plans/P-01-health-endpoint.md](workbench/plans/P-01-health-endpoint.md) | Plan from a text feature description, with review findings |
 | [workbench/contracts/CONT-01-health-endpoint.md](workbench/contracts/CONT-01-health-endpoint.md) | Approved contract and working rules |
 | [workbench/tracking/TRK-01-health-endpoint.md](workbench/tracking/TRK-01-health-endpoint.md) | Task statuses, History, Activity log |
 | [workbench/subtasks/P-01-health-endpoint/](workbench/subtasks/P-01-health-endpoint/) | Task files |

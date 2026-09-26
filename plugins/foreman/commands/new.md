@@ -1,6 +1,6 @@
 ---
-description: Start a new feature from BRD file(s) and/or text - review it, then create plan, contract, tracking, and subtasks in workbench/
-argument-hint: "[BRD file path(s)] [feature description / notes]"
+description: Start a new feature from working file(s) and/or text - review it, then create plan, contract, tracking, and subtasks in workbench/
+argument-hint: "[working file path(s)] [feature description / notes]"
 allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), AskUserQuestion
 ---
 
@@ -33,18 +33,18 @@ Read `workbench/INDEX.md`. `NN` = highest feature number + 1 (or `01`).
 
 ## 3. Get the requirements
 
-The input may contain any mix of BRD file paths and free text. All of it describes ONE feature.
+The input may contain any mix of working file paths and free text. All of it describes ONE feature.
 
 1. **Split the input.** Every token that looks like a file path (has a path separator or a file extension, quoted or not) is a path candidate. Everything else is text.
 2. **Check paths.** For each path candidate, check that the file exists. If one does not exist, ask the user whether it is a wrong path (and for the correct one) or is meant as text. Never silently drop or reinterpret it.
-3. **Build the BRD:**
+3. **Build the feature description:**
    - **Files only** (one or many; md, txt, pdf, ...): read every file. If a file cannot be read (e.g. `.docx` or another binary format), say so and ask the user for a PDF, Markdown, or text version, or to paste its content. Merge them into one set of requirements. Record which file each requirement came from.
-   - **Files + text**: the files are the BRD; the text is extra notes that add to or override the files. List every place where the text conflicts with a file and ask the user to confirm which wins.
-   - **Text only** (typed in the arguments or pasted in the conversation): the text is the BRD. Treat it exactly like a file BRD - do not start a full interview; the review in step 4 asks only about the gaps found.
-   - **Nothing** (empty input and no BRD text in the conversation): ask the user to give BRD file path(s) or describe the feature in text. If they prefer, interview them with focused questions (goal, users, functional requirements, non-functional requirements, constraints, acceptance criteria, out of scope) until requirements are clear.
+   - **Files + text**: the files are the feature description; the text is extra notes that add to or override the files. List every place where the text conflicts with a file and ask the user to confirm which wins.
+   - **Text only** (typed in the arguments or pasted in the conversation): the text is the feature description. Treat it exactly like working files - do not start a full interview; the review in step 4 asks only about the gaps found.
+   - **Nothing** (empty input and no feature text in the conversation): ask the user to give working file path(s) or describe the feature in text. If they prefer, interview them with focused questions (goal, users, functional requirements, non-functional requirements, constraints, acceptance criteria, out of scope) until requirements are clear.
 4. Keep the original input (file paths and the full text) for the plan's Source section.
 
-## 4. Review the BRD
+## 4. Review the feature
 
 Examine the requirements against logic and against the current codebase. Identify:
 - missing information,
@@ -65,7 +65,7 @@ Ask the user for the contract Working Rules that you cannot infer: commit policy
 ## 7. Write the files
 
 Pick the `<slug>` from the feature name. Create, from templates:
-1. `workbench/plans/P-NN-<slug>.md` - all sections filled; Source lists every BRD file and contains the user's text verbatim (and the interview Q&A, if any); Requirements hold the final agreed requirements; BRD Review Findings contain every finding and its agreed resolution.
+1. `workbench/plans/P-NN-<slug>.md` - all sections filled; Source lists every working file and contains the user's text verbatim (and the interview Q&A, if any); Requirements hold the final agreed requirements; Feature Review Findings contain every finding and its agreed resolution.
 2. `workbench/contracts/CONT-NN-<slug>.md` - Status `Draft`; Scope, Out of Scope, Acceptance Criteria, Working Rules filled.
 3. `workbench/subtasks/P-NN-<slug>/TASK-TT-<task-slug>.md` - one file per task. Every section is mandatory: Problem, Evidence, Required Outcome, Files Expected to Change, Out of Scope, Implementation, Report Requirements. Each task must be small enough for one subagent run and independently verifiable.
 4. `workbench/tracking/TRK-NN-<slug>.md` - one row per task, all `Not Started`; History row "Plan created".

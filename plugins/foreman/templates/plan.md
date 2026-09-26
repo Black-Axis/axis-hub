@@ -15,19 +15,19 @@
 - Received: {{YYYY-MM-DD}}
 - Type: {{files | files + text | text | interview | import}}
 
-### BRD Files
+### Working Files
 
-- `{{path/to/brd-file}}`
+- `{{path/to/working-file}}`
 
 ### User Text
 
-{{The user's text exactly as given (BRD text or extra notes). Remove this subsection if there is none.}}
+{{The user's text exactly as given (feature description or extra notes). Remove this subsection if there is none.}}
 
 ### Interview
 
 {{Questions and the user's answers, if an interview was held. Remove this subsection if there was none.}}
 
-## BRD Review Findings
+## Feature Review Findings
 
 | # | Finding | Type | Resolution |
 |---|---------|------|------------|

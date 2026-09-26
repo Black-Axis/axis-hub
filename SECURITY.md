@@ -34,7 +34,7 @@ Plugins here are instructions that Claude Code follows, plus hook scripts that r
 - A command, agent, or skill that makes Claude edit files, run commands, or perform actions without the permission prompts the user's permission mode requires (for example, overly broad `allowed-tools`).
 - A hook script that can be abused to run unintended commands, read or leak data, or block Claude Code.
 - Instructions that make Claude send project content, secrets, or personal data to an external service.
-- Content in user-provided files (BRDs, imported plans, task files) that can hijack plugin instructions into harmful actions.
+- Content in user-provided files (working files, imported plans, task files) that can hijack plugin instructions into harmful actions.
 - Secrets or credentials committed to this repository.
 
 Out of scope: vulnerabilities in Claude Code itself (report those to Anthropic), and issues that need the user to disable their own permission prompts.

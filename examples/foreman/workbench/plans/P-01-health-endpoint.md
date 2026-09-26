@@ -19,7 +19,7 @@ Add `GET /health` so the load balancer can check that the service is up and whic
 
 add a /health endpoint returning {status:"ok"} and the app version
 
-## BRD Review Findings
+## Feature Review Findings
 
 | # | Finding | Type | Resolution |
 |---|---------|------|------------|

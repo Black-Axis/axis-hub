@@ -18,7 +18,7 @@ Other sources (SSH, pinned versions, local clone), shell commands, team setup, a
 Four commands cover the everyday flow:
 
 ```
-/foreman:new add login with email and Google     # 1. describe the feature (or pass BRD file paths)
+/foreman:new add login with email and Google     # 1. describe the feature (or pass working file paths)
 /foreman:approve P-01                            # 2. review the plan and contract, then approve
 /foreman:run                                     # 3. run the next ready task (repeat)
 /foreman:status                                  # any time: where things stand
@@ -31,7 +31,7 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 ```
 > /foreman:new add a /health endpoint returning {status:"ok"} and the app version
   Applied settings: Git ignored, Output Concise, Fix rounds 4 (change with /foreman:settings)
-  BRD review - 2 findings:
+  Feature review - 2 findings:
     1. Where does the version come from? (unclear)
     2. Auth required on /health? (missing)
   ... you answer ...
@@ -51,7 +51,7 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 
 ## Workflow in detail
 
-1. **`/foreman:new [BRD file path(s)] [text]`** - Claude reads the BRD from one or more files, from your text, or both (text then acts as extra notes over the files; conflicts are confirmed with you). Text alone is treated as the BRD. With no input it asks for files or text, or interviews you. It reviews the BRD for missing / unclear / conflicting / non-applicable items, resolves each finding with you, explores the codebase, and creates the plan, contract (`Draft`), tracking, task files, and a doc skeleton. Readable BRD formats: Markdown, text, PDF (not `.docx` - export it to PDF or paste the text).
+1. **`/foreman:new [working file path(s)] [text]`** - Claude reads the feature description from one or more working files, from your text, or both (text then acts as extra notes over the files; conflicts are confirmed with you). Text alone is treated as the feature description. With no input it asks for files or text, or interviews you. It reviews the feature for missing / unclear / conflicting / non-applicable items, resolves each finding with you, explores the codebase, and creates the plan, contract (`Draft`), tracking, task files, and a doc skeleton. Readable working file formats: Markdown, text, PDF (not `.docx` - export it to PDF or paste the text).
 2. **`/foreman:approve P-01`** - after you review the files.
 3. **`/foreman:run [P-01] [TASK-01]`** - with no arguments, foreman proposes the next ready task; with only `TASK-01`, it uses the single active plan. The main agent first pre-checks the task against the current code (paths, evidence, dependencies, not already done, still matches the contract): small problems like stale line numbers are fixed and logged; big ones are shown to you. Then the worker implements the task; the main agent verifies it (diff vs. expected files, out of scope, required outcome, tests), marks it `Done` or `Hold`, updates the doc, and applies the contract's commit policy. If verification finds problems, the main agent automatically sends the same worker a fix round listing what to **Revert**, what is **Not done**, and what is **Wrong**, shows you `Fix round n/limit`, then verifies again - up to `Fix rounds` times (default 4). Issues still open after that put the task on `Hold` with the list.
 4. **Repeat step 3** for each task. Use `/foreman:status` any time.
@@ -64,7 +64,7 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 
 | Command | Purpose |
 |---------|---------|
-| `/foreman:new [BRD path(s)] [text]` | Start a feature: BRD review, plan, contract, tracking, subtasks |
+| `/foreman:new [working file path(s)] [text]` | Start a feature: feature review, plan, contract, tracking, subtasks |
 | `/foreman:approve <P-NN>` | Approve the contract (required before running tasks) |
 | `/foreman:run [P-NN] [TASK-TT]` | Delegate one task to the worker, verify, update tracking and docs (no args = next ready task) |
 | `/foreman:status [P-NN]` | Overview of all features, or details of one plan |
@@ -144,7 +144,7 @@ workbench/
 
 ## Files
 
-- **Plan** - Overview, Source, BRD Review Findings, Requirements, Technical Approach, Task Breakdown, Risks, Open Questions.
+- **Plan** - Overview, Source, Feature Review Findings, Requirements, Technical Approach, Task Breakdown, Risks, Open Questions.
 - **Contract** - Status, Scope, Out of Scope, Acceptance Criteria, Working Rules (commit policy, auto-close, tests, standards, when to ask), Change Requests (`FEAT-n`).
 - **Tracking** - task table (status, updated, note); status History with who made each change (`User` / `Main agent` / `Worker`); Activity log of every user decision, worker action (files changed, commands run), and main agent action (task fixes, test runs, commits).
 - **Task** - header table (Plan, Contract, Tracking, Depends On, Source, Created), then Problem, Evidence, Required Outcome, Files Expected to Change, Out of Scope, Implementation, Report Requirements.
