@@ -48,8 +48,20 @@ function segments(command) {
   return out;
 }
 
+// Removes redirections (2>&1, >file, > file, <file, ...) from a segment's tokens.
+function withoutRedirects(tokens) {
+  const out = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const m = /^(\d*|&)(>>?|<)(&?\d*)(.*)$/.exec(tokens[i]);
+    if (!m) out.push(tokens[i]);
+    else if (!m[3] && !m[4]) i++; // target is the next token
+  }
+  return out;
+}
+
 // Returns { sub, args } for a git invocation, or null.
-function gitCall(tokens) {
+function gitCall(rawTokens) {
+  const tokens = withoutRedirects(rawTokens);
   if (!/^git(\.exe)?$/i.test(tokens[0] || '')) return null;
   let i = 1;
   while (i < tokens.length && tokens[i].startsWith('-')) i += ['-c', '-C'].includes(tokens[i]) ? 2 : 1;

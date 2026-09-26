@@ -67,6 +67,9 @@ test('Claude hook: commit and push on main', () => {
   assert.strictEqual(check('git push origin v1.0.0', dir).length, 0, 'tag');
   assert.strictEqual(check('git push --tags origin', dir).length, 0, 'all tags');
   assert.strictEqual(check('git status && git log', dir).length, 0, 'read-only');
+  assert.strictEqual(check('git push -u origin feat/x 2>&1 | tail -5', dir).length, 0, 'redirect and pipe');
+  assert.strictEqual(check('git push origin feat/x > out.txt 2> err.txt', dir).length, 0, 'redirect with space');
+  assert.ok(check('git push origin main 2>/dev/null', dir).length, 'redirect does not hide main');
 });
 
 test('Claude hook: branch creation', () => {
