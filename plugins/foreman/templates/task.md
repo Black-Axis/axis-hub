@@ -6,7 +6,7 @@
 | Contract | [CONT-{{NN}}-{{slug}}](../../contracts/CONT-{{NN}}-{{slug}}.md) |
 | Tracking | [TRK-{{NN}}-{{slug}}](../../tracking/TRK-{{NN}}-{{slug}}.md) |
 | Depends On | {{TASK-xx, TASK-yy \| —}} |
-| Source | {{BRD requirement(s) or change request (FEAT-n) this task comes from}} |
+| Source | {{Feature requirement(s) or change request (FEAT-n) this task comes from}} |
 | Created | {{YYYY-MM-DD}} |
 
 ## Problem
@@ -15,7 +15,7 @@
 
 ## Evidence
 
-{{Facts from the code and the BRD that justify this task: file paths with line numbers, current behavior, logs, BRD references.}}
+{{Facts from the code and the feature description that justify this task: file paths with line numbers, current behavior, logs, requirement references.}}
 
 ## Required Outcome
 

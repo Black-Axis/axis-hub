@@ -49,7 +49,7 @@ Create files from these templates, replacing every `{{...}}` placeholder:
 ## Activity log
 
 Log in the feature's TRK `Activity` table (date, target, By, Type, details - one line each):
-- **User decisions** (`User`, `Decision`): every answer or choice the user gives that affects the feature - BRD finding resolutions, working rules, contract approval, change request confirmation, proceed-anyway on dependencies, pre-check answers, cancel confirmations, import mapping confirmations. Details: the question in short and the answer.
+- **User decisions** (`User`, `Decision`): every answer or choice the user gives that affects the feature - feature review finding resolutions, working rules, contract approval, change request confirmation, proceed-anyway on dependencies, pre-check answers, cancel confirmations, import mapping confirmations. Details: the question in short and the answer.
 - **Worker actions** (`Worker`, `Action`): per worker round - files changed, commands run (from the worker report).
 - **Main agent actions** (`Main agent`, `Action`): task-file auto-fixes, test runs and results, commits (with hash), fix-round feedback sent.
 

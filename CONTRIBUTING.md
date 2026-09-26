@@ -178,7 +178,7 @@ Read the "foreman plugin architecture" section of `CLAUDE.md` before changing `p
 
 Testing a foreman change end to end, in a throwaway git project:
 
-1. `/foreman:new` with a short text BRD, then check the `workbench/` tree, file names, and `INDEX.md`.
+1. `/foreman:new` with a short text feature description, then check the `workbench/` tree, file names, and `INDEX.md`.
 2. `/foreman:run` before approval must be refused; `/foreman:approve P-01`, then `/foreman:run P-01 TASK-01`.
 3. Check TRK History and Activity rows, the doc update, and that the worker did not touch `workbench/`.
 4. Exercise the command you changed (`hold`/`resume`, `change`, `close`, `doctor`, `import`, `settings`, ...).
