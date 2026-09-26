@@ -20,7 +20,9 @@ axis-hub/
 │     └─ README.md                   # user-facing docs for the plugin
 ├─ examples/<plugin>/                # sample output (also test fixtures)
 ├─ tests/                            # node --test suites (manifests, hooks)
-├─ .github/                          # workflows, release script, Dependabot, issue and PR templates
+├─ .github/                          # workflows, release script, Dependabot, main branch ruleset, issue and PR templates
+├─ .githooks/                        # git hooks: branch rules (no commits on or pushes to main)
+├─ .claude/                          # Claude Code settings for this repo (applies the branch rules to Claude)
 ├─ AUTHORS.md                        # maintainers and contributors
 ├─ CHANGELOG.md                      # marketplace-level changes
 ├─ CLAUDE.md                         # guidance for Claude Code working in this repo
@@ -41,6 +43,12 @@ Requirements:
 - Claude Code (the `claude` CLI).
 - Node.js 22 or later, to run the tests and hook scripts (e.g. `plugins/foreman/hooks/session-start.js`).
 
+After cloning, turn on the repository's git hooks once:
+
+```
+git config core.hooksPath .githooks
+```
+
 Load a plugin straight from your working copy (restart the session to pick up edits):
 
 ```
@@ -55,6 +63,29 @@ Or test the full marketplace install path inside Claude Code:
 ```
 
 After edits: `/plugin marketplace update axis-hub`, then restart the session. Remove with `/plugin uninstall <plugin>@axis-hub` and `/plugin marketplace remove axis-hub`.
+
+## Branches and pull requests
+
+`main` only changes through pull requests. Never commit on `main` or push to it.
+
+1. Update `main` and create a branch for your work:
+   ```
+   git switch main
+   git pull
+   git switch -c <type>/<short-name>
+   ```
+   `<type>` is one of `feat`, `fix`, `docs`, `test`, `ci`, `chore`, `refactor` (the same types as commit messages), and `<short-name>` is kebab-case. For example: `feat/foreman-bug-command`, `fix/run-fix-rounds`, `docs/install-guide`.
+2. Commit on the branch, then push it: `git push -u origin <type>/<short-name>`.
+3. Open a pull request against `main`. It can be merged when the **validate** check passes.
+4. After the merge, delete the branch and go back to step 1 for the next change.
+
+These rules are enforced in three places:
+
+| Where | What it refuses |
+|-------|-----------------|
+| GitHub ruleset on `main` ([`.github/rulesets/main.json`](.github/rulesets/main.json)) | Direct pushes, force pushes, and deleting `main`; merging a pull request before **validate** passes |
+| Git hooks in `.githooks/` (after `git config core.hooksPath .githooks`) | Commits on `main`, pushes to `main` on GitHub, and branch names not following `<type>/<short-name>` |
+| Claude Code hook (`.claude/settings.json`) | The same, for git commands Claude runs in this repository |
 
 ## Validation and tests
 
@@ -153,6 +184,7 @@ Testing a foreman change end to end, in a throwaway git project:
 
 ## Pull request checklist
 
+- [ ] Work is on a `<type>/<short-name>` branch, not `main`.
 - [ ] `claude plugin validate .` and `claude plugin validate plugins/<plugin>` pass.
 - [ ] `node --test` passes.
 - [ ] `CHANGELOG.md` updated (plugin and/or root).

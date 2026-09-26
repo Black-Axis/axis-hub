@@ -1,0 +1,3 @@
+#!/bin/sh
+# Refuses commits on main and on branches not named <type>/<short-name>.
+exec node "$(dirname "$0")/guard.js" pre-commit
