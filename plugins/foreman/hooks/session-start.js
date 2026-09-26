@@ -45,7 +45,8 @@ function tableRows(text, heading) {
 }
 
 function field(text, name) {
-  const m = text && text.match(new RegExp(`^- ${name}:\\s*(.+)$`, 'mi'));
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const m = text && text.match(new RegExp(`^- ${escaped}:\\s*(.+)$`, 'mi'));
   return m ? m[1].trim() : '';
 }
 
@@ -66,7 +67,7 @@ function main() {
 
   const lines = [];
   const index = readText(path.join(wb, 'INDEX.md')) || '';
-  const missing = ['Git', 'Output', 'Fix rounds'].filter((name) => !field(index, name));
+  const missing = ['Git', 'Output', 'Fix rounds', 'CLAUDE.md'].filter((name) => !field(index, name));
   if (missing.length) {
     lines.push(`Settings not set (${missing.join(', ')}) — run /foreman:settings`);
   }

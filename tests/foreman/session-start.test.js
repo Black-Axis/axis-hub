@@ -88,6 +88,12 @@ test('reports missing settings', () => {
   assert.match(run(dir).systemMessage, /Settings not set \(Fix rounds\)/);
 });
 
+test('reports missing CLAUDE.md setting', () => {
+  const dir = project();
+  edit(dir, 'INDEX.md', '- CLAUDE.md: no\n', '');
+  assert.match(run(dir).systemMessage, /Settings not set \(CLAUDE\.md\)/);
+});
+
 test('survives a broken tracking file', () => {
   const dir = project();
   fs.writeFileSync(path.join(dir, 'workbench', TRK), '| broken');

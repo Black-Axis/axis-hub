@@ -30,6 +30,12 @@
       "default": 4,
       "min": 0,
       "max": 10
+    },
+    "default_claude_md": {
+      "type": "string",
+      "title": "Default CLAUDE.md block",
+      "description": "yes, no, or ask. Whether foreman adds a short block about workbench/ to the project's CLAUDE.md (or CLAUDE.local.md when workbench/ is git-ignored) when it sets up a new project.",
+      "default": "ask"
     }
   }
 }
