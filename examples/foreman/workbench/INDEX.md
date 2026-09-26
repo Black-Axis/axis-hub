@@ -5,6 +5,7 @@
 - Git: committed
 - Output: Concise
 - Fix rounds: 4
+- CLAUDE.md: no
 - Created: 2026-09-20
 
 ## Features

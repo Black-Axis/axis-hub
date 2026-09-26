@@ -16,10 +16,11 @@ Sources are local files only (md, txt, json, yaml, or any text). Never move, edi
 
 1. If no path is given, ask for the folder(s) or file(s) of the old workflow. Check every path exists; ask about any that does not.
 2. If `workbench/INDEX.md` does not exist, initialize it:
-   - User defaults (set when the plugin was enabled; change with `/config`): output `${user_config.default_output}`, git `${user_config.default_git}`, fix rounds `${user_config.default_fix_rounds}`. A value that is empty, still shows the literal `${user_config...}` text, or is invalid counts as output `Concise`, git `ask`, fix rounds `4`.
+   - User defaults (set when the plugin was enabled; change with `/config`): output `${user_config.default_output}`, git `${user_config.default_git}`, fix rounds `${user_config.default_fix_rounds}`, CLAUDE.md block `${user_config.default_claude_md}`. A value that is empty, still shows the literal `${user_config...}` text, or is invalid counts as output `Concise`, git `ask`, fix rounds `4`, CLAUDE.md block `ask`.
    - Output and Fix rounds: use the defaults. Do not ask.
    - Git: use the default if it is `committed` or `ignored`. Do not ask. Only if it is `ask`: ask whether `workbench/` should be **committed** or **ignored**.
-   - Create the folders and `INDEX.md`, and update `.gitignore`, as in steps 1.3-1.5 of `${CLAUDE_PLUGIN_ROOT}/commands/new.md` (use only those steps from that file; its defaults are not filled in when read as a file).
+   - CLAUDE.md: use the default if it is `yes` or `no`. Do not ask. Only if it is `ask`: ask as in step 1.2 of `${CLAUDE_PLUGIN_ROOT}/commands/new.md`.
+   - Create the folders and `INDEX.md`, update `.gitignore`, and write the CLAUDE.md block if `yes`, as in steps 1.3-1.6 of `${CLAUDE_PLUGIN_ROOT}/commands/new.md` (use only those steps from that file; its defaults are not filled in when read as a file).
    - Tell the user in one line which values were applied and that `/foreman:settings` changes them.
 3. Next feature number = highest in INDEX + 1.
 

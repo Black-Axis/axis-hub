@@ -30,7 +30,8 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 
 ```
 > /foreman:new add a /health endpoint returning {status:"ok"} and the app version
-  Applied settings: Git ignored, Output Concise, Fix rounds 4 (change with /foreman:settings)
+  Add a foreman block to CLAUDE.local.md so Claude knows about workbench/?  > yes
+  Applied settings: Git ignored, Output Concise, Fix rounds 4, CLAUDE.md yes (change with /foreman:settings)
   Feature review - 2 findings:
     1. Where does the version come from? (unclear)
     2. Auth required on /health? (missing)
@@ -101,16 +102,26 @@ There are two levels. You normally only touch the second.
 
 | Level | Where | What | Change with |
 |-------|-------|------|-------------|
-| Your defaults (all projects) | Claude Code plugin config, asked when you enable the plugin | Default output style, git choice, fix rounds | `/config` |
-| This project | `workbench/INDEX.md` `Settings`, filled from your defaults on the first `/foreman:new` or `/foreman:import` | Git, Output, Fix rounds | `/foreman:settings` |
+| Your defaults (all projects) | Claude Code plugin config, asked when you enable the plugin | Default output style, git choice, fix rounds, CLAUDE.md block | `/config` |
+| This project | `workbench/INDEX.md` `Settings`, filled from your defaults on the first `/foreman:new` or `/foreman:import` | Git, Output, Fix rounds, CLAUDE.md | `/foreman:settings` |
 
 | Setting | Values | Meaning |
 |---------|--------|---------|
 | Git | `committed`, `ignored` | Whether `workbench/` is tracked by git (default choice `ask` = asked once per project) |
 | Output | `Concise` (default), `Normal` | `Concise` keeps all foreman replies, worker reports, and files short and token-efficient - no other plugin needed. Affects foreman only. |
 | Fix rounds | `0`-`10` (default `4`) | Automatic fix rounds before a failing task goes on `Hold` |
+| CLAUDE.md | `yes`, `no` (default choice `ask`) | Whether foreman adds a short block about `workbench/` to your project instructions (see below) |
 
 If a project's settings are missing, the session start summary tells you to run `/foreman:settings`.
+
+### CLAUDE.md block
+
+With `CLAUDE.md: yes`, foreman adds a short block to your project instructions, so Claude knows about `workbench/` in every session, even when you don't run a foreman command: it changes `workbench/` only through foreman commands, checks the active plan before feature work, stays within the contract's scope, and suggests the matching `/foreman:*` command.
+
+- **Where**: `CLAUDE.md` when `workbench/` is committed (shared with your team), `CLAUDE.local.md` when it is git-ignored (only you; foreman adds it to `.gitignore`). Changing Git with `/foreman:settings` moves the block.
+- **Yours to control**: the block sits between `<!-- foreman:start -->` and `<!-- foreman:end -->` markers (Claude Code hides these comments from Claude). Foreman never touches anything outside them. `/foreman:settings claude-md no` removes it; `/foreman:doctor` refreshes it after a foreman update.
+- **Projects with `AGENTS.md` only**: creating a CLAUDE file would make Claude Code stop reading `AGENTS.md`, so foreman asks first and, if you agree, starts the file with `@AGENTS.md` to keep it loaded.
+- The block starts with "If the foreman plugin is installed", so it does nothing after you remove the plugin.
 
 ## Permissions
 

@@ -15,5 +15,6 @@ First release.
 - `foreman-guide` skill that suggests the right command.
 - SessionStart hook summarizing active plans, ready tasks, and missing settings.
 - `workbench/` structure: INDEX, plans, contracts, tracking (History with `By`, Activity log), subtasks, docs, reports.
-- Settings: user defaults via plugin config, per-project values via `/foreman:settings` (Git, Output, Fix rounds).
+- Settings: user defaults via plugin config, per-project values via `/foreman:settings` (Git, Output, Fix rounds, CLAUDE.md).
+- Optional CLAUDE.md block: a short, marker-delimited section in `CLAUDE.md` (or `CLAUDE.local.md` when `workbench/` is git-ignored) that tells Claude about `workbench/` in every session.
 - Concise output mode for token-efficient replies, reports, and files.

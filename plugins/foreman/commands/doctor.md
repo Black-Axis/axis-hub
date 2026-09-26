@@ -23,10 +23,11 @@ List the folders explicitly (`workbench/plans/`, `contracts/`, `tracking/`, `sub
 5. **Tasks vs plan** - the plan's Task Breakdown lists the same tasks; `Depends On` references tasks that exist.
 6. **Statuses** - every status is a valid value (exact Title Case); the TRK table matches the last History entry for each target; the plan status follows the derivation rule; a plan is `Done` only if a `Closed` or `Imported` History entry exists.
 7. **Contract** - valid Status; Auto-close is `Ask`, `Yes`, or `No`; `Approved` has a date; Change Requests with an Approved date only if the contract is `Approved`.
-8. **INDEX** - Settings has valid Git (`committed` / `ignored`), Output (`Concise` / `Normal`), and Fix rounds (whole number 0-10) values; Contract Status and Progress match the contract and TRK files.
+8. **INDEX** - Settings has valid Git (`committed` / `ignored`), Output (`Concise` / `Normal`), Fix rounds (whole number 0-10), and CLAUDE.md (`yes` / `no`) values; Contract Status and Progress match the contract and TRK files.
 9. **Task files** - all mandatory sections exist and are not empty or still `{{...}}` placeholders.
 10. **Tracking format** - every TRK file has the `History` table with a `By` column and an `Activity` table (older files: propose adding them, empty; never back-fill guessed rows).
 11. **Imported gaps** - list every `Missing - from import` field (report only; the user fills them).
+12. **CLAUDE.md block** ("Project instructions block" in rules.md) - `yes`: the block is in the right target file for the Git setting, only there, and matches `${CLAUDE_PLUGIN_ROOT}/templates/claude-md.md` exactly (an outdated block is refreshed from the template); `no`: no CLAUDE file has a foreman block.
 
 ## 2. Report
 
