@@ -17,3 +17,4 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 - GitHub Actions: validation with a pinned Claude Code version, release on `vX.Y.Z` tags, CodeQL, and Dependabot for actions.
 - Issue and pull request templates.
 - Branch rules: `main` changes only through pull requests (GitHub ruleset), branches named `<type>/<short-name>`, enforced by git hooks (`.githooks/`) and a Claude Code hook (`.claude/`).
+- `git finish` and a Claude Code session start hook: after a pull request is merged, switch to `main`, pull, and delete merged branches.

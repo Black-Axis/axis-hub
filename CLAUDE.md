@@ -22,7 +22,7 @@ Marketplace-level test inside Claude Code: `/plugin marketplace add <repo path>`
 
 ## Branches
 
-Never commit on `main` or push to it; `main` changes only through pull requests (GitHub ruleset in `.github/rulesets/main.json`, requires the `validate` check). Before changing anything, create a branch `<type>/<short-name>` (`feat`, `fix`, `docs`, `test`, `ci`, `chore`, `refactor`; kebab-case, e.g. `feat/foreman-bug-command`). The rules live in `.githooks/guard.js`, used by the git hooks (`git config core.hooksPath .githooks`) and by the PreToolUse hook `.claude/hooks/guard-git.js`, which denies Claude's git commands that break them. GitHub deletes merged branches automatically; after a merge, switch to `main`, pull, and `git branch -d` the local branch.
+Never commit on `main` or push to it; `main` changes only through pull requests (GitHub ruleset in `.github/rulesets/main.json`, requires the `validate` check). Before changing anything, create a branch `<type>/<short-name>` (`feat`, `fix`, `docs`, `test`, `ci`, `chore`, `refactor`; kebab-case, e.g. `feat/foreman-bug-command`). The rules live in `.githooks/guard.js`, used by the git hooks (`git config core.hooksPath .githooks`) and by the PreToolUse hook `.claude/hooks/guard-git.js`, which denies Claude's git commands that break them. GitHub deletes merged branches automatically; locally, `.githooks/finish.js` (`git finish`, and the SessionStart hook `.claude/hooks/finish-on-start.js`) switches to `main`, pulls, and deletes merged branches (tip contained in `main` and PR `MERGED` via `gh`, or upstream deleted). It must never delete unmerged work or act with uncommitted changes; `tests/git-finish.test.js` covers this.
 
 ## Structure
 
