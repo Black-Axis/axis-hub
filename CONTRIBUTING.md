@@ -20,7 +20,7 @@ axis-hub/
 │     └─ README.md                   # user-facing docs for the plugin
 ├─ examples/<plugin>/                # sample output (also test fixtures)
 ├─ tests/                            # node --test suites (manifests, hooks)
-├─ .github/                          # CI workflow, issue and PR templates
+├─ .github/                          # workflows, release script, Dependabot, issue and PR templates
 ├─ AUTHORS.md                        # maintainers and contributors
 ├─ CHANGELOG.md                      # marketplace-level changes
 ├─ CLAUDE.md                         # guidance for Claude Code working in this repo
@@ -66,9 +66,23 @@ claude plugin validate plugins/<plugin>   # the plugin's plugin.json
 node --test                               # all tests (finds every *.test.js)
 ```
 
-The tests check that both manifests agree (name, version, description, keywords), that each plugin has a README and a CHANGELOG entry for its current version, that each plugin is listed in the root README, and that the foreman session start hook produces the right summary for the sample in `examples/foreman/`.
+The tests check that:
 
-The same checks run in GitHub Actions (`.github/workflows/validate.yml`) on every pull request and push to `main`.
+- both manifests agree (name, version, description, keywords);
+- each plugin has a README and a CHANGELOG entry for its current version, and is listed in the root README;
+- the foreman session start hook produces the right summary for the sample in `examples/foreman/`;
+- relative links in every Markdown file point to files that exist (plugin templates are skipped);
+- the release script accepts only tags that match the marketplace version, and all workflows pin the same Claude Code version.
+
+GitHub Actions runs:
+
+| Workflow | When | What |
+|----------|------|------|
+| `validate.yml` | Every pull request and push to `main` | Both validations and `node --test` |
+| `codeql.yml` | Pull requests, pushes to `main`, weekly | CodeQL scan of the JavaScript (skipped while the repository is private) |
+| `release.yml` | Push of a `vX.Y.Z` tag | See [Releasing](#releasing) |
+
+CI installs a pinned Claude Code version (`CLAUDE_CODE_VERSION` in `validate.yml` and `release.yml`). To move to a newer version, change it in both files in one pull request. Dependabot (`.github/dependabot.yml`) opens weekly pull requests to update the GitHub Actions used by the workflows.
 
 Then check in a Claude Code session that the plugin loads: its commands appear when you type `/<plugin>:`, its agents appear in `/agents`, and `claude --debug` shows no load errors.
 
@@ -89,6 +103,22 @@ Then check in a Claude Code session that the plugin loads: its commands appear w
 - **Manifests in sync**: `description` and `keywords` must match between `plugin.json` and `marketplace.json`.
 - **Changelog**: add your change under `## [Unreleased]` in the plugin's `CHANGELOG.md` (and the root `CHANGELOG.md` for repository-level changes). On release, rename it to the new version with the date.
 - **Docs**: update the plugin's `README.md` whenever commands, arguments, settings, or behavior change, and `CLAUDE.md` when a cross-file design rule changes.
+
+## Releasing
+
+A release is a git tag `vX.Y.Z` that matches `metadata.version` in `.claude-plugin/marketplace.json`. Users can pin it (`/plugin marketplace add https://github.com/Black-Axis/axis-hub.git#vX.Y.Z`).
+
+1. Bump the versions of the changed plugins (both manifests) and `metadata.version` in `marketplace.json`.
+2. In each changed plugin's `CHANGELOG.md` and in the root `CHANGELOG.md`, rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD` and add a new empty `## [Unreleased]` above it.
+3. Update the version in the root `README.md` plugin table.
+4. Check the notes: `node .github/scripts/release-notes.js vX.Y.Z` (fails if the tag does not match or the changelog has no section).
+5. Merge to `main`, then tag and push the tag:
+   ```
+   git tag vX.Y.Z
+   git push origin vX.Y.Z
+   ```
+
+`release.yml` then checks the tag again, validates, runs the tests, and creates the GitHub release with the root changelog section and the plugin versions as notes.
 
 ## Conventions for plugin files
 
