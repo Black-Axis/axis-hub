@@ -43,10 +43,11 @@ Requirements:
 - Claude Code (the `claude` CLI).
 - Node.js 22 or later, to run the tests and hook scripts (e.g. `plugins/foreman/hooks/session-start.js`).
 
-After cloning, turn on the repository's git hooks once:
+After cloning, run once:
 
 ```
-git config core.hooksPath .githooks
+git config core.hooksPath .githooks   # turn on the repository's git hooks
+git config fetch.prune true           # forget remote branches deleted after their pull request is merged
 ```
 
 Load a plugin straight from your working copy (restart the session to pick up edits):
@@ -77,7 +78,13 @@ After edits: `/plugin marketplace update axis-hub`, then restart the session. Re
    `<type>` is one of `feat`, `fix`, `docs`, `test`, `ci`, `chore`, `refactor` (the same types as commit messages), and `<short-name>` is kebab-case. For example: `feat/foreman-bug-command`, `fix/run-fix-rounds`, `docs/install-guide`.
 2. Commit on the branch, then push it: `git push -u origin <type>/<short-name>`.
 3. Open a pull request against `main`. It can be merged when the **validate** check passes.
-4. After the merge, delete the branch and go back to step 1 for the next change.
+4. After the merge, GitHub deletes the branch on GitHub automatically (it can be restored from the pull request page). Delete your local copy:
+   ```
+   git switch main
+   git pull
+   git branch -d <type>/<short-name>
+   ```
+   `git branch -d` only deletes a fully merged branch; if it refuses, the branch has work that is not in `main` yet. Then go back to step 1 for the next change.
 
 These rules are enforced in three places:
 
