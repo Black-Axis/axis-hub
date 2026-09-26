@@ -48,6 +48,7 @@ After cloning, run once:
 ```
 git config core.hooksPath .githooks   # turn on the repository's git hooks
 git config fetch.prune true           # forget remote branches deleted after their pull request is merged
+git config alias.finish '!node .githooks/finish.js'   # `git finish`: clean up after a merge (see below)
 ```
 
 Load a plugin straight from your working copy (restart the session to pick up edits):
@@ -78,13 +79,11 @@ After edits: `/plugin marketplace update axis-hub`, then restart the session. Re
    `<type>` is one of `feat`, `fix`, `docs`, `test`, `ci`, `chore`, `refactor` (the same types as commit messages), and `<short-name>` is kebab-case. For example: `feat/foreman-bug-command`, `fix/run-fix-rounds`, `docs/install-guide`.
 2. Commit on the branch, then push it: `git push -u origin <type>/<short-name>`.
 3. Open a pull request against `main`. It can be merged when the **validate** check passes.
-4. After the merge, GitHub deletes the branch on GitHub automatically (it can be restored from the pull request page). Delete your local copy:
+4. After the merge, GitHub deletes the branch on GitHub automatically (it can be restored from the pull request page). Clean up your clone with one command:
    ```
-   git switch main
-   git pull
-   git branch -d <type>/<short-name>
+   git finish
    ```
-   `git branch -d` only deletes a fully merged branch; if it refuses, the branch has work that is not in `main` yet. Then go back to step 1 for the next change.
+   It switches to `main`, pulls it, and deletes every local branch whose pull request was merged. A branch is deleted only if all its commits are in `main` and GitHub reports its pull request as merged (with the `gh` CLI) or its GitHub copy was deleted. It changes nothing while you have uncommitted changes or while your current branch is not merged yet. In Claude Code, the same cleanup runs automatically when a session starts. Then go back to step 1 for the next change.
 
 These rules are enforced in three places:
 
