@@ -25,11 +25,12 @@ for (const entry of marketplace.plugins) {
     assert.ok(fs.existsSync(path.join(dir, 'README.md')), 'README.md missing');
     const changelog = path.join(dir, 'CHANGELOG.md');
     assert.ok(fs.existsSync(changelog), 'CHANGELOG.md missing');
-    assert.match(fs.readFileSync(changelog, 'utf8'), new RegExp(`## \\[${entry.version.replace(/\./g, '\\.')}\\]`),
+    assert.ok(fs.readFileSync(changelog, 'utf8').includes(`## [${entry.version}]`),
       `CHANGELOG.md has no entry for ${entry.version}`);
   });
 
   test(`${entry.name}: listed in root README`, () => {
-    assert.match(fs.readFileSync(path.join(repo, 'README.md'), 'utf8'), new RegExp(`\\[${entry.name}\\]`));
+    assert.ok(fs.readFileSync(path.join(repo, 'README.md'), 'utf8').includes(`[${entry.name}]`),
+      `${entry.name} is not in the root README plugin table`);
   });
 }
