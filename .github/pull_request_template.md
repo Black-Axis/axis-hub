@@ -9,6 +9,7 @@
 
 ## Checklist
 
+- [ ] Branch named `<type>/<short-name>` (e.g. `feat/foreman-bug-command`).
 - [ ] `claude plugin validate .` and `claude plugin validate plugins/<plugin>` pass.
 - [ ] `node --test` passes.
 - [ ] Tried the changed commands, agents, skills, or hooks in Claude Code.
