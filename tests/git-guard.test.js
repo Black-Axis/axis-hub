@@ -66,10 +66,22 @@ test('Claude hook: commit and push on main', () => {
   assert.strictEqual(check('git push backup main', dir).length, 0, 'non-GitHub remote');
   assert.strictEqual(check('git push origin v1.0.0', dir).length, 0, 'tag');
   assert.strictEqual(check('git push --tags origin', dir).length, 0, 'all tags');
+  assert.strictEqual(check('git tag -a v2.0.0 -m "v2.0.0" && git push origin v2.0.0', dir).length, 0, 'tag created in the same command');
+  assert.strictEqual(check('git push origin refs/tags/v3.0.0', dir).length, 0, 'full tag ref');
+  assert.ok(check('git tag -d v2.0.0 && git push origin v2.0.0', dir).length, 'deleted tag is not a new tag');
   assert.strictEqual(check('git status && git log', dir).length, 0, 'read-only');
   assert.strictEqual(check('git push -u origin feat/x 2>&1 | tail -5', dir).length, 0, 'redirect and pipe');
   assert.strictEqual(check('git push origin feat/x > out.txt 2> err.txt', dir).length, 0, 'redirect with space');
   assert.ok(check('git push origin main 2>/dev/null', dir).length, 'redirect does not hide main');
+});
+
+test('Claude hook: heredoc and here-string bodies are data, not commands', () => {
+  const dir = tempRepo();
+  const heredoc = "cat > pr.md <<'EOF'\n- `git tag x && git push origin main` was denied\nEOF\ngh pr create --body-file pr.md";
+  assert.strictEqual(check(heredoc, dir).length, 0, 'heredoc');
+  const hereString = "git log -1 -m @'\ngit push origin main\n'@";
+  assert.strictEqual(check(hereString, dir).length, 0, 'PowerShell here-string');
+  assert.ok(check("cat > a <<EOF\nx\nEOF\ngit push origin main", dir).length, 'command after the heredoc is still checked');
 });
 
 test('Claude hook: branch creation', () => {

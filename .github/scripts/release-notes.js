@@ -22,6 +22,17 @@ function changelogSection(text, version) {
   return body || null;
 }
 
+const repoUrl = process.env.GITHUB_REPOSITORY
+  ? `${process.env.GITHUB_SERVER_URL || 'https://github.com'}/${process.env.GITHUB_REPOSITORY}`
+  : 'https://github.com/Black-Axis/axis-hub';
+
+// Makes relative Markdown links absolute (pointing at the files in `tag`),
+// since relative links break on the GitHub release page.
+function absoluteLinks(text, tag, base = repoUrl) {
+  return text.replace(/\]\((?![a-z][a-z0-9+.-]*:|#)([^)\s]+)\)/gi,
+    (_, target) => `](${base}/blob/${tag}/${target.replace(/^\.\//, '')})`);
+}
+
 // Returns { notes } or { error }.
 function releaseNotes(tag, dir = root) {
   const match = /^v(\d+\.\d+\.\d+)$/.exec(tag || '');
@@ -42,7 +53,7 @@ function releaseNotes(tag, dir = root) {
   const plugins = (marketplace.plugins || [])
     .map((p) => `| ${p.name} | ${p.version} |`)
     .join('\n');
-  const notes = `${section}\n\n## Plugins in this release\n\n| Plugin | Version |\n|--------|---------|\n${plugins}\n`;
+  const notes = `${absoluteLinks(section, tag)}\n\n## Plugins in this release\n\n| Plugin | Version |\n|--------|---------|\n${plugins}\n`;
   return { notes };
 }
 
@@ -55,4 +66,4 @@ if (require.main === module) {
   process.stdout.write(result.notes);
 }
 
-module.exports = { changelogSection, releaseNotes };
+module.exports = { absoluteLinks, changelogSection, releaseNotes };

@@ -9,8 +9,17 @@ const { execFileSync } = require('child_process');
 const path = require('path');
 const guard = require(path.join(__dirname, '..', '..', '.githooks', 'guard.js'));
 
+// Removes heredoc bodies (<<EOF ... EOF) and PowerShell here-strings (@' ... '@):
+// they are data (file content, PR text), not commands.
+function stripHereDocs(command) {
+  return command
+    .replace(/<<-?[ \t]*(['"]?)([A-Za-z_][\w-]*)\1([^\n]*)\n[\s\S]*?\n[ \t]*\2[ \t]*(?=\r?\n|$)/g, (m, q, tag, rest) => rest)
+    .replace(/@(['"])\r?\n[\s\S]*?\r?\n\1@/g, "''");
+}
+
 // Splits a command line into segments (on && || ; | and newlines) of tokens, honoring quotes.
-function segments(command) {
+function segments(rawCommand) {
+  const command = stripHereDocs(rawCommand);
   const out = [];
   let tokens = [];
   let token = '';
@@ -81,8 +90,19 @@ function positionals(args) {
   return args.filter((a) => !a.startsWith('-'));
 }
 
-// Errors for one push, given the simulated current branch.
-function checkPushCall(args, branch, cwd) {
+// Name of the tag a `git tag` call creates, or null (listing, deleting, verifying).
+function createdTag(args) {
+  if (args.some((a) => ['-d', '--delete', '-l', '--list', '-v', '--verify'].includes(a))) return null;
+  const withValue = ['-m', '--message', '-F', '--file', '-u', '--local-user', '--cleanup'];
+  for (let i = 0; i < args.length; i++) {
+    if (withValue.includes(args[i])) i++;
+    else if (!args[i].startsWith('-')) return args[i];
+  }
+  return null;
+}
+
+// Errors for one push, given the simulated current branch and the tags created earlier in the command.
+function checkPushCall(args, branch, cwd, newTags = new Set()) {
   const pos = positionals(args);
   const remote = pos[0] || (branch && git(cwd, ['config', `branch.${branch}.remote`])) || 'origin';
   const url = /[:/]/.test(remote) ? remote : git(cwd, ['remote', 'get-url', remote]);
@@ -103,7 +123,8 @@ function checkPushCall(args, branch, cwd) {
     const [src, dst] = s.includes(':') ? s.split(':') : [s, s];
     let name = dst === 'HEAD' ? branch : dst;
     if (!name) continue;
-    if (name.startsWith('refs/tags/') || (!name.startsWith('refs/') && git(cwd, ['show-ref', '--verify', '-q', `refs/tags/${name}`]) !== null)) continue;
+    if (name.startsWith('refs/tags/') || newTags.has(name)) continue;
+    if (!name.startsWith('refs/') && git(cwd, ['show-ref', '--verify', '-q', `refs/tags/${name}`]) !== null) continue;
     name = name.replace(/^refs\/heads\//, '');
     updates.push({ remoteRef: `refs/heads/${name}`, localSha: deleting || src === '' ? '0' : '1' });
   }
@@ -113,6 +134,7 @@ function checkPushCall(args, branch, cwd) {
 // Walks the command in order, tracking branch switches, and returns the first set of errors.
 function check(command, cwd) {
   let branch = guard.currentBranch(cwd);
+  const newTags = new Set();
   for (const tokens of segments(command)) {
     const call = gitCall(tokens);
     if (!call) continue;
@@ -139,8 +161,11 @@ function check(command, cwd) {
     } else if (sub === 'commit') {
       const err = guard.checkCommit(branch);
       if (err) errors = [err];
+    } else if (sub === 'tag') {
+      const tag = createdTag(args);
+      if (tag) newTags.add(tag);
     } else if (sub === 'push') {
-      errors = checkPushCall(args, branch, cwd);
+      errors = checkPushCall(args, branch, cwd, newTags);
     }
     if (errors.length) return errors;
   }
