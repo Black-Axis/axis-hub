@@ -6,6 +6,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-27
+
 ### Changed
 
 - `foreman` 1.2.0: new `/foreman:init` command and working rules defaults ([changelog](plugins/foreman/CHANGELOG.md)).
