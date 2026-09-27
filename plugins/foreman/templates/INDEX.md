@@ -12,6 +12,15 @@
 
 - Created: {{YYYY-MM-DD}}
 
+## Working Rules Defaults
+
+<!-- proposed for every new contract's Working Rules; set by /foreman:init, changed by /foreman:settings rules -->
+- Commit policy: {{never auto-commit | main agent commits after each verified task | other}}
+- Auto-close: {{Ask | Yes | No}}
+- Tests: {{required commands, e.g. `npm test`, or "none available"}}
+- Standards: {{coding standards / conventions to follow}}
+- Ask the user when: {{situations where the main agent must stop and ask}}
+
 ## Features
 
 | # | Feature | Plan | Contract | Tracking | Doc | Contract Status | Progress |

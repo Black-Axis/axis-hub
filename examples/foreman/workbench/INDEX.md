@@ -8,6 +8,14 @@
 - CLAUDE.md: no
 - Created: 2026-09-20
 
+## Working Rules Defaults
+
+- Commit policy: never auto-commit
+- Auto-close: Ask
+- Tests: `npm test`
+- Standards: follow existing route style in `src/routes/`
+- Ask the user when: any file outside Files Expected to Change is needed
+
 ## Features
 
 | # | Feature | Plan | Contract | Tracking | Doc | Contract Status | Progress |

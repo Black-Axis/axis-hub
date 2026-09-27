@@ -20,7 +20,7 @@ A folder or file that does not exist means the plugin provides none of that comp
 
 ## 2. Output
 
-Print exactly four sections in this order, each with a Markdown table. Number rows from 1 within each table, sorted by the natural workflow for commands (`new`, `interview`, `import`, `approve`, `run`, `status`, `change`, `hold`, `cancel`, `resume`, `close`, `doctor`, `report`, `settings`, `ask`, `catalog`, then any others alphabetically) and alphabetically for the rest. Keep each "What it does" to one short sentence.
+Print exactly four sections in this order, each with a Markdown table. Number rows from 1 within each table, sorted by the natural workflow for commands (`init`, `new`, `interview`, `import`, `approve`, `run`, `status`, `change`, `hold`, `cancel`, `resume`, `close`, `doctor`, `report`, `settings`, `ask`, `catalog`, then any others alphabetically) and alphabetically for the rest. Keep each "What it does" to one short sentence.
 
 ### Commands
 

@@ -10,7 +10,7 @@ Input: $ARGUMENTS
 
 First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it. This command is read-only: do not modify any file.
 
-If `workbench/INDEX.md` does not exist, tell the user to start with `/foreman:new` and stop.
+If `workbench/INDEX.md` does not exist, tell the user to start with `/foreman:init` or `/foreman:new` and stop.
 
 ## No argument
 

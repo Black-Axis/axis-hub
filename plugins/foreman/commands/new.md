@@ -12,23 +12,11 @@ First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it throughout.
 
 ## 1. Initialize `workbench/` (first time only)
 
-If `workbench/INDEX.md` does not exist in the project root:
-1. Read the user's defaults (set when the plugin was enabled; change with `/config`):
-   - Default output: `${user_config.default_output}`
-   - Default git: `${user_config.default_git}`
-   - Default fix rounds: `${user_config.default_fix_rounds}`
-   - Default CLAUDE.md block: `${user_config.default_claude_md}`
-
-   If a value above is empty, still shows the literal `${user_config...}` text, or is not a valid value, treat it as: output `Concise`, git `ask`, fix rounds `4`, CLAUDE.md block `ask`.
-2. Decide the settings without re-asking what the user already chose:
-   - Output: use the default output (it is always `Concise` or `Normal` after step 1). Do not ask.
-   - Fix rounds: use the default. Do not ask.
-   - Git: if the default git is `committed` or `ignored`, use it. Do not ask. Only if it is `ask`: ask whether `workbench/` should be **committed** to git or **ignored**.
-   - CLAUDE.md: if the default is `yes` or `no`, use it. Do not ask. Only if it is `ask`: ask whether to add a short foreman block to the project's `CLAUDE.md` (Git `committed`) or `CLAUDE.local.md` (Git `ignored`) so Claude knows about `workbench/` in every session; show the block from `${CLAUDE_PLUGIN_ROOT}/templates/claude-md.md`.
-3. Create `workbench/` with subfolders `plans/`, `contracts/`, `tracking/`, `subtasks/`, `docs/`, `interviews/`.
-4. Create `workbench/INDEX.md` from the INDEX template with the chosen Git, Output, Fix rounds, and CLAUDE.md settings. Tell the user in one line which values were applied and that `/foreman:settings` changes them.
-5. If `ignored`: add `workbench/` to the project `.gitignore` (create it if missing; do not duplicate the line).
-6. If CLAUDE.md is `yes`: write the block as described in "Project instructions block" in rules.md.
+If `workbench/INDEX.md` does not exist in the project root, follow `${CLAUDE_PLUGIN_ROOT}/reference/setup.md` in **Auto** mode with the user's defaults (set when the plugin was enabled; change with `/config`):
+- Default output: `${user_config.default_output}`
+- Default git: `${user_config.default_git}`
+- Default fix rounds: `${user_config.default_fix_rounds}`
+- Default CLAUDE.md block: `${user_config.default_claude_md}`
 
 ## 2. Determine the feature number
 
@@ -63,7 +51,7 @@ Explore the codebase to find the files, patterns, and existing utilities relevan
 
 ## 6. Agree on working rules
 
-Ask the user for the contract Working Rules that you cannot infer: commit policy, Auto-close (`Ask` - default, `Yes`, or `No`), test commands required, standards to follow, and when you must stop and ask. Propose sensible defaults from the project and let the user confirm or change them.
+If `workbench/INDEX.md` has a `Working Rules Defaults` section, show those values and ask one question: use them for this feature, or change some (then ask only about those). Otherwise ask the user for the contract Working Rules that you cannot infer: commit policy, Auto-close (`Ask` - default, `Yes`, or `No`), test commands required, standards to follow, and when you must stop and ask. Propose sensible defaults from the project and let the user confirm or change them.
 
 ## 7. Write the files
 
