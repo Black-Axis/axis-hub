@@ -18,6 +18,7 @@ Other sources (SSH, pinned versions, local clone), shell commands, team setup, a
 Four commands cover the everyday flow:
 
 ```
+/foreman:init                                    # 0. optional: set up workbench/ and your project's defaults
 /foreman:new add login with email and Google     # 1. describe the feature (or pass working file paths)
 /foreman:approve P-01                            # 2. review the plan and contract, then approve
 /foreman:run                                     # 3. run the next ready task (repeat)
@@ -54,6 +55,7 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 
 ## Workflow in detail
 
+0. **`/foreman:init`** (optional) - sets up `workbench/` and asks every setting (Git, Output, Fix rounds, CLAUDE.md block), with your `/config` defaults as the recommended answers. It also agrees the project's **working rules defaults** (commit policy, auto-close, test commands, standards, when to ask), proposed from what it finds in the project; every new contract starts from them. Skip it and the first `new`, `interview`, or `import` sets up `workbench/` silently from your defaults. Run on an existing `workbench/`, it only adds what is missing and never overwrites.
 1. **`/foreman:new [working file path(s)] [text]`** - Claude reads the feature description from one or more working files, from your text, or both (text then acts as extra notes over the files; conflicts are confirmed with you). Text alone is treated as the feature description. With no input it asks for files or text, or points you to `/foreman:interview`. It reviews the feature for missing / unclear / conflicting / non-applicable items, resolves each finding with you, explores the codebase, and creates the plan, contract (`Draft`), tracking, task files, and a doc skeleton. Readable working file formats: Markdown, text, PDF (not `.docx` - export it to PDF or paste the text).
    **Or `/foreman:interview [idea]`** - for an idea without a written description. Claude studies the codebase, then interviews you topic by topic (goal and users, flows, data, edge cases, security, performance, UI, integrations, migration, tests, acceptance criteria, out of scope) as a blunt tech lead: vague answers ("fast", "the usual way"), contradictions, and scope creep are challenged until the answer is concrete. It proposes the files expected to change for you to confirm, shows a coverage check, and only then creates the plan, contract, tracking, and tasks. Progress is saved after every round in `workbench/interviews/INT-NN-<slug>.md`; `/foreman:interview INT-NN` continues it in a later session.
 2. **`/foreman:approve P-01`** - after you review the files.
@@ -68,6 +70,7 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 
 | Command | Purpose |
 |---------|---------|
+| `/foreman:init` | Set up `workbench/`: ask every setting and the working rules defaults (repairs only what is missing if already set up) |
 | `/foreman:new [working file path(s)] [text]` | Start a feature: feature review, plan, contract, tracking, subtasks |
 | `/foreman:interview [idea \| INT-NN]` | Deep tech-lead interview about an idea, then plan, contract, tracking, subtasks (resumable) |
 | `/foreman:approve <P-NN>` | Approve the contract (required before running tasks) |
@@ -91,7 +94,7 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 | `/foreman:import <path(s)>` | Move plans/tasks/progress from another workflow's local files into `workbench/` (preview first; originals untouched) |
 | `/foreman:doctor [P-NN]` | Find inconsistencies in `workbench/`; fix them after your confirmation |
 | `/foreman:report <P-NN>` | Write a stakeholder report to `workbench/reports/REP-NN-<slug>.md` |
-| `/foreman:settings [git ...] [output ...] [fix-rounds N]` | View or change this project's settings |
+| `/foreman:settings [git ...] [output ...] [fix-rounds N] [claude-md ...] [rules]` | View or change this project's settings and working rules defaults |
 
 **Help**
 
@@ -107,7 +110,7 @@ There are two levels. You normally only touch the second.
 | Level | Where | What | Change with |
 |-------|-------|------|-------------|
 | Your defaults (all projects) | Claude Code plugin config, asked when you enable the plugin | Default output style, git choice, fix rounds, CLAUDE.md block | `/config` |
-| This project | `workbench/INDEX.md` `Settings`, filled from your defaults on the first `/foreman:new` or `/foreman:import` | Git, Output, Fix rounds, CLAUDE.md | `/foreman:settings` |
+| This project | `workbench/INDEX.md` `Settings`, asked by `/foreman:init` or filled from your defaults on the first `/foreman:new`, `/foreman:interview`, or `/foreman:import` | Git, Output, Fix rounds, CLAUDE.md, working rules defaults (init only) | `/foreman:settings` |
 
 | Setting | Values | Meaning |
 |---------|--------|---------|

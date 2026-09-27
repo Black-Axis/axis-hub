@@ -25,6 +25,10 @@ workbench/
 - `<slug>` is lowercase kebab-case, ASCII letters, digits and hyphens only, max ~40 characters (e.g. `user-login`).
 - Plan IDs are written `P-NN`, task IDs `TASK-TT`. A task is always addressed together with its plan: `P-01 TASK-03`.
 
+## Setup
+
+`workbench/` is created by `/foreman:init` (asks every setting and the working rules defaults) or, when missing, automatically by `/foreman:new`, `/foreman:interview`, and `/foreman:import` from the user's defaults. The steps are in `${CLAUDE_PLUGIN_ROOT}/reference/setup.md`. `.gitkeep` files in subfolders are not feature files.
+
 ## Templates
 
 Create files from these templates, replacing every `{{...}}` placeholder:

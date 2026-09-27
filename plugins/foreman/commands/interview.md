@@ -23,13 +23,7 @@ You are an experienced tech lead interviewing the person who wants this feature.
 
 ## 1. Start or resume
 
-1. If `workbench/INDEX.md` does not exist, initialize `workbench/`:
-   - User defaults (set when the plugin was enabled; change with `/config`): output `${user_config.default_output}`, git `${user_config.default_git}`, fix rounds `${user_config.default_fix_rounds}`, CLAUDE.md block `${user_config.default_claude_md}`. A value that is empty, still shows the literal `${user_config...}` text, or is invalid counts as output `Concise`, git `ask`, fix rounds `4`, CLAUDE.md block `ask`.
-   - Output and Fix rounds: use the defaults. Do not ask.
-   - Git: use the default if it is `committed` or `ignored`. Do not ask. Only if it is `ask`: ask whether `workbench/` should be **committed** or **ignored**.
-   - CLAUDE.md: use the default if it is `yes` or `no`. Do not ask. Only if it is `ask`: ask as in step 1.2 of `${CLAUDE_PLUGIN_ROOT}/commands/new.md`.
-   - Create the folders and `INDEX.md`, update `.gitignore`, and write the CLAUDE.md block if `yes`, as in steps 1.3-1.6 of `${CLAUDE_PLUGIN_ROOT}/commands/new.md` (use only those steps from that file; its defaults are not filled in when read as a file).
-   - Tell the user in one line which values were applied and that `/foreman:settings` changes them.
+1. If `workbench/INDEX.md` does not exist, follow `${CLAUDE_PLUGIN_ROOT}/reference/setup.md` in **Auto** mode with the user's defaults (set when the plugin was enabled; change with `/config`): output `${user_config.default_output}`, git `${user_config.default_git}`, fix rounds `${user_config.default_fix_rounds}`, CLAUDE.md block `${user_config.default_claude_md}`.
 2. **Resume** if the input is `INT-NN`: open `workbench/interviews/INT-NN-<slug>.md`. If its Status is not `In Progress`, say so and stop. Show the Coverage table and Open Gaps in short, then continue at step 3 with the first open topic.
 3. **Open interviews**: if the input is empty and `workbench/interviews/` has files with Status `In Progress`, list them and ask: resume one, or start a new interview.
 4. **New interview**: if the input is empty, ask for the idea in a few sentences. Then:

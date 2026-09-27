@@ -15,13 +15,7 @@ Sources are local files only (md, txt, json, yaml, or any text). Never move, edi
 ## 1. Prepare
 
 1. If no path is given, ask for the folder(s) or file(s) of the old workflow. Check every path exists; ask about any that does not.
-2. If `workbench/INDEX.md` does not exist, initialize it:
-   - User defaults (set when the plugin was enabled; change with `/config`): output `${user_config.default_output}`, git `${user_config.default_git}`, fix rounds `${user_config.default_fix_rounds}`, CLAUDE.md block `${user_config.default_claude_md}`. A value that is empty, still shows the literal `${user_config...}` text, or is invalid counts as output `Concise`, git `ask`, fix rounds `4`, CLAUDE.md block `ask`.
-   - Output and Fix rounds: use the defaults. Do not ask.
-   - Git: use the default if it is `committed` or `ignored`. Do not ask. Only if it is `ask`: ask whether `workbench/` should be **committed** or **ignored**.
-   - CLAUDE.md: use the default if it is `yes` or `no`. Do not ask. Only if it is `ask`: ask as in step 1.2 of `${CLAUDE_PLUGIN_ROOT}/commands/new.md`.
-   - Create the folders and `INDEX.md`, update `.gitignore`, and write the CLAUDE.md block if `yes`, as in steps 1.3-1.6 of `${CLAUDE_PLUGIN_ROOT}/commands/new.md` (use only those steps from that file; its defaults are not filled in when read as a file).
-   - Tell the user in one line which values were applied and that `/foreman:settings` changes them.
+2. If `workbench/INDEX.md` does not exist, follow `${CLAUDE_PLUGIN_ROOT}/reference/setup.md` in **Auto** mode with the user's defaults (set when the plugin was enabled; change with `/config`): output `${user_config.default_output}`, git `${user_config.default_git}`, fix rounds `${user_config.default_fix_rounds}`, CLAUDE.md block `${user_config.default_claude_md}`.
 3. Next feature number = highest in INDEX or in `workbench/interviews/` + 1.
 
 ## 2. Scan and map
@@ -50,7 +44,7 @@ Ask the user to confirm or correct. Apply corrections and re-show only what chan
 Per feature, from the templates:
 - **Plan**: Source `Type: import`, listing every source file used; other sections from the sources. Missing content: `Missing - from import` (never invent).
 - **Contract**:
-  - Unfinished feature: Status `Draft`. Scope, Out of Scope, Acceptance Criteria from the sources; Working Rules as in `/foreman:new` step 6 (ask the user once for all imported features, not per feature).
+  - Unfinished feature: Status `Draft`. Scope, Out of Scope, Acceptance Criteria from the sources; Working Rules as in `/foreman:new` step 6, including the INDEX `Working Rules Defaults` if present (ask the user once for all imported features, not per feature).
   - Fully finished feature: Status `Approved`, Approved = today, with a note line `Imported - completed before foreman`.
 - **Tasks**: all mandatory sections; header Source = the old source file path. Fill from sources; fill Evidence and Files Expected to Change from the codebase where you can verify them; otherwise `Missing - from import`. Done tasks: summarize what was done in Required Outcome.
 - **Tracking**: one row per task with its mapped status and note `imported`. History: one row per task and one for the plan, `— -> <status> | Main agent | Imported from <source path>`.

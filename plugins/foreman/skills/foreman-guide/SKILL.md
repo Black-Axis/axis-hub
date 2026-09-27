@@ -12,6 +12,7 @@ Skip this skill when the user is already running a `/foreman:*` command, or expl
 ## Steps
 
 1. Map the need to a command using the list of commands in `${CLAUDE_PLUGIN_ROOT}/commands/*.md` (read their `description` and `argument-hint`).
+   - Set up foreman in this project (before any feature): `/foreman:init`
    - Build/add a feature, has requirements or working files: `/foreman:new`
    - Has only an idea, wants to brainstorm or be questioned about a feature, or continue an open interview: `/foreman:interview`
    - Move existing plans/tasks from another workflow into foreman: `/foreman:import`
@@ -23,7 +24,7 @@ Skip this skill when the user is already running a `/foreman:*` command, or expl
    - Finish a feature: `/foreman:close`
    - Something looks broken in `workbench/`: `/foreman:doctor`
    - Report for a manager or team: `/foreman:report`
-   - View or change project settings (git, output style, fix rounds): `/foreman:settings`
+   - View or change project settings (git, output style, fix rounds, CLAUDE.md block, working rules defaults): `/foreman:settings`
    - What does foreman provide: `/foreman:catalog`
    - Not sure: `/foreman:ask`
 2. If `workbench/INDEX.md` exists, read it and the relevant TRK file to fill real arguments (e.g. the next ready task for "continue"). Follow the rules: unapproved contract means `/foreman:approve` first; `Hold` means `/foreman:resume`.
