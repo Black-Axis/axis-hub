@@ -14,7 +14,7 @@ With `P-NN`, check only that feature; otherwise check all of `workbench/`. If `w
 
 ## 1. Check
 
-List the folders explicitly (`workbench/plans/`, `contracts/`, `tracking/`, `subtasks/`, `docs/`, `reports/`) and check:
+List the folders explicitly (`workbench/plans/`, `contracts/`, `tracking/`, `subtasks/`, `docs/`, `interviews/`, `reports/`) and check:
 
 1. **Feature files** - every feature in INDEX has its plan, contract, tracking, doc, and subtasks folder, with the same number and slug. Any of those files without an INDEX row.
 2. **Naming** - file names follow the rules (prefix, 2-digit zero padding, kebab-case slug).
@@ -28,6 +28,7 @@ List the folders explicitly (`workbench/plans/`, `contracts/`, `tracking/`, `sub
 10. **Tracking format** - every TRK file has the `History` table with a `By` column and an `Activity` table (older files: propose adding them, empty; never back-fill guessed rows).
 11. **Imported gaps** - list every `Missing - from import` field (report only; the user fills them).
 12. **CLAUDE.md block** ("Project instructions block" in rules.md) - `yes`: the block is in the right target file for the Git setting, only there, and matches `${CLAUDE_PLUGIN_ROOT}/templates/claude-md.md` exactly (an outdated block is refreshed from the template); `no`: no CLAUDE file has a foreman block.
+13. **Interviews** - names follow `INT-NN-<slug>.md`; Status is `In Progress`, `Done`, or `Canceled`; a `Done` interview links an existing plan with the same number and slug, and that plan's Source Type is `interview`; no interview number is used by a different feature. List `In Progress` interviews (report only; `/foreman:interview INT-NN` continues them).
 
 ## 2. Report
 

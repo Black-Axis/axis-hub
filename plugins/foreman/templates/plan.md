@@ -25,7 +25,7 @@
 
 ### Interview
 
-{{Questions and the user's answers, if an interview was held. Remove this subsection if there was none.}}
+{{Link to the interview file `../interviews/INT-NN-slug.md` and its key decisions, if an interview was held. Remove this subsection if there was none.}}
 
 ## Feature Review Findings
 

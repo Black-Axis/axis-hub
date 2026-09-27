@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Foreman SessionStart hook: summarizes workbench/ state (active plans,
-// contracts awaiting approval, next ready tasks). Silent when the project
+// contracts awaiting approval, next ready tasks, open interviews). Silent when the project
 // has no workbench/ folder. Never fails the session: all errors exit 0.
 
 const fs = require('fs');
@@ -114,6 +114,17 @@ function main() {
       if (ready.length) line += `. Ready: ${ready.map((t) => `${t.id} (${t.title})`).join(', ')}`;
     }
     lines.push(line);
+  }
+
+  const interviewDir = path.join(wb, 'interviews');
+  for (const file of listDir(interviewDir).sort()) {
+    const m = file.match(/^INT-(\d+)-(.+)\.md$/);
+    if (!m) continue;
+    const text = readText(path.join(interviewDir, file)) || '';
+    if (!/^in progress$/i.test(field(text, 'Status'))) continue;
+    const topics = tableRows(text, 'Coverage');
+    const covered = topics.filter((c) => /^(covered|n\/a)$/i.test(c[1] || '')).length;
+    lines.push(`INT-${m[1]} ${m[2]} — Interview in progress, ${covered}/${topics.length} topics. Continue: /foreman:interview INT-${m[1]}`);
   }
 
   if (!lines.length) return;

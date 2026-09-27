@@ -24,6 +24,8 @@ Four commands cover the everyday flow:
 /foreman:status                                  # any time: where things stand
 ```
 
+Only have an idea? `/foreman:interview <idea>` questions you like a tech lead until every part is clear, then writes the same plan and contract.
+
 Not sure which command you need? Type `/foreman:ask <what you want>`.
 
 ## Example session
@@ -52,7 +54,8 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 
 ## Workflow in detail
 
-1. **`/foreman:new [working file path(s)] [text]`** - Claude reads the feature description from one or more working files, from your text, or both (text then acts as extra notes over the files; conflicts are confirmed with you). Text alone is treated as the feature description. With no input it asks for files or text, or interviews you. It reviews the feature for missing / unclear / conflicting / non-applicable items, resolves each finding with you, explores the codebase, and creates the plan, contract (`Draft`), tracking, task files, and a doc skeleton. Readable working file formats: Markdown, text, PDF (not `.docx` - export it to PDF or paste the text).
+1. **`/foreman:new [working file path(s)] [text]`** - Claude reads the feature description from one or more working files, from your text, or both (text then acts as extra notes over the files; conflicts are confirmed with you). Text alone is treated as the feature description. With no input it asks for files or text, or points you to `/foreman:interview`. It reviews the feature for missing / unclear / conflicting / non-applicable items, resolves each finding with you, explores the codebase, and creates the plan, contract (`Draft`), tracking, task files, and a doc skeleton. Readable working file formats: Markdown, text, PDF (not `.docx` - export it to PDF or paste the text).
+   **Or `/foreman:interview [idea]`** - for an idea without a written description. Claude studies the codebase, then interviews you topic by topic (goal and users, flows, data, edge cases, security, performance, UI, integrations, migration, tests, acceptance criteria, out of scope) as a blunt tech lead: vague answers ("fast", "the usual way"), contradictions, and scope creep are challenged until the answer is concrete. It proposes the files expected to change for you to confirm, shows a coverage check, and only then creates the plan, contract, tracking, and tasks. Progress is saved after every round in `workbench/interviews/INT-NN-<slug>.md`; `/foreman:interview INT-NN` continues it in a later session.
 2. **`/foreman:approve P-01`** - after you review the files.
 3. **`/foreman:run [P-01] [TASK-01]`** - with no arguments, foreman proposes the next ready task; with only `TASK-01`, it uses the single active plan. The main agent first pre-checks the task against the current code (paths, evidence, dependencies, not already done, still matches the contract): small problems like stale line numbers are fixed and logged; big ones are shown to you. Then the worker implements the task; the main agent verifies it (diff vs. expected files, out of scope, required outcome, tests), marks it `Done` or `Hold`, updates the doc, and applies the contract's commit policy. If verification finds problems, the main agent automatically sends the same worker a fix round listing what to **Revert**, what is **Not done**, and what is **Wrong**, shows you `Fix round n/limit`, then verifies again - up to `Fix rounds` times (default 4). Issues still open after that put the task on `Hold` with the list.
 4. **Repeat step 3** for each task. Use `/foreman:status` any time.
@@ -66,6 +69,7 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 | Command | Purpose |
 |---------|---------|
 | `/foreman:new [working file path(s)] [text]` | Start a feature: feature review, plan, contract, tracking, subtasks |
+| `/foreman:interview [idea \| INT-NN]` | Deep tech-lead interview about an idea, then plan, contract, tracking, subtasks (resumable) |
 | `/foreman:approve <P-NN>` | Approve the contract (required before running tasks) |
 | `/foreman:run [P-NN] [TASK-TT]` | Delegate one task to the worker, verify, update tracking and docs (no args = next ready task) |
 | `/foreman:status [P-NN]` | Overview of all features, or details of one plan |
@@ -135,7 +139,7 @@ Foreman respects your permission mode. Commands pre-approve only edits inside `w
 
 - **`foreman-worker`** (subagent, Sonnet) - implements one task per `/foreman:run`; never edits `workbench/`, never commits.
 - **`foreman-guide`** (skill) - when you ask for foreman-type work without a command (e.g. "let's build X", "what's left?"), Claude suggests the matching `/foreman:*` command. It never runs it.
-- **SessionStart hook** - at session start, if the project has `workbench/`, shows each active plan with its contract status, progress, tasks In Progress, next ready tasks, and plans waiting for `/foreman:close`. Requires Node.js on `PATH`; without it the hook does nothing.
+- **SessionStart hook** - at session start, if the project has `workbench/`, shows each active plan with its contract status, progress, tasks In Progress, next ready tasks, plans waiting for `/foreman:close`, and interviews in progress. Requires Node.js on `PATH`; without it the hook does nothing.
 
 ## Folder structure (in your project)
 
@@ -147,6 +151,7 @@ workbench/
 ├─ tracking/TRK-01-user-login.md
 ├─ subtasks/P-01-user-login/TASK-01-create-api.md
 ├─ docs/DOC-01-user-login.md
+├─ interviews/INT-02-dark-mode.md             # only with /foreman:interview
 └─ reports/REP-01-user-login.md               # only after /foreman:report
 ```
 
@@ -160,12 +165,14 @@ workbench/
 - **Tracking** - task table (status, updated, note); status History with who made each change (`User` / `Main agent` / `Worker`); Activity log of every user decision, worker action (files changed, commands run), and main agent action (task fixes, test runs, commits).
 - **Task** - header table (Plan, Contract, Tracking, Depends On, Source, Created), then Problem, Evidence, Required Outcome, Files Expected to Change, Out of Scope, Implementation, Report Requirements.
 - **Doc** - updated after each completed task: Summary, Implemented Tasks, Architecture / Key Files, How to Extend, Acceptance, Known Limitations.
+- **Interview** - Status, Idea, Coverage (each topic `Open` / `Covered` / `N/A`), Files Expected to Change, Rounds (question, answer, challenge), Decisions, Open Gaps.
 - **Report** - Summary, Scope, Progress, Change Requests, Acceptance, Risks and Blockers, Next Steps.
 
 ## Statuses
 
 - Tasks and plans: `Not Started`, `In Progress`, `Hold`, `Done`, `Canceled`.
 - Contracts: `Draft`, `Approved`, `Amended Pending Approval`.
+- Interviews: `In Progress`, `Done` (plan created), `Canceled`.
 
 The main agent owns all status changes and may set `Hold` or `Canceled` itself (e.g. verification failed, blocked, obsolete), always recording the reason in the tracking History.
 

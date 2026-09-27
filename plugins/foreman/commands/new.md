@@ -25,14 +25,14 @@ If `workbench/INDEX.md` does not exist in the project root:
    - Fix rounds: use the default. Do not ask.
    - Git: if the default git is `committed` or `ignored`, use it. Do not ask. Only if it is `ask`: ask whether `workbench/` should be **committed** to git or **ignored**.
    - CLAUDE.md: if the default is `yes` or `no`, use it. Do not ask. Only if it is `ask`: ask whether to add a short foreman block to the project's `CLAUDE.md` (Git `committed`) or `CLAUDE.local.md` (Git `ignored`) so Claude knows about `workbench/` in every session; show the block from `${CLAUDE_PLUGIN_ROOT}/templates/claude-md.md`.
-3. Create `workbench/` with subfolders `plans/`, `contracts/`, `tracking/`, `subtasks/`, `docs/`.
+3. Create `workbench/` with subfolders `plans/`, `contracts/`, `tracking/`, `subtasks/`, `docs/`, `interviews/`.
 4. Create `workbench/INDEX.md` from the INDEX template with the chosen Git, Output, Fix rounds, and CLAUDE.md settings. Tell the user in one line which values were applied and that `/foreman:settings` changes them.
 5. If `ignored`: add `workbench/` to the project `.gitignore` (create it if missing; do not duplicate the line).
 6. If CLAUDE.md is `yes`: write the block as described in "Project instructions block" in rules.md.
 
 ## 2. Determine the feature number
 
-Read `workbench/INDEX.md`. `NN` = highest feature number + 1 (or `01`).
+Read `workbench/INDEX.md` and list `workbench/interviews/`. `NN` = highest feature or interview number + 1 (or `01`).
 
 ## 3. Get the requirements
 
@@ -44,7 +44,7 @@ The input may contain any mix of working file paths and free text. All of it des
    - **Files only** (one or many; md, txt, pdf, ...): read every file. If a file cannot be read (e.g. `.docx` or another binary format), say so and ask the user for a PDF, Markdown, or text version, or to paste its content. Merge them into one set of requirements. Record which file each requirement came from.
    - **Files + text**: the files are the feature description; the text is extra notes that add to or override the files. List every place where the text conflicts with a file and ask the user to confirm which wins.
    - **Text only** (typed in the arguments or pasted in the conversation): the text is the feature description. Treat it exactly like working files - do not start a full interview; the review in step 4 asks only about the gaps found.
-   - **Nothing** (empty input and no feature text in the conversation): ask the user to give working file path(s) or describe the feature in text. If they prefer, interview them with focused questions (goal, users, functional requirements, non-functional requirements, constraints, acceptance criteria, out of scope) until requirements are clear.
+   - **Nothing** (empty input and no feature text in the conversation): ask the user to give working file path(s) or describe the feature in text. If they only have an idea and want to be interviewed, stop and suggest `/foreman:interview <idea>` (a deep interview that ends with the same plan, contract, and tasks).
 4. Keep the original input (file paths and the full text) for the plan's Source section.
 
 ## 4. Review the feature

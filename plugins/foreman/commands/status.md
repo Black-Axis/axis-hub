@@ -14,7 +14,7 @@ If `workbench/INDEX.md` does not exist, tell the user to start with `/foreman:ne
 
 ## No argument
 
-Show the features table from `workbench/INDEX.md` (number, feature, contract status, plan status from each TRK file, progress). Highlight plans on `Hold`, contracts not yet `Approved`, and plans whose every non-canceled task is `Done` as `All tasks Done - waiting for /foreman:close P-NN`.
+Show the features table from `workbench/INDEX.md` (number, feature, contract status, plan status from each TRK file, progress). Highlight plans on `Hold`, contracts not yet `Approved`, and plans whose every non-canceled task is `Done` as `All tasks Done - waiting for /foreman:close P-NN`. Below the table, list interviews in `workbench/interviews/` with Status `In Progress` as `INT-NN <slug> - interview in progress, <covered>/<total> topics - /foreman:interview INT-NN`.
 
 ## With `P-NN`
 
