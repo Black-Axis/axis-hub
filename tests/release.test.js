@@ -6,7 +6,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
-const { changelogSection, releaseNotes } = require('../.github/scripts/release-notes.js');
+const { absoluteLinks, changelogSection, releaseNotes } = require('../.github/scripts/release-notes.js');
 
 const repo = path.resolve(__dirname, '..');
 const marketplace = JSON.parse(fs.readFileSync(path.join(repo, '.claude-plugin', 'marketplace.json'), 'utf8'));
@@ -16,6 +16,15 @@ test('current marketplace version produces release notes', () => {
   const result = releaseNotes(`v${version}`);
   assert.ifError(result.error);
   for (const p of marketplace.plugins) assert.ok(result.notes.includes(`| ${p.name} | ${p.version} |`), p.name);
+});
+
+test('relative links become absolute links to the tagged files', () => {
+  const base = 'https://github.com/o/r';
+  assert.strictEqual(absoluteLinks('[c](plugins/x/CHANGELOG.md)', 'v1.2.3', base), `[c](${base}/blob/v1.2.3/plugins/x/CHANGELOG.md)`);
+  assert.strictEqual(absoluteLinks('[c](./README.md#install)', 'v1.2.3', base), `[c](${base}/blob/v1.2.3/README.md#install)`);
+  for (const kept of ['[a](https://x.y/z)', '[b](#anchor)', '[m](mailto:a@b.c)']) {
+    assert.strictEqual(absoluteLinks(kept, 'v1.2.3', base), kept);
+  }
 });
 
 test('tag not matching marketplace version is rejected', () => {

@@ -31,7 +31,11 @@ function run(dir) {
 
 function edit(dir, rel, from, to) {
   const file = path.join(dir, 'workbench', rel);
-  fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace(from, to));
+  // Normalize line endings: on Windows, git may check the sample out with CRLF.
+  const text = fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
+  const found = typeof from === 'string' ? text.includes(from) : from.test(text);
+  assert.ok(found, `${rel} does not contain ${from}`);
+  fs.writeFileSync(file, text.replace(from, to));
 }
 
 const TRK = 'tracking/TRK-01-health-endpoint.md';
