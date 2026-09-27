@@ -12,13 +12,15 @@ workbench/
 ├─ tracking/TRK-NN-<slug>.md
 ├─ subtasks/P-NN-<slug>/TASK-TT-<task-slug>.md
 ├─ docs/DOC-NN-<slug>.md
+├─ interviews/INT-NN-<slug>.md   # created by /foreman:interview
 └─ reports/REP-NN-<slug>.md      # created on demand by /foreman:report
 ```
 
 ## Naming
 
 - One feature = one plan, one contract, one tracking file, one doc, one subtasks folder. All share the same number `NN` and the same `<slug>`.
-- `NN` is the feature number, zero-padded to 2 digits (`01`, `02`, ... `99`, then `100`). Next number = highest number in `INDEX.md` + 1.
+- `NN` is the feature number, zero-padded to 2 digits (`01`, `02`, ... `99`, then `100`). Next number = highest number in `INDEX.md` or in `workbench/interviews/` + 1.
+- An interview `INT-NN-<slug>` reserves its number and slug: the plan it creates uses the same `NN` and `<slug>`. A canceled interview's number stays used.
 - `TT` is the task number inside its plan, zero-padded to 2 digits, starting at `01` for every plan.
 - `<slug>` is lowercase kebab-case, ASCII letters, digits and hyphens only, max ~40 characters (e.g. `user-login`).
 - Plan IDs are written `P-NN`, task IDs `TASK-TT`. A task is always addressed together with its plan: `P-01 TASK-03`.
@@ -34,6 +36,7 @@ Create files from these templates, replacing every `{{...}}` placeholder:
 - `${CLAUDE_PLUGIN_ROOT}/templates/task.md`
 - `${CLAUDE_PLUGIN_ROOT}/templates/doc.md`
 - `${CLAUDE_PLUGIN_ROOT}/templates/report.md`
+- `${CLAUDE_PLUGIN_ROOT}/templates/interview.md`
 - `${CLAUDE_PLUGIN_ROOT}/templates/claude-md.md` (the project instructions block, see below)
 
 ## Project instructions block
@@ -50,6 +53,7 @@ The INDEX setting `- CLAUDE.md: yes | no` controls a short block that tells Clau
 
 - Task and plan statuses: `Not Started`, `In Progress`, `Hold`, `Done`, `Canceled`.
 - Contract statuses: `Draft`, `Approved`, `Amended Pending Approval`.
+- Interview statuses: `In Progress`, `Done` (plan created), `Canceled`. Interviews are not in the INDEX features table until their plan exists.
 - Every status change of a task or plan must:
   1. Update the row in the TRK `Tasks` table (Status, Updated date, Note).
   2. Append a row to the TRK `History` table: date, target (`P-NN` or `TASK-TT`), `old -> new`, By (`User` if the user asked for it, otherwise `Main agent`), reason.

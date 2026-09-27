@@ -98,6 +98,30 @@ test('reports missing CLAUDE.md setting', () => {
   assert.match(run(dir).systemMessage, /Settings not set \(CLAUDE\.md\)/);
 });
 
+function interview(dir, status) {
+  const template = fs.readFileSync(path.join(repo, 'plugins', 'foreman', 'templates', 'interview.md'), 'utf8')
+    .replace(/\r\n/g, '\n')
+    .replace('- Status: {{In Progress | Done | Canceled}}', `- Status: ${status}`)
+    .replace('| {{Open / Covered / N/A}} |', '| Covered |')
+    .replace('| Main flows | Open |', '| Main flows | N/A |');
+  fs.mkdirSync(path.join(dir, 'workbench', 'interviews'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'workbench', 'interviews', 'INT-02-dark-mode.md'), template);
+}
+
+test('shows an interview in progress with covered topics', () => {
+  const dir = project();
+  interview(dir, 'In Progress');
+  assert.match(run(dir).systemMessage, /INT-02 dark-mode — Interview in progress, 2\/13 topics\. Continue: \/foreman:interview INT-02/);
+});
+
+test('hides finished and canceled interviews', () => {
+  for (const status of ['Done', 'Canceled']) {
+    const dir = project();
+    interview(dir, status);
+    assert.doesNotMatch(run(dir).systemMessage, /INT-02/, status);
+  }
+});
+
 test('survives a broken tracking file', () => {
   const dir = project();
   fs.writeFileSync(path.join(dir, 'workbench', TRK), '| broken');

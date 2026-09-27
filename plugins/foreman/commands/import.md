@@ -22,7 +22,7 @@ Sources are local files only (md, txt, json, yaml, or any text). Never move, edi
    - CLAUDE.md: use the default if it is `yes` or `no`. Do not ask. Only if it is `ask`: ask as in step 1.2 of `${CLAUDE_PLUGIN_ROOT}/commands/new.md`.
    - Create the folders and `INDEX.md`, update `.gitignore`, and write the CLAUDE.md block if `yes`, as in steps 1.3-1.6 of `${CLAUDE_PLUGIN_ROOT}/commands/new.md` (use only those steps from that file; its defaults are not filled in when read as a file).
    - Tell the user in one line which values were applied and that `/foreman:settings` changes them.
-3. Next feature number = highest in INDEX + 1.
+3. Next feature number = highest in INDEX or in `workbench/interviews/` + 1.
 
 ## 2. Scan and map
 
