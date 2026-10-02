@@ -120,6 +120,14 @@ Never work around the user's permission mode. Foreman commands pre-approve only 
 
 Every change to a code or docs file must reach the user as a diff. The worker therefore changes files only with `Edit` / `Write` (shell only for running commands; rules in `${CLAUDE_PLUGIN_ROOT}/agents/foreman-worker.md`), and `/foreman:run` shows the diff of any file a command changed.
 
+## Questions and follow-up turns
+
+A command's `allowed-tools` apply only in the turn the command was run in; they end when the user sends the next message. After that, reading plugin files and editing `workbench/` go through the user's permission prompts. So:
+
+- **Read first.** Before the first question, read every plugin file the command will need later (`${CLAUDE_PLUGIN_ROOT}/...`: templates, `reference/setup.md`, other command files it follows). Files already read stay in context; never re-read them in a later turn.
+- **Ask with `AskUserQuestion`.** It keeps the command's turn, so its permissions stay. Use it for every question, including open ones: the user types free text with "Other". At most 4 questions per call (2-4 options each); for more, use several calls in a row.
+- **Plain-text questions** only when `AskUserQuestion` is not available or fails. End that message with one line: "Your answer continues in a new turn: `workbench/` edits may ask for permission." Then continue normally after the answer; never work around a prompt. If a needed plugin file is not in context and its read is refused, stop, name the file, and tell the user to run the command again or allow the read.
+
 ## Output style
 
 Read `- Output:` in the INDEX `Settings` block. `Concise` (the default when missing or unclear) applies the rules below to all foreman work: replies to the user, questions, subagent prompts and reports, and every file written under `workbench/`. `Normal` means your usual style. This style applies only while running foreman commands, the worker, or the foreman-guide skill.
@@ -128,7 +136,7 @@ Concise rules:
 - Lead with the result. No preamble, no restating the request, no narration of steps, no closing recap, no pleasantries or hedging.
 - Short plain sentences. Prefer bullets and tables over paragraphs. One line per item.
 - Never paste file content into chat that the user can open; give the path and the key facts.
-- Questions to the user: short, one decision each, with options when possible.
+- Questions to the user: short, one decision each, with options when possible (asked as in "Questions and follow-up turns").
 - Files: bullets and tables, no padding prose. Keep every required section and every fact (evidence, criteria, reasons, dates) - cut words, never substance.
 - Stakeholder reports: same brevity, plain words, no jargon or code.
 - Research and tool use: search (Grep/Glob) before reading; read only the needed files or line ranges; never re-read a file already in context; no exploratory dumps.

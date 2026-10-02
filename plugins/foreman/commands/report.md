@@ -1,7 +1,7 @@
 ---
 description: Write a stakeholder report for a feature to workbench/reports/
 argument-hint: <P-NN>
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**)
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), AskUserQuestion
 ---
 
 # /foreman:report

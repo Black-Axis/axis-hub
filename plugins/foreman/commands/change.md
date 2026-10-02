@@ -19,7 +19,7 @@ First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it.
 4. Classify the change:
    - **Small**: the contract's Scope, Out of Scope, and Acceptance Criteria stay exactly the same (e.g. splitting a task, adding detail, reordering, a new task that only implements already-agreed scope).
    - **Big**: any change to Scope, Out of Scope, or Acceptance Criteria.
-5. Present the impact and the classification to the user and get confirmation before writing. For a small change, the same confirmation also approves it (tell the user this in the question). Log the answer (`User`, `Decision`).
+5. Present the impact and the classification to the user and get confirmation with `AskUserQuestion` before writing. For a small change, the same confirmation also approves it (tell the user this in the question). Log the answer (`User`, `Decision`).
 6. Apply:
    - Contract: append a Change Requests row (`FEAT-n`, date, change, impact, Approved). `FEAT-n` continues from the highest existing number, starting at `FEAT-1`.
      - Small: Approved = today; contract Status unchanged.

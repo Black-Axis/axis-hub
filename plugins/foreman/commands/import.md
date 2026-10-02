@@ -37,7 +37,7 @@ Show:
 3. Proposed status mappings that need confirmation.
 4. Unassigned items and gaps (e.g. no acceptance criteria, no scope).
 
-Ask the user to confirm or correct. Apply corrections and re-show only what changed. Write nothing until the user confirms.
+Before asking, read the templates step 4 needs (`plan.md`, `contract.md`, `task.md`, `tracking.md`, `doc.md`; "Questions and follow-up turns" in rules.md). Ask the user with `AskUserQuestion` to confirm or correct (corrections typed with "Other"). Apply corrections and re-show only what changed. Write nothing until the user confirms.
 
 ## 4. Write
 
