@@ -1,7 +1,7 @@
 ---
 description: Delegate one task to the Sonnet worker subagent, verify the result, then update tracking and docs
 argument-hint: "[P-NN] [TASK-TT]"
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git status:*), Bash(git diff:*), Bash(git ls-files:*), Agent, SendMessage, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git status:*), Bash(git diff:*), Bash(git ls-files:*), Bash(tf status:*), Bash(tf diff:*), Agent, SendMessage, AskUserQuestion
 ---
 
 # /foreman:run
@@ -25,7 +25,7 @@ Exactly one task is run per invocation. You (the main agent) orchestrate and ver
    - The plan is `Hold` or `Canceled`.
    - The task is `Done`, `Canceled`, or `Hold` (suggest `/foreman:resume` for hold).
    - A task listed in `Depends On` is not `Done`. Ask the user whether to proceed anyway; proceed only on explicit yes.
-4. Record the current git state (`git status --porcelain`, `git diff --stat`) if the project is a git repo, so you can isolate the task's changes later.
+4. Read `Version control` in INDEX (missing: detect and add it, "Version control" in rules.md). For `tfvc`, check once whether `tf` is available.
 
 ## 2. Pre-check the task (before delegating)
 
@@ -36,6 +36,7 @@ The code may have changed since the task was planned. Verify the task file again
 - The Required Outcome is not already met by the current code.
 - The task still matches the contract (Scope, Out of Scope, Acceptance Criteria) and the plan, including approved change requests.
 - The sections are complete and specific enough for the worker to act without guessing.
+- **tfvc only - writable files**: every existing file in `Files Expected to Change` must be writable (a TFVC server workspace keeps files read-only until checked out). Check with a read-only command (`test -w <file>`, or PowerShell `(Get-Item <file>).IsReadOnly`). For read-only files: if `tf` is available, tell the user and run `tf checkout <files>` (one command, their normal permission prompt applies); otherwise list the files and ask the user to check them out in Visual Studio (Solution Explorer → Check Out for Edit), then re-check. Never clear the read-only flag yourself. Log the result (`Main agent`, `Action`).
 
 Then:
 - **Small problems** - stale line numbers, a moved or renamed path with one obvious match, typos, missing detail you can fill from the code without changing intent: fix the task file yourself and log each fix (`Main agent`, `Action`, `pre-check: <fix>`).
@@ -45,6 +46,8 @@ Then:
 
 Set the task to `In Progress` following the status rules (TRK table, History, INDEX).
 
+Record the start state so you can isolate the task's changes later ("Version control" in rules.md): git - `git status --porcelain` and `git diff --stat`; tfvc with `tf` - `tf status`, plus a snapshot; tfvc without `tf` and none - a snapshot in `workbench/.baseline/P-NN/TASK-TT/`. With tfvc, the snapshot is kept even when `tf` works, so the diff of each listed file never depends on the workspace type.
+
 ## 4. Delegate
 
 Launch the `foreman-worker` subagent (`foreman:foreman-worker`) with a prompt of exactly these lines and nothing else - never paste file contents, summaries, or instructions (the worker's own definition already has them):
@@ -53,12 +56,13 @@ Launch the `foreman-worker` subagent (`foreman:foreman-worker`) with a prompt of
 Task: workbench/subtasks/P-NN-<slug>/TASK-TT-<task-slug>.md
 Contract: workbench/contracts/CONT-NN-<slug>.md
 Output: <Concise | Normal>
+Version control: <git | tfvc | none>
 ```
 
 ## 5. Verify
 
 When the worker returns its report:
-1. Inspect the actual changes (git diff against the recorded state, or read the files listed in the report).
+1. Inspect the actual changes against the recorded start state: git - `git diff` and new files from `git status`; tfvc - `tf status` / `tf diff /format:unified` if `tf` is available, and the snapshot diff; none - the snapshot diff and the modification-time check ("Snapshot" in rules.md). Also read the files listed in the report.
 2. Check:
    - Only files in `Files Expected to Change` were modified. Any other file is a deviation - judge whether it is justified; if not, the task fails verification.
    - Nothing listed in the task's or contract's Out of Scope was touched.
@@ -67,9 +71,9 @@ When the worker returns its report:
    - `workbench/` was not modified by the worker.
    - Files were changed only with `Edit` / `Write` ("How to change files" in `${CLAUDE_PLUGIN_ROOT}/agents/foreman-worker.md`). Scan Commands Run for shell file writes (redirects, `Set-Content`, `Out-File`, `Add-Content`, `sed -i`, heredocs or here-strings into files, script one-liners that write files), deletes or renames of files not listed for that, and file-changing commands (formatters, generators, installs) not named in the task or Working Rules. Each one is a deviation: list it under **Wrong** ("use Edit/Write, not the shell"), or under **Revert** if the change itself is unwanted, and tell the user which files were changed through the shell. If the content is right, the worker does not redo it; the item reminds it of the rule for the rest of the task.
 3. **Show every change made outside `Edit` / `Write` as a diff.** The user must see every change to a code or docs file as a diff. For each file changed, created, deleted, or renamed by a shell command (named generators and installs, listed deletes and renames, and any rule break found above), show the user:
-   - code and docs files (source, tests, config, Markdown, ...): the full `git diff` of the file; for a new untracked file, its full content as an added-lines diff;
+   - code and docs files (source, tests, config, Markdown, ...): the full diff of the file (`git diff`, `tf diff`, or the snapshot diff); for a new file, its full content as an added-lines diff;
    - deleted files: path and line count; renamed files: old → new path plus any content diff;
-   - lockfiles, build output, binaries, and other generated non-source files: path and `git diff --stat` only.
+   - lockfiles, build output, binaries, and other generated non-source files: path and size of the change only (e.g. `git diff --stat`).
    Show this before the Pass/Fail decision, so the user sees it even when verification passes.
 4. Run the test/build commands from the contract Working Rules (and any the project obviously uses). Record the results.
 5. Log the test run (`Main agent`, `Action`, command + result) and the worker round (`Worker`, `Action`, files changed + commands run from its report).
@@ -84,7 +88,7 @@ Each round starts with one progress line to the user: `Fix round <n>/<limit>: <c
    - **Revert** - changes that must be undone (out-of-scope edits, unjustified files outside Files Expected to Change, unwanted changes).
    - **Not done** - parts of the Required Outcome, Implementation, or Report Requirements still missing.
    - **Wrong** - done but incorrect: failed tests (quote the exact error), wrong behavior, broken rules or standards.
-2. Send the feedback to the **same** worker so it keeps its context (continue it with SendMessage using the agent ID returned in step 4). Send only the feedback lists - no task content, no repeated context. If continuing is not possible, launch a new `foreman-worker` with the same three lines as step 4, plus `Fix round: <n>` and the feedback lists (no previous report).
+2. Send the feedback to the **same** worker so it keeps its context (continue it with SendMessage using the agent ID returned in step 4). Send only the feedback lists - no task content, no repeated context. If continuing is not possible, launch a new `foreman-worker` with the same lines as step 4, plus `Fix round: <n>` and the feedback lists (no previous report).
 3. Add a TRK History row: `TASK-TT | In Progress -> In Progress | Main agent | Fix round <n>: <count> issues`, and an Activity row (`Main agent`, `Action`) with the feedback items in short.
 4. When the worker replies, verify again exactly as in step 5 (all checks, all tests, logging), not only the listed items.
 
@@ -95,13 +99,17 @@ If verification passes, go to step 7 (Pass). If the limit is reached and issues 
 - **Pass**:
   1. Set the task to `Done` with a short note that includes the fix rounds used (e.g. `verified; 2 fix rounds`).
   2. Update `workbench/docs/DOC-NN-<slug>.md`: add an `Implemented Tasks` entry (what changed, files, decisions) and refresh Summary, Architecture / Key Files, How to Extend, Known Limitations as needed. Set Last Updated.
-  3. Apply the contract's commit policy (commit only if the policy says so; the commit message references `P-NN TASK-TT`). Log a commit as `Main agent`, `Action`, with its hash.
+  3. Version control ("Version control" in rules.md):
+     - git: apply the contract's commit policy (commit only if the policy says so; the commit message references `P-NN TASK-TT`). Log a commit as `Main agent`, `Action`, with its hash.
+     - tfvc: never check in. Deletes and renames the worker reported as needed, and new files: with `tf` available, propose `tf delete` / `tf rename` / `tf add` for those files and run them only on the user's yes; without `tf`, list them for the user to do in Visual Studio. Then tell the user the task's changes are ready to review and check in (pending changes). Log what was run.
+     - none: nothing to do.
+     - Delete the task's snapshot folder `workbench/.baseline/P-NN/TASK-TT/`, if any.
   4. Recompute the plan status. If every non-canceled task is now `Done`, apply the contract's Auto-close rule (missing or unclear value = `Ask`):
      - `Ask`: ask the user "All tasks Done. Run /foreman:close P-NN now?" and run it only on yes. Log the answer (`User`, `Decision`).
      - `Yes`: after the report in step 8, run `/foreman:close P-NN` (follow `${CLAUDE_PLUGIN_ROOT}/commands/close.md`).
      - `No`: only tell the user they can run `/foreman:close P-NN`.
 - **Fail** (fix rounds used up, or blocked):
-  - Set `Hold` with the reason `Verification failed after <n> fix rounds` plus the remaining issues in the TRK note. Use `Canceled` only if the task turned out to be obsolete, with the reason.
+  - Set `Hold` with the reason `Verification failed after <n> fix rounds` plus the remaining issues in the TRK note. Delete the task's snapshot folder, if any (a re-run takes a new one). Use `Canceled` only if the task turned out to be obsolete, with the reason.
   - Show the user the remaining Revert / Not done / Wrong items and propose the next step: `/foreman:resume` then re-run, `/foreman:change`, or a manual fix.
 
 ## 8. Report to the user

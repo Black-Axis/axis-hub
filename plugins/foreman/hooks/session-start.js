@@ -67,7 +67,11 @@ function main() {
 
   const lines = [];
   const index = readText(path.join(wb, 'INDEX.md')) || '';
-  const missing = ['Git', 'Output', 'Fix rounds', 'CLAUDE.md'].filter((name) => !field(index, name));
+  // `Workbench` was called `Git` before 1.3.0; either line counts. `Version control`
+  // is not required: commands detect and add it when missing.
+  const missing = [['Workbench', 'Git'], ['Output'], ['Fix rounds'], ['CLAUDE.md']]
+    .filter((names) => !names.some((name) => field(index, name)))
+    .map((names) => names[0]);
   if (missing.length) {
     lines.push(`Settings not set (${missing.join(', ')}) — run /foreman:settings`);
   }

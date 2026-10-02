@@ -19,8 +19,8 @@
     },
     "default_git": {
       "type": "string",
-      "title": "Default git choice for workbench/",
-      "description": "committed, ignored, or ask. Offered as the default when foreman sets up a new project.",
+      "title": "Default for workbench/ in version control",
+      "description": "tracked, ignored, or ask (committed = tracked). Whether workbench/ is kept in git or TFVC; offered as the default when foreman sets up a new project.",
       "default": "ask"
     },
     "default_fix_rounds": {
@@ -34,7 +34,7 @@
     "default_claude_md": {
       "type": "string",
       "title": "Default CLAUDE.md block",
-      "description": "yes, no, or ask. Whether foreman adds a short block about workbench/ to the project's CLAUDE.md (or CLAUDE.local.md when workbench/ is git-ignored) when it sets up a new project.",
+      "description": "yes, no, or ask. Whether foreman adds a short block about workbench/ to the project's CLAUDE.md (or CLAUDE.local.md when workbench/ is ignored) when it sets up a new project.",
       "default": "ask"
     }
   }

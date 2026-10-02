@@ -92,6 +92,18 @@ test('reports missing settings', () => {
   assert.match(run(dir).systemMessage, /Settings not set \(Fix rounds\)/);
 });
 
+test('reports missing Workbench setting', () => {
+  const dir = project();
+  edit(dir, 'INDEX.md', '- Workbench: tracked\n', '');
+  assert.match(run(dir).systemMessage, /Settings not set \(Workbench\)/);
+});
+
+test('accepts the old Git line as Workbench, and no Version control line', () => {
+  const dir = project();
+  edit(dir, 'INDEX.md', '- Version control: git\n- Workbench: tracked\n', '- Git: committed\n');
+  assert.doesNotMatch(run(dir).systemMessage, /Settings not set/);
+});
+
 test('reports missing CLAUDE.md setting', () => {
   const dir = project();
   edit(dir, 'INDEX.md', '- CLAUDE.md: no\n', '');

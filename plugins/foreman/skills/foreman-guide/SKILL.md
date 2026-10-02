@@ -24,7 +24,7 @@ Skip this skill when the user is already running a `/foreman:*` command, or expl
    - Finish a feature: `/foreman:close`
    - Something looks broken in `workbench/`: `/foreman:doctor`
    - Report for a manager or team: `/foreman:report`
-   - View or change project settings (git, output style, fix rounds, CLAUDE.md block, working rules defaults): `/foreman:settings`
+   - View or change project settings (version control, workbench tracked or ignored, output style, fix rounds, CLAUDE.md block, working rules defaults): `/foreman:settings`
    - What does foreman provide: `/foreman:catalog`
    - Not sure: `/foreman:ask`
 2. If `workbench/INDEX.md` exists, read it and the relevant TRK file to fill real arguments (e.g. the next ready task for "continue"). Follow the rules: unapproved contract means `/foreman:approve` first; `Hold` means `/foreman:resume`.

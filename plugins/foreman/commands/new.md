@@ -14,7 +14,7 @@ First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it throughout.
 
 If `workbench/INDEX.md` does not exist in the project root, follow `${CLAUDE_PLUGIN_ROOT}/reference/setup.md` in **Auto** mode with the user's defaults (set when the plugin was enabled; change with `/config`):
 - Default output: `${user_config.default_output}`
-- Default git: `${user_config.default_git}`
+- Default workbench in version control: `${user_config.default_git}`
 - Default fix rounds: `${user_config.default_fix_rounds}`
 - Default CLAUDE.md block: `${user_config.default_claude_md}`
 
@@ -51,7 +51,7 @@ Explore the codebase to find the files, patterns, and existing utilities relevan
 
 ## 6. Agree on working rules
 
-If `workbench/INDEX.md` has a `Working Rules Defaults` section, show those values and ask one question: use them for this feature, or change some (then ask only about those). Otherwise ask the user for the contract Working Rules that you cannot infer: commit policy, Auto-close (`Ask` - default, `Yes`, or `No`), test commands required, standards to follow, and when you must stop and ask. Propose sensible defaults from the project and let the user confirm or change them.
+If `workbench/INDEX.md` has a `Working Rules Defaults` section, show those values and ask one question: use them for this feature, or change some (then ask only about those). Otherwise ask the user for the contract Working Rules that you cannot infer: commit policy (git only; for tfvc and none it is always `never auto-commit (user checks in)`), Auto-close (`Ask` - default, `Yes`, or `No`), test commands required, standards to follow, and when you must stop and ask. Propose sensible defaults from the project and let the user confirm or change them.
 
 ## 7. Write the files
 

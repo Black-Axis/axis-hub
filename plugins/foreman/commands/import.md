@@ -15,7 +15,7 @@ Sources are local files only (md, txt, json, yaml, or any text). Never move, edi
 ## 1. Prepare
 
 1. If no path is given, ask for the folder(s) or file(s) of the old workflow. Check every path exists; ask about any that does not.
-2. If `workbench/INDEX.md` does not exist, follow `${CLAUDE_PLUGIN_ROOT}/reference/setup.md` in **Auto** mode with the user's defaults (set when the plugin was enabled; change with `/config`): output `${user_config.default_output}`, git `${user_config.default_git}`, fix rounds `${user_config.default_fix_rounds}`, CLAUDE.md block `${user_config.default_claude_md}`.
+2. If `workbench/INDEX.md` does not exist, follow `${CLAUDE_PLUGIN_ROOT}/reference/setup.md` in **Auto** mode with the user's defaults (set when the plugin was enabled; change with `/config`): output `${user_config.default_output}`, workbench `${user_config.default_git}`, fix rounds `${user_config.default_fix_rounds}`, CLAUDE.md block `${user_config.default_claude_md}`.
 3. Next feature number = highest in INDEX or in `workbench/interviews/` + 1.
 
 ## 2. Scan and map

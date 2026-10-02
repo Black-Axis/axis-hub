@@ -13,6 +13,7 @@ workbench/
 ├─ subtasks/P-NN-<slug>/TASK-TT-<task-slug>.md
 ├─ docs/DOC-NN-<slug>.md
 ├─ interviews/INT-NN-<slug>.md   # created by /foreman:interview
+├─ .baseline/P-NN/TASK-TT/...    # temporary file snapshots during /foreman:run (tfvc without tf, none)
 └─ reports/REP-NN-<slug>.md      # created on demand by /foreman:report
 ```
 
@@ -28,6 +29,36 @@ workbench/
 ## Setup
 
 `workbench/` is created by `/foreman:init` (asks every setting and the working rules defaults) or, when missing, automatically by `/foreman:new`, `/foreman:interview`, and `/foreman:import` from the user's defaults. The steps are in `${CLAUDE_PLUGIN_ROOT}/reference/setup.md`. `.gitkeep` files in subfolders are not feature files.
+
+## Version control
+
+INDEX `Settings` holds two lines:
+- `- Version control: git | tfvc | none` - the project's version control. `tfvc` is Team Foundation Version Control (Azure DevOps Server / TFS).
+- `- Workbench: tracked | ignored` - whether `workbench/` is kept in version control. The older line `- Git: committed | ignored` means the same (`committed` = `tracked`): read it as `Workbench`; `/foreman:doctor` offers to rename it.
+
+**Detection** (setup, doctor, and any command that finds the `Version control` line missing): a `.git` folder or file in the project root or a parent folder → `git`; a `$tf` or `.tf` folder (TFVC local workspace) or a `.tfignore` file in the root or a parent folder → `tfvc`; otherwise `none`. TFVC server workspaces leave no marker: when the result is `none`, ask the user (`git` / `tfvc` / `none`). When the line is missing, add the detected value and tell the user in one line.
+
+**`tf` availability** (tfvc only): at the start of `/foreman:run` and `/foreman:close`, run `tf status` once. If the command is not found or fails, `tf` is unavailable for that run: use snapshots and ask the user for source control actions.
+
+| Operation | git | tfvc | none |
+|-----------|-----|------|------|
+| Ignore file (Workbench `ignored`, `CLAUDE.local.md`) | `.gitignore` (`workbench/`, `CLAUDE.local.md`) | `.tfignore` (`\workbench`, `\CLAUDE.local.md`) | nothing to ignore |
+| Empty subfolders | `.gitkeep` in each when `tracked` | not needed (TFVC versions folders) | not needed |
+| Start state of a task | `git status --porcelain`, `git diff --stat` | `tf status` (if available), and a snapshot | snapshot |
+| Changes of a task | `git diff`, new untracked files from `git status` | `tf diff /format:unified` and `tf status` (if available), otherwise the snapshot | the snapshot |
+| Commit after a task | as the contract's commit policy says | never: the user checks in | never |
+| Read-only files | - | possible (server workspace): see pre-check in `/foreman:run` | - |
+| Deletes and renames | worker, listed files only | main agent: `tf delete` / `tf rename` if `tf` is available, on the user's yes; otherwise the user does it in Visual Studio | worker, listed files only |
+| New files | - | `tf add` if `tf` is available, on the user's yes; otherwise list them for the user to add | - |
+
+In `tfvc` and `none` projects, the contract's Commit policy is always `never auto-commit (user checks in)`; do not ask about it.
+
+Never run version control commands that change state (commit, check-in, shelve, checkout, add, delete, rename, undo) except where this table and the command files say so, and then only after telling the user. Read-only commands (`git status`, `git diff`, `git log`, `git ls-files`, `tf status`, `tf diff`, `tf history`) are always fine.
+
+**Snapshot** (tfvc without `tf`, and none): before the worker starts, copy every existing file in the task's `Files Expected to Change` to `workbench/.baseline/P-NN/TASK-TT/<same relative path>` and note the time. Afterwards:
+- Diff each listed file against its copy (`diff -u <copy> <file>` if a `diff` command exists; otherwise compare them yourself and show the changed lines in unified diff form). A listed file with no copy is new: show it in full.
+- Find files changed outside the list: list files modified after the snapshot time with a read-only command (`find . -newer <a snapshot copy> -type f`, or PowerShell `Get-ChildItem -Recurse -File | Where-Object LastWriteTime -gt '<time>'`), excluding `workbench/` and dependency and build folders. Without version control this cannot see deleted files or every change; tell the user once per task that changes outside the list are checked by modification time only.
+- Delete `workbench/.baseline/P-NN/TASK-TT/` when the task leaves `In Progress`. Keep `workbench/.baseline/` out of version control (add it to the ignore file when Workbench is `tracked`).
 
 ## Templates
 
@@ -47,7 +78,7 @@ Create files from these templates, replacing every `{{...}}` placeholder:
 
 The INDEX setting `- CLAUDE.md: yes | no` controls a short block that tells Claude about `workbench/` in every session of the project. The block is the full content of the `claude-md.md` template, from `<!-- foreman:start` to `<!-- foreman:end -->`. Never change text outside these markers.
 
-- **Target file**: if Git is `committed`, the project's shared instructions: `CLAUDE.md` at the project root, or `.claude/CLAUDE.md` if that exists and the root one does not. If Git is `ignored`, the personal `CLAUDE.local.md` at the project root, and add `CLAUDE.local.md` to `.gitignore` (no duplicate line).
+- **Target file**: if Workbench is `tracked`, the project's shared instructions: `CLAUDE.md` at the project root, or `.claude/CLAUDE.md` if that exists and the root one does not. If Workbench is `ignored`, the personal `CLAUDE.local.md` at the project root, and add `CLAUDE.local.md` to the ignore file of the project's version control (see "Version control"; no duplicate line).
 - **AGENTS.md projects**: if the project has an `AGENTS.md` and none of `CLAUDE.md`, `.claude/CLAUDE.md`, `CLAUDE.local.md`, creating a CLAUDE file makes Claude Code stop reading `AGENTS.md`. Tell the user and ask: create the file starting with the line `@AGENTS.md` (keeps AGENTS.md loaded - recommended), or do not add the block (set `CLAUDE.md: no`). Never write the block into `AGENTS.md`.
 - **Write (`yes`)**: if the target file has the markers, replace everything between and including them with the template; otherwise append the block at the end, after one blank line (create the file if missing). Remove a foreman block from the other CLAUDE file if one is there.
 - **Remove (`no`)**: delete the block, markers included, from every CLAUDE file that has one. If a file is left empty (or only `@AGENTS.md` that foreman added), ask before deleting the file.
@@ -74,7 +105,7 @@ Log in the feature's TRK `Activity` table (date, target, By, Type, details - one
 
 ## Permissions
 
-Never work around the user's permission mode. Foreman commands pre-approve only edits inside `workbench/` and read-only git (`status`, `diff`, `ls-files`); every other edit and command - by you or the worker - goes through the user's normal permission prompts. Never suggest granting broader or session-wide permissions.
+Never work around the user's permission mode. Foreman commands pre-approve only edits inside `workbench/` and read-only version control commands (`git status`, `git diff`, `git ls-files`, `git log`, `tf status`, `tf diff`, `tf history`); every other edit and command - by you or the worker - goes through the user's normal permission prompts. Never suggest granting broader or session-wide permissions.
 
 Every change to a code or docs file must reach the user as a diff. The worker therefore changes files only with `Edit` / `Write` (shell only for running commands; rules in `${CLAUDE_PLUGIN_ROOT}/agents/foreman-worker.md`), and `/foreman:run` shows the diff of any file a command changed.
 
