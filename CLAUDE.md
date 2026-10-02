@@ -24,6 +24,29 @@ Marketplace-level test inside Claude Code: `/plugin marketplace add <repo path>`
 
 Never commit on `main` or push to it; `main` changes only through pull requests (GitHub ruleset in `.github/rulesets/main.json`, requires the `validate` check). Before changing anything, create a branch `<type>/<short-name>` (`feat`, `fix`, `docs`, `test`, `ci`, `chore`, `refactor`; kebab-case, e.g. `feat/foreman-bug-command`). The rules live in `.githooks/guard.js`, used by the git hooks (`git config core.hooksPath .githooks`) and by the PreToolUse hook `.claude/hooks/guard-git.js`, which denies Claude's git commands that break them. GitHub deletes merged branches automatically; locally, `.githooks/finish.js` (`git finish`, and the SessionStart hook `.claude/hooks/finish-on-start.js`) switches to `main`, pulls, and deletes merged branches (tip contained in `main` and PR `MERGED` via `gh`, or upstream deleted). It must never delete unmerged work or act with uncommitted changes; `tests/git-finish.test.js` covers this.
 
+## GitHub issues
+
+Every issue opened on `Black-Axis/axis-hub` gets, at creation:
+
+- **Labels**: `bug` or `enhancement` (or another fitting label), plus the plugin label (e.g. `plugin: foreman`) or `marketplace`.
+- **Type**: `Bug`, `Feature`, or `Task` (organization issue types).
+- **Assignee**: `krypton225`.
+- **Fields** (organization issue fields): `Priority` (`Urgent` / `High` / `Medium` / `Low`) and `Effort` (`High` / `Medium` / `Low`) always; `Start date` and `Target date` only when the user gives them. Propose the values with the issue and let the user correct them.
+
+Write the body to a scratchpad file, then:
+
+```
+gh issue create --title "<title>" --body-file <file> --label <label> --type <Bug|Feature|Task> --assignee krypton225
+```
+
+Fields are set through GraphQL. Look up the issue node ID (`gh issue view <n> --json id`) and the field and option IDs (`gh api graphql -f query='{ organization(login:"Black-Axis"){ issueFields(first:20){ nodes{ __typename ... on IssueFieldSingleSelect { id name options{ id name } } ... on IssueFieldDate { id name } } } } }'`), then:
+
+```
+gh api graphql -f query='mutation($issue:ID!){ setIssueFieldValue(input:{issueId:$issue, issueFields:[{fieldId:"<Priority id>", singleSelectOptionId:"<option id>"}, {fieldId:"<Effort id>", singleSelectOptionId:"<option id>"}]}){ clientMutationId } }' -f issue=<issue node id>
+```
+
+Date fields use `dateValue: "YYYY-MM-DD"` instead of `singleSelectOptionId`.
+
 ## Structure
 
 - `.claude-plugin/marketplace.json` lists every plugin with `"source": "./plugins/<name>"`. Adding a plugin = new `plugins/<name>/.claude-plugin/plugin.json` + an entry here. Keep `version`, `description`, and `keywords` in sync between the two manifests (enforced by `tests/manifests.test.js`), and add a `## [version]` entry to the plugin's `CHANGELOG.md` for each version.
