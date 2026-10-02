@@ -1,7 +1,7 @@
 ---
 description: Import plans, tasks, and progress from another workflow's local files into workbench/ (originals are never changed)
 argument-hint: <path(s) to old workflow files or folders>
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), AskUserQuestion
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), Bash(tf history:*), AskUserQuestion
 ---
 
 # /foreman:import

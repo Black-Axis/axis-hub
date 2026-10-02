@@ -23,6 +23,19 @@ test('commands running setup.md carry every user_config placeholder', () => {
   }
 });
 
+test('allowed-tools stay scoped: workbench edits and read-only version control only', () => {
+  const readOnly = /^Bash\((git (status|diff|ls-files|log)|tf (status|diff|history)):\*\)$/;
+  for (const file of fs.readdirSync(commandsDir)) {
+    const m = /^allowed-tools:\s*(.+)$/m.exec(fs.readFileSync(path.join(commandsDir, file), 'utf8'));
+    if (!m) continue;
+    for (const tool of m[1].split(/,\s*(?![^()]*\))/).map((t) => t.trim())) {
+      if (/^(Edit|Write|Bash|PowerShell)/.test(tool)) {
+        assert.ok(/^(Edit|Write)\(workbench\/\*\*\)$/.test(tool) || readOnly.test(tool), `${file}: ${tool}`);
+      }
+    }
+  }
+});
+
 test('setup.md itself has no user_config placeholders', () => {
   const text = fs.readFileSync(path.join(plugin, 'reference', 'setup.md'), 'utf8');
   assert.doesNotMatch(text, /\$\{user_config\.[a-z_]+\}/);

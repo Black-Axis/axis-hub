@@ -8,6 +8,7 @@
 | Depends On | {{TASK-xx, TASK-yy \| —}} |
 | Source | {{Feature requirement(s) or change request (FEAT-n) this task comes from}} |
 | Created | {{YYYY-MM-DD}} |
+| Baseline | {{git commit hash \| C<changeset> \| YYYY-MM-DD HH:MM}} |
 
 ## Problem
 

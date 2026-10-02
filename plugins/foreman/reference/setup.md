@@ -31,6 +31,7 @@ Project-wide defaults for every new contract's Working Rules. `/foreman:new` and
    - Commit policy (git only; for tfvc and none it is always `never auto-commit (user checks in)` - do not ask): never auto-commit / main agent commits after each verified task / other.
    - Auto-close: `Ask` (default) / `Yes` / `No`.
    - Tests: the commands to run after each task, or "none available".
+   - Baseline tests: `yes` (default - run the tests before each task too, so failures that already exist are not counted against the worker; costs one extra test run per task) / `no`.
    - Standards: coding standards and conventions to follow.
    - Ask the user when: situations where the main agent must stop and ask.
 
