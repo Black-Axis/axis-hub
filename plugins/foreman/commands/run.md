@@ -1,7 +1,7 @@
 ---
 description: Delegate one task to the Sonnet worker subagent, verify the result, then update tracking and docs
 argument-hint: "[P-NN] [TASK-TT]"
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git status:*), Bash(git diff:*), Bash(git ls-files:*), Bash(git log:*), Bash(tf status:*), Bash(tf diff:*), Bash(tf history:*), Agent, SendMessage, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git status:*), PowerShell(git status:*), Bash(git diff:*), PowerShell(git diff:*), Bash(git ls-files:*), PowerShell(git ls-files:*), Bash(git log:*), PowerShell(git log:*), Bash(tf status:*), PowerShell(tf status:*), Bash(tf diff:*), PowerShell(tf diff:*), Bash(tf history:*), PowerShell(tf history:*), Agent, SendMessage, AskUserQuestion
 ---
 
 # /foreman:run
@@ -113,7 +113,7 @@ If verification passes, go to step 7 (Pass). If the limit is reached and issues 
      - git: apply the contract's commit policy (commit only if the policy says so; the commit message references `P-NN TASK-TT`). Log a commit as `Main agent`, `Action`, with its hash.
      - tfvc: never check in. Deletes and renames the worker reported as needed, and new files: with `tf` available, propose `tf delete` / `tf rename` / `tf add` for those files and run them only on the user's yes; without `tf`, list them for the user to do in Visual Studio. Then tell the user the task's changes are ready to review and check in (pending changes). Log what was run.
      - none: nothing to do.
-     - Delete the task's snapshot folder `workbench/.baseline/P-NN/TASK-TT/`, if any.
+     - Delete the task's snapshot folder `workbench/.baseline/P-NN/TASK-TT/`, if any ("Snapshot" in rules.md).
   4. Recompute the plan status. If every non-canceled task is now `Done`, apply the contract's Auto-close rule (missing or unclear value = `Ask`):
      - `Ask`: read `${CLAUDE_PLUGIN_ROOT}/commands/close.md` first, then ask the user with `AskUserQuestion` "All tasks Done. Run /foreman:close P-NN now?" and run it only on yes. Log the answer (`User`, `Decision`).
      - `Yes`: after the report in step 8, run `/foreman:close P-NN` (follow `${CLAUDE_PLUGIN_ROOT}/commands/close.md`).

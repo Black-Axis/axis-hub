@@ -9,6 +9,14 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 ### Fixed
 
 - Permission prompts after the user answered a question (#42). A command's pre-approved tools last only for the turn it runs in, so a plain-text answer started a new turn in which reading plugin templates was refused and `workbench/` edits asked for permission. Commands now read every template and reference file they need before the first question, and ask with the question dialog (`AskUserQuestion`, free text through "Other"), which keeps the turn. New rule "Questions and follow-up turns" in `reference/rules.md`; applied in `new`, `interview`, `import`, `change`, `doctor`, `run` (auto-close question), and workbench setup. `report` can now ask for a missing plan ID with the dialog.
+- Read-only version control commands run through PowerShell (common on Windows) no longer ask for permission: every command allows the `PowerShell(...)` twin of each `Bash(...)` rule (#24).
+- A `|` inside a table cell (e.g. a logged command `npm test | tail`, or a task title) broke TRK tables and the SessionStart summary. Cells now escape it as `\|`, and the hook splits only on unescaped pipes (#24).
+- `/foreman:close` checks whether `tf` is available, as the rules say, and has the `git log` / `tf history` commands its Out of Scope check needs; that check now uses the tasks' logged files and baselines (#24).
+- Snapshots (TFVC without `tf`, no version control): copied with one shell command instead of Read + Write, which could change line endings or encoding and could not copy binary files; a `.stamp` file marks the snapshot time instead of a remembered time; date baselines come from a command, never from memory. Snapshot folders are deleted with one shell command, and `/foreman:doctor` can delete leftover ones on confirmation (#24).
+
+### Changed
+
+- Task size rule in `reference/rules.md` (one checkable outcome, about 5 files or fewer, split by outcome), used by `new`, `interview`, and `change` (#24).
 
 ## [1.4.0] - 2026-10-02
 

@@ -1,7 +1,7 @@
 ---
 description: Deep interview as a tech lead - grill the user on every part of a feature, challenge weak answers, agree the files to change, then create plan, contract, tracking, and subtasks
 argument-hint: "[feature idea | INT-NN]"
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), Bash(tf history:*), AskUserQuestion
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), PowerShell(git log:*), Bash(tf history:*), PowerShell(tf history:*), AskUserQuestion
 ---
 
 # /foreman:interview

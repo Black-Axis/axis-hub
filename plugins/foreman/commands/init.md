@@ -1,6 +1,6 @@
 ---
 description: Set up workbench/ in this project - ask every setting and the default working rules, then create the folders and INDEX
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), AskUserQuestion
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), PowerShell(git log:*), AskUserQuestion
 ---
 
 # /foreman:init

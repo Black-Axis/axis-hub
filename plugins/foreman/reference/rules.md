@@ -58,7 +58,7 @@ Never run version control commands that change state (commit, check-in, shelve, 
 **Task baseline** - the project state a task file was written against, in the task header `Baseline` row. Every command that creates a task file or rewrites its Evidence, Files Expected to Change, or Implementation (`new`, `interview`, `import`, `change`, the `run` pre-check) sets it:
 - git: the current commit, `git log -1 --format=%H`.
 - tfvc with `tf`: the latest changeset, `C<number>` from `tf history . /recursive /stopafter:1 /noprompt`.
-- tfvc without `tf`, and none: the current date and time, `YYYY-MM-DD HH:MM`.
+- tfvc without `tf`, and none: the current date and time, `YYYY-MM-DD HH:MM`, taken from a command (`date '+%Y-%m-%d %H:%M'`, or PowerShell `Get-Date -Format 'yyyy-MM-dd HH:mm'`), never from memory.
 
 To see what changed in a task's files since its baseline:
 - git: `git log --oneline <hash>..HEAD -- <files>` and `git diff <hash> -- <files>` (includes uncommitted changes).
@@ -66,12 +66,18 @@ To see what changed in a task's files since its baseline:
 - date baseline (or a value of another version control): the files' modification times compared with the baseline time (read-only command, as for snapshots). This shows that a file changed, not how; read it again in full.
 A missing or unreadable baseline (tasks created before 1.3.0): use the task's Created date as a date baseline.
 
-**Snapshot** (tfvc without `tf`, and none): before the worker starts, copy every existing file in the task's `Files Expected to Change` to `workbench/.baseline/P-NN/TASK-TT/<same relative path>` and note the time. Afterwards:
+**Snapshot** (tfvc without `tf`, and none): before the worker starts, copy every existing file in the task's `Files Expected to Change` to `workbench/.baseline/P-NN/TASK-TT/<same relative path>` and create the stamp file `.stamp` there; its modification time is the snapshot time. Do it with one shell command (the user's normal permission prompt applies), never with Read + Write, which can change line endings, a BOM, or the encoding, cannot copy binary files, and loads every file into context:
+- shell: `mkdir -p <dir> && tar cf - <files> | tar xf - -C <dir> && touch <dir>/.stamp`
+- PowerShell: `foreach ($f in @('<file>', ...)) { $d = Join-Path '<dir>' $f; New-Item -ItemType Directory -Force (Split-Path $d) | Out-Null; Copy-Item $f $d }; New-Item -ItemType File '<dir>/.stamp' | Out-Null`
+
+Afterwards:
 - Diff each listed file against its copy (`diff -u <copy> <file>` if a `diff` command exists; otherwise compare them yourself and show the changed lines in unified diff form). A listed file with no copy is new: show it in full.
-- Find files changed outside the list: list files modified after the snapshot time with a read-only command (`find . -newer <a snapshot copy> -type f`, or PowerShell `Get-ChildItem -Recurse -File | Where-Object LastWriteTime -gt '<time>'`), excluding `workbench/` and dependency and build folders. Without version control this cannot see deleted files or every change; tell the user once per task that changes outside the list are checked by modification time only.
-- Delete `workbench/.baseline/P-NN/TASK-TT/` when the task leaves `In Progress`. Keep `workbench/.baseline/` out of version control (add it to the ignore file when Workbench is `tracked`).
+- Find files changed outside the list: list files modified after the stamp with a read-only command (`find . -newer <dir>/.stamp -type f`, or PowerShell `Get-ChildItem -Recurse -File | Where-Object LastWriteTime -gt (Get-Item '<dir>/.stamp').LastWriteTime`), excluding `workbench/` and dependency and build folders. Without version control this cannot see deleted files or every change; tell the user once per task that changes outside the list are checked by modification time only.
+- Delete `workbench/.baseline/P-NN/TASK-TT/` when the task leaves `In Progress`, with one shell command (`rm -rf <dir>`, or PowerShell `Remove-Item -Recurse -Force '<dir>'`; the user's normal permission prompt applies). Keep `workbench/.baseline/` out of version control (add it to the ignore file when Workbench is `tracked`).
 
 ## Templates
+
+In every Markdown table cell written under `workbench/`, write a literal `|` as `\|` (e.g. `npm test \| tail`), so the row keeps its columns; `hooks/session-start.js` reads `\|` as part of the cell.
 
 Create files from these templates, replacing every `{{...}}` placeholder:
 
@@ -116,7 +122,7 @@ Log in the feature's TRK `Activity` table (date, target, By, Type, details - one
 
 ## Permissions
 
-Never work around the user's permission mode. Foreman commands pre-approve only edits inside `workbench/` and read-only version control commands (`git status`, `git diff`, `git ls-files`, `git log`, `tf status`, `tf diff`, `tf history`); every other edit and command - by you or the worker - goes through the user's normal permission prompts. Never suggest granting broader or session-wide permissions.
+Never work around the user's permission mode. Foreman commands pre-approve only edits inside `workbench/` and read-only version control commands (`git status`, `git diff`, `git ls-files`, `git log`, `tf status`, `tf diff`, `tf history`, through Bash or PowerShell); every other edit and command - by you or the worker - goes through the user's normal permission prompts. Never suggest granting broader or session-wide permissions.
 
 Every change to a code or docs file must reach the user as a diff. The worker therefore changes files only with `Edit` / `Write` (shell only for running commands; rules in `${CLAUDE_PLUGIN_ROOT}/agents/foreman-worker.md`), and `/foreman:run` shows the diff of any file a command changed.
 
@@ -149,6 +155,13 @@ Use today's date in `YYYY-MM-DD`.
 ## Approval gate
 
 No task may be run unless the contract Status is `Approved`.
+
+## Task size
+
+A task must fit one worker run and be verifiable on its own:
+- One clear outcome that a test, a command, or a short check can confirm.
+- About 5 files or fewer in `Files Expected to Change` (tests included). Split a bigger task by outcome (e.g. data, logic, UI, tests), with `Depends On` between the parts.
+- No task that only prepares work for another one without a checkable result of its own.
 
 ## Scope discipline
 

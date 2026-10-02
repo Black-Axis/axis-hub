@@ -1,7 +1,7 @@
 ---
 description: Record a change request for a feature - amend the contract, plan, and tasks; small changes are approved inline, big ones need re-approval
 argument-hint: <P-NN> <change request>
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), Bash(tf history:*), AskUserQuestion
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), PowerShell(git log:*), Bash(tf history:*), PowerShell(tf history:*), AskUserQuestion
 ---
 
 # /foreman:change
@@ -25,7 +25,7 @@ First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it.
      - Small: Approved = today; contract Status unchanged.
      - Big: Approved empty; update Scope / Out of Scope / Acceptance Criteria; set Status to `Amended Pending Approval`.
    - Plan: update affected sections and the Task Breakdown; add a note under Open Questions if anything remains open.
-   - Tasks: create new `TASK-TT` files (continue numbering from the highest existing task; Source = `FEAT-n`), edit not-yet-done task files, set obsolete tasks to `Canceled` with reason "FEAT-n".
+   - Tasks: create new `TASK-TT` files ("Task size" in rules.md; continue numbering from the highest existing task; Source = `FEAT-n`), edit not-yet-done task files, set obsolete tasks to `Canceled` with reason "FEAT-n".
    - TRK: add rows for new tasks (`Not Started`), History rows for every change.
    - INDEX: update Contract Status and Progress.
 7. Tell the user the result:
