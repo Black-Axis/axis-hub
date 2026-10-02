@@ -36,6 +36,11 @@ test('allowed-tools stay scoped: workbench edits and read-only version control o
   }
 });
 
+test('settings.md carries every user_config placeholder (its menu shows the defaults)', () => {
+  const text = fs.readFileSync(path.join(commandsDir, 'settings.md'), 'utf8');
+  for (const key of keys) assert.ok(text.includes(`\${user_config.${key}}`), `settings.md lacks ${key}`);
+});
+
 test('setup.md itself has no user_config placeholders', () => {
   const text = fs.readFileSync(path.join(plugin, 'reference', 'setup.md'), 'utf8');
   assert.doesNotMatch(text, /\$\{user_config\.[a-z_]+\}/);

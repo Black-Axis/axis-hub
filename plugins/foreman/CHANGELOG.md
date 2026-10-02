@@ -4,6 +4,13 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-10-02
+
+### Added
+
+- `/foreman:settings` menu: without arguments it shows every setting with its current value and default (the user's `/config` default, or the built-in one), marks values that differ, then lets the user pick groups (Project, Behavior, Working rules) and choose each value from a list with `(current)` and `(default)` labels. Changes and their side effects are summarized and applied only after confirmation.
+- `/foreman:settings reset`: every setting back to its default (Version control re-detected), with the same summary and confirmation.
+
 ## [1.3.0] - 2026-10-02
 
 ### Added
