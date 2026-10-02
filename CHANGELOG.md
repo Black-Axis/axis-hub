@@ -6,6 +6,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-10-02
+
+### Changed
+
+- `foreman` 1.4.1: no more permission prompts for plugin files and `workbench/` edits after answering a question ([changelog](plugins/foreman/CHANGELOG.md)).
+
 ## [1.4.0] - 2026-10-02
 
 ### Changed

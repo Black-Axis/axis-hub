@@ -32,13 +32,13 @@ You are an experienced tech lead interviewing the person who wants this feature.
 
 ## 2. Study the codebase first
 
-Before the first question, explore the parts of the codebase the idea touches: related modules, data models, routes/screens, existing utilities, tests, conventions. Ask informed questions ("`src/auth/session.ts` stores sessions in memory - must the new tokens survive a restart?"), never generic ones. On resume, re-check only what the next topics need.
+Before the first question, read `${CLAUDE_PLUGIN_ROOT}/commands/new.md` and the templates its step 7 needs (step 6 below follows them; see "Questions and follow-up turns" in rules.md). Then explore the parts of the codebase the idea touches: related modules, data models, routes/screens, existing utilities, tests, conventions. Ask informed questions ("`src/auth/session.ts` stores sessions in memory - must the new tokens survive a restart?"), never generic ones. On resume, re-check only what the next topics need.
 
 ## 3. Interview rounds
 
 Work through the Coverage topics in the template order, one topic per round:
 
-1. Ask 3-5 focused questions about the topic. Use `AskUserQuestion` when a question has clear options; otherwise ask in plain text. Offer your recommended option first when you have one.
+1. Ask 3-5 focused questions about the topic with `AskUserQuestion` (open questions too: offer likely answers, the user types their own with "Other"). Offer your recommended option first when you have one.
 2. Challenge every weak answer as in "Your stance" and ask again until it is concrete. Do not move to the next topic while the current one has a vague answer, unless the user explicitly parks it - then add it to Open Gaps.
 3. Mark a topic `N/A` only when the user confirms it does not apply, with the reason.
 4. **Save after every round**: append the round (question, final answer, challenge given) to Rounds, update Coverage, Decisions, Open Gaps, and Updated. A session can end at any time; nothing agreed may be lost.

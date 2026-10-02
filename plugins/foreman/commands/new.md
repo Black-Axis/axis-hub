@@ -43,7 +43,9 @@ Examine the requirements against logic and against the current codebase. Identif
 - contradictions,
 - items that are not applicable or not feasible in this project.
 
-Present the findings to the user as a numbered list and ask for a resolution of each. Do not assume answers. Repeat until every finding has a resolution.
+Before asking, read the templates step 7 needs (`plan.md`, `contract.md`, `task.md`, `tracking.md`, `doc.md`; see "Questions and follow-up turns" in rules.md).
+
+Present the findings to the user as a numbered list and ask for a resolution of each with `AskUserQuestion` (one question per finding, your recommended resolution first). Do not assume answers. Repeat until every finding has a resolution.
 
 ## 5. Gather evidence
 

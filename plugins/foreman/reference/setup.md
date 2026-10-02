@@ -20,7 +20,7 @@ First detect the version control ("Version control" in rules.md). In Auto mode u
 
 When asking about CLAUDE.md, explain it in one line: a short foreman block in the project's `CLAUDE.md` (Workbench `tracked`) or `CLAUDE.local.md` (Workbench `ignored`) so Claude knows about `workbench/` in every session. Show the block from `${CLAUDE_PLUGIN_ROOT}/templates/claude-md.md`. Apply the AGENTS.md rule from "Project instructions block" in rules.md before writing.
 
-Ask the settings together in one `AskUserQuestion` call when possible.
+Before asking anything, read `${CLAUDE_PLUGIN_ROOT}/templates/INDEX.md` (step 3) and, when the CLAUDE.md block may be written, `${CLAUDE_PLUGIN_ROOT}/templates/claude-md.md` ("Questions and follow-up turns" in rules.md). Ask the settings together in one `AskUserQuestion` call when possible.
 
 ## 2. Working rules defaults (Ask all only)
 

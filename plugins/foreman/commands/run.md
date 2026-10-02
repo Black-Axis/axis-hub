@@ -115,7 +115,7 @@ If verification passes, go to step 7 (Pass). If the limit is reached and issues 
      - none: nothing to do.
      - Delete the task's snapshot folder `workbench/.baseline/P-NN/TASK-TT/`, if any.
   4. Recompute the plan status. If every non-canceled task is now `Done`, apply the contract's Auto-close rule (missing or unclear value = `Ask`):
-     - `Ask`: ask the user "All tasks Done. Run /foreman:close P-NN now?" and run it only on yes. Log the answer (`User`, `Decision`).
+     - `Ask`: read `${CLAUDE_PLUGIN_ROOT}/commands/close.md` first, then ask the user with `AskUserQuestion` "All tasks Done. Run /foreman:close P-NN now?" and run it only on yes. Log the answer (`User`, `Decision`).
      - `Yes`: after the report in step 8, run `/foreman:close P-NN` (follow `${CLAUDE_PLUGIN_ROOT}/commands/close.md`).
      - `No`: only tell the user they can run `/foreman:close P-NN`.
 - **Fail** (fix rounds used up, or blocked):
