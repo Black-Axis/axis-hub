@@ -76,6 +76,8 @@ Log in the feature's TRK `Activity` table (date, target, By, Type, details - one
 
 Never work around the user's permission mode. Foreman commands pre-approve only edits inside `workbench/` and read-only git (`status`, `diff`, `ls-files`); every other edit and command - by you or the worker - goes through the user's normal permission prompts. Never suggest granting broader or session-wide permissions.
 
+Every change to a code or docs file must reach the user as a diff. The worker therefore changes files only with `Edit` / `Write` (shell only for running commands; rules in `${CLAUDE_PLUGIN_ROOT}/agents/foreman-worker.md`), and `/foreman:run` shows the diff of any file a command changed.
+
 ## Output style
 
 Read `- Output:` in the INDEX `Settings` block. `Concise` (the default when missing or unclear) applies the rules below to all foreman work: replies to the user, questions, subagent prompts and reports, and every file written under `workbench/`. `Normal` means your usual style. This style applies only while running foreman commands, the worker, or the foreman-guide skill.
@@ -88,7 +90,7 @@ Concise rules:
 - Files: bullets and tables, no padding prose. Keep every required section and every fact (evidence, criteria, reasons, dates) - cut words, never substance.
 - Stakeholder reports: same brevity, plain words, no jargon or code.
 - Research and tool use: search (Grep/Glob) before reading; read only the needed files or line ranges; never re-read a file already in context; no exploratory dumps.
-- Never shorten: error messages (quote exactly), security warnings, and confirmations before destructive or irreversible actions.
+- Never shorten: error messages (quote exactly), security warnings, confirmations before destructive or irreversible actions, and the diffs `/foreman:run` must show for files changed outside `Edit` / `Write`.
 
 ## Dates
 

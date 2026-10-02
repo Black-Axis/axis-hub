@@ -4,6 +4,18 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-10-02
+
+### Fixed
+
+- The worker sometimes edited files through PowerShell or shell commands, which the user could not review as a diff. It now changes file content only with `Edit` / `Write`; Bash and PowerShell are for running commands only. Formatters and linters run in check mode with fixes applied through `Edit`. Shell deletes and renames are allowed only for files the task lists for that; generators and installs only when the task or Working Rules name them.
+- `/foreman:run` verification flags shell file writes as deviations and shows the user the full diff of every code or docs file changed outside `Edit` / `Write` (stat only for lockfiles and build output) before passing the task.
+
+### Changed
+
+- Worker tools include `PowerShell` for running PowerShell commands on Windows.
+- Task template: each `Files Expected to Change` line states `edit`, `new`, `delete`, or `rename to <path>`.
+
 ## [1.2.0] - 2026-09-27
 
 ### Added

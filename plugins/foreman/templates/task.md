@@ -23,7 +23,7 @@
 
 ## Files Expected to Change
 
-- `{{path/to/file}}` — {{why}}
+- `{{path/to/file}}` — {{edit | new | delete | rename to `new/path`}} — {{why}}
 
 ## Out of Scope
 

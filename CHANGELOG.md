@@ -6,6 +6,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ## [Unreleased]
 
+### Changed
+
+- `foreman` 1.2.1: the worker edits files only with Edit / Write, so every change is shown as a diff ([changelog](plugins/foreman/CHANGELOG.md)).
+
 ## [1.2.0] - 2026-09-27
 
 ### Changed
