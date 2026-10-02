@@ -23,7 +23,7 @@ Tests prove `GET /health` returns `200` with the right body and needs no auth to
 
 ## Files Expected to Change
 
-- `test/routes/health.test.js` — new test file
+- `test/routes/health.test.js` — new — test file for the route
 
 ## Out of Scope
 

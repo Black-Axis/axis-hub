@@ -65,9 +65,15 @@ When the worker returns its report:
    - The Required Outcome is met and the Implementation requirements were followed.
    - The report covers every Report Requirement.
    - `workbench/` was not modified by the worker.
-3. Run the test/build commands from the contract Working Rules (and any the project obviously uses). Record the results.
-4. Log the test run (`Main agent`, `Action`, command + result) and the worker round (`Worker`, `Action`, files changed + commands run from its report).
-5. If every check and test passes, go to step 7 (Pass). Otherwise go to step 6.
+   - Files were changed only with `Edit` / `Write` ("How to change files" in `${CLAUDE_PLUGIN_ROOT}/agents/foreman-worker.md`). Scan Commands Run for shell file writes (redirects, `Set-Content`, `Out-File`, `Add-Content`, `sed -i`, heredocs or here-strings into files, script one-liners that write files), deletes or renames of files not listed for that, and file-changing commands (formatters, generators, installs) not named in the task or Working Rules. Each one is a deviation: list it under **Wrong** ("use Edit/Write, not the shell"), or under **Revert** if the change itself is unwanted, and tell the user which files were changed through the shell. If the content is right, the worker does not redo it; the item reminds it of the rule for the rest of the task.
+3. **Show every change made outside `Edit` / `Write` as a diff.** The user must see every change to a code or docs file as a diff. For each file changed, created, deleted, or renamed by a shell command (named generators and installs, listed deletes and renames, and any rule break found above), show the user:
+   - code and docs files (source, tests, config, Markdown, ...): the full `git diff` of the file; for a new untracked file, its full content as an added-lines diff;
+   - deleted files: path and line count; renamed files: old → new path plus any content diff;
+   - lockfiles, build output, binaries, and other generated non-source files: path and `git diff --stat` only.
+   Show this before the Pass/Fail decision, so the user sees it even when verification passes.
+4. Run the test/build commands from the contract Working Rules (and any the project obviously uses). Record the results.
+5. Log the test run (`Main agent`, `Action`, command + result) and the worker round (`Worker`, `Action`, files changed + commands run from its report).
+6. If every check and test passes, go to step 7 (Pass). Otherwise go to step 6.
 
 ## 6. Fix rounds
 

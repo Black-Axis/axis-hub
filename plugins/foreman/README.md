@@ -140,7 +140,7 @@ Foreman respects your permission mode. Commands pre-approve only edits inside `w
 
 ## Subagent, skill, hook
 
-- **`foreman-worker`** (subagent, Sonnet) - implements one task per `/foreman:run`; never edits `workbench/`, never commits.
+- **`foreman-worker`** (subagent, Sonnet) - implements one task per `/foreman:run`; never edits `workbench/`, never commits. It changes files only with the Edit and Write tools, so every change reaches you as a readable diff; Bash / PowerShell are only for running commands (tests, builds, named generators). Formatters run in check mode and their fixes are applied with Edit. When a named command (generator, install) or a listed delete/rename changes files, the main agent shows you their diff before the task can pass.
 - **`foreman-guide`** (skill) - when you ask for foreman-type work without a command (e.g. "let's build X", "what's left?"), Claude suggests the matching `/foreman:*` command. It never runs it.
 - **SessionStart hook** - at session start, if the project has `workbench/`, shows each active plan with its contract status, progress, tasks In Progress, next ready tasks, plans waiting for `/foreman:close`, and interviews in progress. Requires Node.js on `PATH`; without it the hook does nothing.
 

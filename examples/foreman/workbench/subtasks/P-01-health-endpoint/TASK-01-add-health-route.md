@@ -24,8 +24,8 @@ The service has no endpoint the load balancer can use to check health and versio
 
 ## Files Expected to Change
 
-- `src/routes/health.js` — new route module
-- `src/app.js` — register the route before the auth middleware
+- `src/routes/health.js` — new — route module
+- `src/app.js` — edit — register the route before the auth middleware
 
 ## Out of Scope
 
