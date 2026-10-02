@@ -47,6 +47,19 @@ gh api graphql -f query='mutation($issue:ID!){ setIssueFieldValue(input:{issueId
 
 Date fields use `dateValue: "YYYY-MM-DD"` instead of `singleSelectOptionId`.
 
+## GitHub pull requests
+
+Every pull request opened on `Black-Axis/axis-hub` gets:
+
+- **Assignee**: `krypton225` (`gh pr create --assignee krypton225`).
+- **Linked issues**: when the PR solves an issue, put a closing keyword line in the body for each one (`Closes #24`, `Fixes #25`). GitHub then lists the issue in the PR's **Development** section and closes it when the PR is merged. A PR that only partly solves an issue references it without a keyword (`Part of #24`) and is not linked.
+
+```
+gh pr create --base main --title "<title>" --body-file <file> --label <label> --assignee krypton225
+```
+
+After creating it, check the link: `gh pr view <n> --json closingIssuesReferences`.
+
 ## Structure
 
 - `.claude-plugin/marketplace.json` lists every plugin with `"source": "./plugins/<name>"`. Adding a plugin = new `plugins/<name>/.claude-plugin/plugin.json` + an entry here. Keep `version`, `description`, and `keywords` in sync between the two manifests (enforced by `tests/manifests.test.js`), and add a `## [version]` entry to the plugin's `CHANGELOG.md` for each version.
