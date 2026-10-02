@@ -38,4 +38,4 @@ If nothing is wrong, say so and stop.
 
 ## 3. Fix after confirmation
 
-Ask the user which fixes to apply with `AskUserQuestion`: all, none, or a list of numbers (typed with "Other"); judgement calls as separate questions. Apply only those. Never delete files; for an orphan file, ask whether to link it or leave it. Record each status correction as a TRK History row with reason "doctor: <what was fixed>". Report what was fixed and what remains.
+Ask the user which fixes to apply with `AskUserQuestion`: all, none, or a list of numbers (typed with "Other"); judgement calls as separate questions. Apply only those. Never delete files, with one exception: leftover `workbench/.baseline/` folders of tasks that are not `In Progress` (finding 8) are deleted on confirmation, as in "Snapshot" in rules.md. For an orphan file, ask whether to link it or leave it. Record each status correction as a TRK History row with reason "doctor: <what was fixed>". Report what was fixed and what remains.

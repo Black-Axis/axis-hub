@@ -30,7 +30,8 @@ function listDir(dir) {
   }
 }
 
-// Returns cells of every Markdown table row under `## <heading>`.
+// Returns cells of every Markdown table row under `## <heading>`. Cells are split
+// on unescaped `|` only; `\|` inside a cell is a literal pipe.
 function tableRows(text, heading) {
   const lines = text.split(/\r?\n/);
   const start = lines.findIndex((l) => l.trim().toLowerCase() === `## ${heading}`.toLowerCase());
@@ -39,7 +40,7 @@ function tableRows(text, heading) {
   for (let i = start + 1; i < lines.length && !lines[i].startsWith('## '); i++) {
     const line = lines[i].trim();
     if (!line.startsWith('|') || /^\|[\s|:-]+\|$/.test(line)) continue;
-    rows.push(line.slice(1, -1).split('|').map((c) => c.trim()));
+    rows.push(line.slice(1, -1).split(/(?<!\\)\|/).map((c) => c.trim().replace(/\\\|/g, '|')));
   }
   return rows.slice(1); // drop header row
 }

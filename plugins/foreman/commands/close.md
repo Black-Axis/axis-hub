@@ -1,7 +1,7 @@
 ---
 description: Close a feature - verify every contract acceptance criterion, run full tests, finalize the doc, mark the plan Done
 argument-hint: <P-NN>
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git status:*), Bash(git diff:*), Bash(git ls-files:*), Bash(tf status:*), Bash(tf diff:*), AskUserQuestion
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git status:*), PowerShell(git status:*), Bash(git diff:*), PowerShell(git diff:*), Bash(git ls-files:*), PowerShell(git ls-files:*), Bash(tf status:*), PowerShell(tf status:*), Bash(git log:*), PowerShell(git log:*), Bash(tf diff:*), PowerShell(tf diff:*), Bash(tf history:*), PowerShell(tf history:*), AskUserQuestion
 ---
 
 # /foreman:close
@@ -20,11 +20,13 @@ Resolve `P-NN` (ask if missing). Refuse and explain if:
 - Any task is not `Done` or `Canceled`. List those tasks and the command to continue each.
 - The plan is already `Done`.
 
+Read `Version control` in INDEX (missing: detect and add it, "Version control" in rules.md). For `tfvc`, check once whether `tf` is available.
+
 ## 2. Verify acceptance
 
 1. Run the full test/build commands from the contract Working Rules (and any the project obviously uses). Record the results.
 2. Check every item in the contract's Acceptance Criteria against the actual code and test results. For each, record: criterion, `Pass` / `Fail`, evidence (file:line, test name, command output).
-3. Check that nothing listed in the contract's Out of Scope was changed by this feature's tasks.
+3. Check that nothing listed in the contract's Out of Scope was changed by this feature's tasks: take the files each task changed from the TRK `Activity` rows, and what changed in them since the earliest task `Baseline` ("Task baseline" in rules.md: `git log` / `git diff`, `tf history` / `tf status`, or modification times).
 
 ## 3. Close or report
 
@@ -32,7 +34,7 @@ Resolve `P-NN` (ask if missing). Refuse and explain if:
   1. Set the plan status to `Done` in the TRK file; add a History row `P-NN | In Progress -> Done | Main agent | Closed: acceptance verified`.
   2. Finalize `workbench/docs/DOC-NN-<slug>.md`: fill the Acceptance section with the results table, refresh Summary, Architecture / Key Files, How to Extend, Known Limitations. Set Last Updated.
   3. Update `workbench/INDEX.md` Progress.
-  4. git: apply the contract's commit policy for any doc/final changes, if it says to commit. tfvc and none: never commit or check in; for tfvc, tell the user the feature is ready to check in. Delete `workbench/.baseline/P-NN/` if any is left.
+  4. git: apply the contract's commit policy for any doc/final changes, if it says to commit. tfvc and none: never commit or check in; for tfvc, tell the user the feature is ready to check in. Delete `workbench/.baseline/P-NN/` if any is left (one shell command, as in "Snapshot" in rules.md).
 - **Any criterion Fails or tests fail**:
   - Leave the plan status unchanged. Show the failing criteria with evidence.
   - Propose the fix: usually `/foreman:change P-NN <add task for ...>` to add follow-up tasks, then `/foreman:run`.

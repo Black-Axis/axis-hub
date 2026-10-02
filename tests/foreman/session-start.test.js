@@ -134,6 +134,12 @@ test('hides finished and canceled interviews', () => {
   }
 });
 
+test('reads escaped pipes in table cells as part of the cell', () => {
+  const dir = project();
+  edit(dir, TRK, /\| Add health route tests \| Not Started \|([^\n]*)\|\n/, '| Add health route tests \\| v2 | Not Started |$1| ran `npm test \\| tail` |\n');
+  assert.match(run(dir).systemMessage, /1\/2 Done\. Ready: TASK-02 \(Add health route tests \| v2\)/);
+});
+
 test('survives a broken tracking file', () => {
   const dir = project();
   fs.writeFileSync(path.join(dir, 'workbench', TRK), '| broken');

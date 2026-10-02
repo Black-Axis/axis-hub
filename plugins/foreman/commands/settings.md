@@ -1,7 +1,7 @@
 ---
 description: View and change this project's foreman settings from a menu (current value and default for each), or directly by argument; reset to defaults
 argument-hint: "[vcs git|tfvc|none] [workbench tracked|ignored] [output concise|normal] [fix-rounds 0-10] [claude-md yes|no] [rules] [reset]"
-allowed-tools: Read, Glob, Edit(workbench/**), Bash(git ls-files:*), Bash(tf status:*), AskUserQuestion
+allowed-tools: Read, Glob, Edit(workbench/**), Bash(git ls-files:*), PowerShell(git ls-files:*), Bash(tf status:*), PowerShell(tf status:*), AskUserQuestion
 ---
 
 # /foreman:settings

@@ -135,7 +135,7 @@ With `CLAUDE.md: yes`, foreman adds a short block to your project instructions, 
 
 ## Permissions
 
-Foreman respects your permission mode. Commands pre-approve only edits inside `workbench/` and read-only version control commands (`git status`, `git diff`, `git ls-files`, `git log`, `tf status`, `tf diff`). Every other edit or command - by the main agent or the worker - asks you as usual in manual mode. In `acceptEdits`, auto, or bypass mode, Claude Code runs the worker in that same mode.
+Foreman respects your permission mode. Commands pre-approve only edits inside `workbench/` and read-only version control commands (`git status`, `git diff`, `git ls-files`, `git log`, `tf status`, `tf diff`, `tf history`), through Bash or PowerShell. Every other edit or command - by the main agent or the worker - asks you as usual in manual mode. In `acceptEdits`, auto, or bypass mode, Claude Code runs the worker in that same mode.
 
 These pre-approvals last only for the turn in which you ran the command. Foreman therefore asks its questions with Claude Code's question dialog, which keeps the command's turn going. If you answer in a new chat message instead, the next `workbench/` edits may ask for permission.
 

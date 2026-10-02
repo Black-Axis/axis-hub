@@ -24,7 +24,7 @@ test('commands running setup.md carry every user_config placeholder', () => {
 });
 
 test('allowed-tools stay scoped: workbench edits and read-only version control only', () => {
-  const readOnly = /^Bash\((git (status|diff|ls-files|log)|tf (status|diff|history)):\*\)$/;
+  const readOnly = /^(Bash|PowerShell)\((git (status|diff|ls-files|log)|tf (status|diff|history)):\*\)$/;
   for (const file of fs.readdirSync(commandsDir)) {
     const m = /^allowed-tools:\s*(.+)$/m.exec(fs.readFileSync(path.join(commandsDir, file), 'utf8'));
     if (!m) continue;
@@ -32,6 +32,19 @@ test('allowed-tools stay scoped: workbench edits and read-only version control o
       if (/^(Edit|Write|Bash|PowerShell)/.test(tool)) {
         assert.ok(/^(Edit|Write)\(workbench\/\*\*\)$/.test(tool) || readOnly.test(tool), `${file}: ${tool}`);
       }
+    }
+  }
+});
+
+// On Windows the main agent may run the same read-only command through PowerShell.
+test('every Bash rule has its PowerShell twin, and the other way round', () => {
+  for (const file of fs.readdirSync(commandsDir)) {
+    const m = /^allowed-tools:\s*(.+)$/m.exec(fs.readFileSync(path.join(commandsDir, file), 'utf8'));
+    if (!m) continue;
+    const tools = m[1].split(/,\s*(?![^()]*\))/).map((t) => t.trim());
+    for (const tool of tools) {
+      const r = /^(Bash|PowerShell)\((.+)\)$/.exec(tool);
+      if (r) assert.ok(tools.includes(`${r[1] === 'Bash' ? 'PowerShell' : 'Bash'}(${r[2]})`), `${file}: ${tool} has no twin`);
     }
   }
 });
