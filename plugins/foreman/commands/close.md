@@ -1,7 +1,7 @@
 ---
 description: Close a feature - verify every contract acceptance criterion, run full tests, finalize the doc, mark the plan Done
 argument-hint: <P-NN>
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git status:*), Bash(git diff:*), Bash(git ls-files:*), AskUserQuestion
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git status:*), Bash(git diff:*), Bash(git ls-files:*), Bash(tf status:*), Bash(tf diff:*), AskUserQuestion
 ---
 
 # /foreman:close
@@ -32,7 +32,7 @@ Resolve `P-NN` (ask if missing). Refuse and explain if:
   1. Set the plan status to `Done` in the TRK file; add a History row `P-NN | In Progress -> Done | Main agent | Closed: acceptance verified`.
   2. Finalize `workbench/docs/DOC-NN-<slug>.md`: fill the Acceptance section with the results table, refresh Summary, Architecture / Key Files, How to Extend, Known Limitations. Set Last Updated.
   3. Update `workbench/INDEX.md` Progress.
-  4. Apply the contract's commit policy for any doc/final changes, if it says to commit.
+  4. git: apply the contract's commit policy for any doc/final changes, if it says to commit. tfvc and none: never commit or check in; for tfvc, tell the user the feature is ready to check in. Delete `workbench/.baseline/P-NN/` if any is left.
 - **Any criterion Fails or tests fail**:
   - Leave the plan status unchanged. Show the failing criteria with evidence.
   - Propose the fix: usually `/foreman:change P-NN <add task for ...>` to add follow-up tasks, then `/foreman:run`.

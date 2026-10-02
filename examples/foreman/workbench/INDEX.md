@@ -2,7 +2,8 @@
 
 ## Settings
 
-- Git: committed
+- Version control: git
+- Workbench: tracked
 - Output: Concise
 - Fix rounds: 4
 - CLAUDE.md: no

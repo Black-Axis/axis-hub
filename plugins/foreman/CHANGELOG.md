@@ -4,6 +4,18 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 
 ## [Unreleased]
 
+### Added
+
+- Version control support beyond git: INDEX setting `Version control: git | tfvc | none`, detected from the project (`.git`, TFVC `$tf` / `.tfignore`) and asked when nothing is found.
+- TFVC (Azure DevOps Server / TFS): `.tfignore` instead of `.gitignore`; never checks in (the user checks in); `/foreman:run` pre-check finds read-only files of server workspaces and runs `tf checkout` (on approval) or asks the user to check out in Visual Studio; deletes, renames, and new files go through `tf delete` / `tf rename` / `tf add` on the user's yes, or are listed for the user. Works without `tf.exe`.
+- Snapshots (`workbench/.baseline/`, temporary) for TFVC and projects without version control, so `/foreman:run` can still show the diff of every file a task changes.
+
+### Changed
+
+- INDEX `Git: committed | ignored` is now `Workbench: tracked | ignored`. Old `Git:` lines keep working; `/foreman:doctor` and `/foreman:settings` offer to rename them. The `default_git` plugin option accepts `tracked` (`committed` still works).
+- The worker prompt has a `Version control` line; the worker never runs state-changing version control commands and, in TFVC projects, never deletes or renames files itself.
+- Commit policy applies to git only; TFVC and none are always `never auto-commit (user checks in)`.
+
 ## [1.2.1] - 2026-10-02
 
 ### Fixed

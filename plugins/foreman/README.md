@@ -34,7 +34,7 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 ```
 > /foreman:new add a /health endpoint returning {status:"ok"} and the app version
   Add a foreman block to CLAUDE.local.md so Claude knows about workbench/?  > yes
-  Applied settings: Git ignored, Output Concise, Fix rounds 4, CLAUDE.md yes (change with /foreman:settings)
+  Applied settings: Version control git, Workbench ignored, Output Concise, Fix rounds 4, CLAUDE.md yes (change with /foreman:settings)
   Feature review - 2 findings:
     1. Where does the version come from? (unclear)
     2. Auth required on /health? (missing)
@@ -55,7 +55,7 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 
 ## Workflow in detail
 
-0. **`/foreman:init`** (optional) - sets up `workbench/` and asks every setting (Git, Output, Fix rounds, CLAUDE.md block), with your `/config` defaults as the recommended answers. It also agrees the project's **working rules defaults** (commit policy, auto-close, test commands, standards, when to ask), proposed from what it finds in the project; every new contract starts from them. Skip it and the first `new`, `interview`, or `import` sets up `workbench/` silently from your defaults. Run on an existing `workbench/`, it only adds what is missing and never overwrites.
+0. **`/foreman:init`** (optional) - sets up `workbench/`, detects the version control (git, TFVC, or none), and asks every setting (Version control, Workbench, Output, Fix rounds, CLAUDE.md block), with your `/config` defaults as the recommended answers. It also agrees the project's **working rules defaults** (commit policy, auto-close, test commands, standards, when to ask), proposed from what it finds in the project; every new contract starts from them. Skip it and the first `new`, `interview`, or `import` sets up `workbench/` silently from your defaults. Run on an existing `workbench/`, it only adds what is missing and never overwrites.
 1. **`/foreman:new [working file path(s)] [text]`** - Claude reads the feature description from one or more working files, from your text, or both (text then acts as extra notes over the files; conflicts are confirmed with you). Text alone is treated as the feature description. With no input it asks for files or text, or points you to `/foreman:interview`. It reviews the feature for missing / unclear / conflicting / non-applicable items, resolves each finding with you, explores the codebase, and creates the plan, contract (`Draft`), tracking, task files, and a doc skeleton. Readable working file formats: Markdown, text, PDF (not `.docx` - export it to PDF or paste the text).
    **Or `/foreman:interview [idea]`** - for an idea without a written description. Claude studies the codebase, then interviews you topic by topic (goal and users, flows, data, edge cases, security, performance, UI, integrations, migration, tests, acceptance criteria, out of scope) as a blunt tech lead: vague answers ("fast", "the usual way"), contradictions, and scope creep are challenged until the answer is concrete. It proposes the files expected to change for you to confirm, shows a coverage check, and only then creates the plan, contract, tracking, and tasks. Progress is saved after every round in `workbench/interviews/INT-NN-<slug>.md`; `/foreman:interview INT-NN` continues it in a later session.
 2. **`/foreman:approve P-01`** - after you review the files.
@@ -94,7 +94,7 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 | `/foreman:import <path(s)>` | Move plans/tasks/progress from another workflow's local files into `workbench/` (preview first; originals untouched) |
 | `/foreman:doctor [P-NN]` | Find inconsistencies in `workbench/`; fix them after your confirmation |
 | `/foreman:report <P-NN>` | Write a stakeholder report to `workbench/reports/REP-NN-<slug>.md` |
-| `/foreman:settings [git ...] [output ...] [fix-rounds N] [claude-md ...] [rules]` | View or change this project's settings and working rules defaults |
+| `/foreman:settings [vcs ...] [workbench ...] [output ...] [fix-rounds N] [claude-md ...] [rules]` | View or change this project's settings and working rules defaults |
 
 **Help**
 
@@ -109,12 +109,13 @@ There are two levels. You normally only touch the second.
 
 | Level | Where | What | Change with |
 |-------|-------|------|-------------|
-| Your defaults (all projects) | Claude Code plugin config, asked when you enable the plugin | Default output style, git choice, fix rounds, CLAUDE.md block | `/config` |
-| This project | `workbench/INDEX.md` `Settings`, asked by `/foreman:init` or filled from your defaults on the first `/foreman:new`, `/foreman:interview`, or `/foreman:import` | Git, Output, Fix rounds, CLAUDE.md, working rules defaults (init only) | `/foreman:settings` |
+| Your defaults (all projects) | Claude Code plugin config, asked when you enable the plugin | Default output style, workbench in version control, fix rounds, CLAUDE.md block | `/config` |
+| This project | `workbench/INDEX.md` `Settings`, asked by `/foreman:init` or filled from your defaults on the first `/foreman:new`, `/foreman:interview`, or `/foreman:import` | Version control, Workbench, Output, Fix rounds, CLAUDE.md, working rules defaults (init only) | `/foreman:settings` |
 
 | Setting | Values | Meaning |
 |---------|--------|---------|
-| Git | `committed`, `ignored` | Whether `workbench/` is tracked by git (default choice `ask` = asked once per project) |
+| Version control | `git`, `tfvc`, `none` | Detected from the project (`.git`, TFVC `$tf` / `.tfignore`); asked when nothing is found. See [Version control](#version-control-git-tfvc-or-none) |
+| Workbench | `tracked`, `ignored` | Whether `workbench/` is kept in version control (default choice `ask` = asked once per project). Called `Git: committed / ignored` before 1.3.0; old lines keep working |
 | Output | `Concise` (default), `Normal` | `Concise` keeps all foreman replies, worker reports, and files short and token-efficient - no other plugin needed. Affects foreman only. |
 | Fix rounds | `0`-`10` (default `4`) | Automatic fix rounds before a failing task goes on `Hold` |
 | CLAUDE.md | `yes`, `no` (default choice `ask`) | Whether foreman adds a short block about `workbench/` to your project instructions (see below) |
@@ -125,14 +126,28 @@ If a project's settings are missing, the session start summary tells you to run 
 
 With `CLAUDE.md: yes`, foreman adds a short block to your project instructions, so Claude knows about `workbench/` in every session, even when you don't run a foreman command: it changes `workbench/` only through foreman commands, checks the active plan before feature work, stays within the contract's scope, and suggests the matching `/foreman:*` command.
 
-- **Where**: `CLAUDE.md` when `workbench/` is committed (shared with your team), `CLAUDE.local.md` when it is git-ignored (only you; foreman adds it to `.gitignore`). Changing Git with `/foreman:settings` moves the block.
+- **Where**: `CLAUDE.md` when `workbench/` is tracked (shared with your team), `CLAUDE.local.md` when it is ignored (only you; foreman adds it to `.gitignore` or `.tfignore`). Changing Workbench with `/foreman:settings` moves the block.
 - **Yours to control**: the block sits between `<!-- foreman:start -->` and `<!-- foreman:end -->` markers (Claude Code hides these comments from Claude). Foreman never touches anything outside them. `/foreman:settings claude-md no` removes it; `/foreman:doctor` refreshes it after a foreman update.
 - **Projects with `AGENTS.md` only**: creating a CLAUDE file would make Claude Code stop reading `AGENTS.md`, so foreman asks first and, if you agree, starts the file with `@AGENTS.md` to keep it loaded.
 - The block starts with "If the foreman plugin is installed", so it does nothing after you remove the plugin.
 
 ## Permissions
 
-Foreman respects your permission mode. Commands pre-approve only edits inside `workbench/` and read-only git (`status`, `diff`, `ls-files`). Every other edit or command - by the main agent or the worker - asks you as usual in manual mode. In `acceptEdits`, auto, or bypass mode, Claude Code runs the worker in that same mode.
+Foreman respects your permission mode. Commands pre-approve only edits inside `workbench/` and read-only version control commands (`git status`, `git diff`, `git ls-files`, `git log`, `tf status`, `tf diff`). Every other edit or command - by the main agent or the worker - asks you as usual in manual mode. In `acceptEdits`, auto, or bypass mode, Claude Code runs the worker in that same mode.
+
+## Version control: git, TFVC, or none
+
+foreman works with git, with Team Foundation Version Control (Azure DevOps Server / TFS), and without version control.
+
+| | git | TFVC | none |
+|-|-----|------|------|
+| How foreman sees a task's changes | `git diff` | `tf diff` / `tf status` when `tf.exe` works, plus a snapshot of the task's files | snapshot of the task's files (temporary, in `workbench/.baseline/`) |
+| Commits / check-ins | per the contract's commit policy | never - you check in | - |
+| Ignore file | `.gitignore` | `.tfignore` | - |
+| Read-only files (server workspace) | - | checked before the worker starts: foreman runs `tf checkout` (with `tf.exe`, on your approval) or asks you to check out in Visual Studio | - |
+| Deletes, renames, new files | worker (listed files only) | foreman proposes `tf delete` / `tf rename` / `tf add`, or lists them for you | worker (listed files only) |
+
+Without `tf.exe` (or without version control), foreman still shows you the diff of every file the task changes, from its snapshot. Changes outside the task's file list are then found by modification time only.
 
 ## Switching from another workflow
 
