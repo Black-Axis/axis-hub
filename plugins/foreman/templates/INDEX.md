@@ -20,6 +20,7 @@
 - Commit policy: {{never auto-commit | main agent commits after each verified task | other; always "never auto-commit (user checks in)" for tfvc and none}}
 - Auto-close: {{Ask | Yes | No}}
 - Tests: {{required commands, e.g. `npm test`, or "none available"}}
+- Baseline tests: {{yes | no}}
 - Standards: {{coding standards / conventions to follow}}
 - Ask the user when: {{situations where the main agent must stop and ask}}
 

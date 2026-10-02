@@ -4,8 +4,15 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-02
+
 ### Added
 
+- Smarter `/foreman:run` pre-check, to cut fix rounds:
+  - Task `Baseline` (git commit, TFVC changeset, or date) recorded when a task is written or changed; the pre-check looks at exactly what changed in the task's files since then.
+  - Earlier foreman tasks that changed the same files are checked against this task's evidence and implementation.
+  - The user's own uncommitted changes in the task's files are found before the worker starts; the user chooses to commit, stash / shelve, or include them.
+  - Baseline tests (contract Working Rule `Baseline tests: yes | no`, default `yes`): tests run before the worker starts, and only new failures count against the worker.
 - Version control support beyond git: INDEX setting `Version control: git | tfvc | none`, detected from the project (`.git`, TFVC `$tf` / `.tfignore`) and asked when nothing is found.
 - TFVC (Azure DevOps Server / TFS): `.tfignore` instead of `.gitignore`; never checks in (the user checks in); `/foreman:run` pre-check finds read-only files of server workspaces and runs `tf checkout` (on approval) or asks the user to check out in Visual Studio; deletes, renames, and new files go through `tf delete` / `tf rename` / `tf add` on the user's yes, or are listed for the user. Works without `tf.exe`.
 - Snapshots (`workbench/.baseline/`, temporary) for TFVC and projects without version control, so `/foreman:run` can still show the diff of every file a task changes.

@@ -1,7 +1,7 @@
 ---
 description: Delegate one task to the Sonnet worker subagent, verify the result, then update tracking and docs
 argument-hint: "[P-NN] [TASK-TT]"
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git status:*), Bash(git diff:*), Bash(git ls-files:*), Bash(tf status:*), Bash(tf diff:*), Agent, SendMessage, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git status:*), Bash(git diff:*), Bash(git ls-files:*), Bash(git log:*), Bash(tf status:*), Bash(tf diff:*), Bash(tf history:*), Agent, SendMessage, AskUserQuestion
 ---
 
 # /foreman:run
@@ -29,7 +29,14 @@ Exactly one task is run per invocation. You (the main agent) orchestrate and ver
 
 ## 2. Pre-check the task (before delegating)
 
-The code may have changed since the task was planned. Verify the task file against the current code and plan:
+The code may have changed since the task was planned. Find out what changed first, then verify the task file against the current code and plan.
+
+**What changed since the task was written** (rules.md "Task baseline"):
+1. **Since the baseline**: list what changed in the task's `Files Expected to Change` (and files named in Evidence) since the task's `Baseline`. Re-read only the changed parts and check them against Evidence and Implementation.
+2. **Earlier foreman tasks**: from the TRK `Activity` rows of `Done` tasks in this plan and other active plans, find tasks that changed the same files after this task's baseline. Check that what they changed (names, signatures, behavior) still fits this task's Evidence and Implementation.
+3. **Uncommitted changes** (git; tfvc with `tf`): `git status --porcelain -- <files>` or `tf status <files>`. Changes from earlier foreman tasks that are not committed or checked in yet are expected (they are in the Activity log). Any other uncommitted change in the task's files belongs to the user: show the files and ask: commit (or check in) them first, keep them out of the way (stash or shelve) and re-run, or include them (they become part of the start state). Never commit, stash, shelve, or undo anything yourself. Log the answer (`User`, `Decision`). Skipped for none and tfvc without `tf`.
+
+Then check:
 - Every path in `Files Expected to Change` exists (or the task clearly creates it).
 - Every Evidence reference (file, line, symbol, behavior) is still true.
 - Outputs of `Depends On` tasks that this task relies on actually exist.
@@ -40,6 +47,7 @@ The code may have changed since the task was planned. Verify the task file again
 
 Then:
 - **Small problems** - stale line numbers, a moved or renamed path with one obvious match, typos, missing detail you can fill from the code without changing intent: fix the task file yourself and log each fix (`Main agent`, `Action`, `pre-check: <fix>`).
+- After any fix, or when the task was checked and still holds, set the task's `Baseline` to the current state, so the next check starts from here.
 - **Big problems** - the Required Outcome, scope, or set of files must change materially; the outcome is already met; a conflict with other code or tasks; evidence no longer holds and the approach is in doubt: stop, show the problems, and ask the user: update the task as proposed and continue, `/foreman:change P-NN`, or cancel the task. Log the answer (`User`, `Decision`). Continue only on the first choice.
 
 ## 3. Mark In Progress
@@ -47,6 +55,8 @@ Then:
 Set the task to `In Progress` following the status rules (TRK table, History, INDEX).
 
 Record the start state so you can isolate the task's changes later ("Version control" in rules.md): git - `git status --porcelain` and `git diff --stat`; tfvc with `tf` - `tf status`, plus a snapshot; tfvc without `tf` and none - a snapshot in `workbench/.baseline/P-NN/TASK-TT/`. With tfvc, the snapshot is kept even when `tf` works, so the diff of each listed file never depends on the workspace type.
+
+**Baseline tests**: unless the contract's Working Rules say `Baseline tests: no` (missing = `yes`), run the contract's test/build commands now, before the worker starts. Record each command with the failing tests (names and exact errors) in the Activity log (`Main agent`, `Action`, `baseline tests: ...`). If anything already fails, tell the user which tests fail before the task and ask: proceed (those failures are not counted against the worker), or stop and fix them first (`Hold` with the reason). Log the answer (`User`, `Decision`).
 
 ## 4. Delegate
 
@@ -75,7 +85,7 @@ When the worker returns its report:
    - deleted files: path and line count; renamed files: old → new path plus any content diff;
    - lockfiles, build output, binaries, and other generated non-source files: path and size of the change only (e.g. `git diff --stat`).
    Show this before the Pass/Fail decision, so the user sees it even when verification passes.
-4. Run the test/build commands from the contract Working Rules (and any the project obviously uses). Record the results.
+4. Run the test/build commands from the contract Working Rules (and any the project obviously uses). Record the results. Compare with the baseline tests: only failures that are new since the baseline fail verification. A baseline failure the user agreed to proceed with does not count against the worker - unless the task's Required Outcome is to fix it. Report baseline failures that still fail in one line.
 5. Log the test run (`Main agent`, `Action`, command + result) and the worker round (`Worker`, `Action`, files changed + commands run from its report).
 6. If every check and test passes, go to step 7 (Pass). Otherwise go to step 6.
 
@@ -87,7 +97,7 @@ Each round starts with one progress line to the user: `Fix round <n>/<limit>: <c
 1. Build feedback with three lists. Each item: file (and line if known), the problem, the expected result. Omit an empty list.
    - **Revert** - changes that must be undone (out-of-scope edits, unjustified files outside Files Expected to Change, unwanted changes).
    - **Not done** - parts of the Required Outcome, Implementation, or Report Requirements still missing.
-   - **Wrong** - done but incorrect: failed tests (quote the exact error), wrong behavior, broken rules or standards.
+   - **Wrong** - done but incorrect: new failed tests since the baseline (quote the exact error), wrong behavior, broken rules or standards.
 2. Send the feedback to the **same** worker so it keeps its context (continue it with SendMessage using the agent ID returned in step 4). Send only the feedback lists - no task content, no repeated context. If continuing is not possible, launch a new `foreman-worker` with the same lines as step 4, plus `Fix round: <n>` and the feedback lists (no previous report).
 3. Add a TRK History row: `TASK-TT | In Progress -> In Progress | Main agent | Fix round <n>: <count> issues`, and an Activity row (`Main agent`, `Action`) with the feedback items in short.
 4. When the worker replies, verify again exactly as in step 5 (all checks, all tests, logging), not only the listed items.

@@ -25,6 +25,7 @@
 - Commit policy: {{never auto-commit | main agent commits after each verified task | other; always "never auto-commit (user checks in)" for tfvc and none}}
 - Auto-close: {{Ask | Yes | No}} (what happens when the last task is Done: ask to run /foreman:close, run it automatically, or never)
 - Tests: {{required commands, e.g. `npm test`, or "none available"}}
+- Baseline tests: {{yes | no}} (yes = run the tests before each task, so failures that already exist are not blamed on the worker)
 - Standards: {{coding standards / conventions to follow}}
 - Ask the user when: {{situations where the main agent must stop and ask}}
 

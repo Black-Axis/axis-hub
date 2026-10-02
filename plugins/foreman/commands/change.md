@@ -1,7 +1,7 @@
 ---
 description: Record a change request for a feature - amend the contract, plan, and tasks; small changes are approved inline, big ones need re-approval
 argument-hint: <P-NN> <change request>
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), AskUserQuestion
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), Bash(tf history:*), AskUserQuestion
 ---
 
 # /foreman:change

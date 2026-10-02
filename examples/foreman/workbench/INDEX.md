@@ -14,6 +14,7 @@
 - Commit policy: never auto-commit
 - Auto-close: Ask
 - Tests: `npm test`
+- Baseline tests: yes
 - Standards: follow existing route style in `src/routes/`
 - Ask the user when: any file outside Files Expected to Change is needed
 

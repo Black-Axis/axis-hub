@@ -1,7 +1,7 @@
 ---
 description: Start a new feature from working file(s) and/or text - review it, then create plan, contract, tracking, and subtasks in workbench/
 argument-hint: "[working file path(s)] [feature description / notes]"
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), AskUserQuestion
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), Bash(tf history:*), AskUserQuestion
 ---
 
 # /foreman:new
@@ -51,14 +51,14 @@ Explore the codebase to find the files, patterns, and existing utilities relevan
 
 ## 6. Agree on working rules
 
-If `workbench/INDEX.md` has a `Working Rules Defaults` section, show those values and ask one question: use them for this feature, or change some (then ask only about those). Otherwise ask the user for the contract Working Rules that you cannot infer: commit policy (git only; for tfvc and none it is always `never auto-commit (user checks in)`), Auto-close (`Ask` - default, `Yes`, or `No`), test commands required, standards to follow, and when you must stop and ask. Propose sensible defaults from the project and let the user confirm or change them.
+If `workbench/INDEX.md` has a `Working Rules Defaults` section, show those values and ask one question: use them for this feature, or change some (then ask only about those). Otherwise ask the user for the contract Working Rules that you cannot infer: commit policy (git only; for tfvc and none it is always `never auto-commit (user checks in)`), Auto-close (`Ask` - default, `Yes`, or `No`), test commands required, Baseline tests (`yes` - default, or `no`), standards to follow, and when you must stop and ask. Propose sensible defaults from the project and let the user confirm or change them.
 
 ## 7. Write the files
 
 Pick the `<slug>` from the feature name. Create, from templates:
 1. `workbench/plans/P-NN-<slug>.md` - all sections filled; Source lists every working file and contains the user's text verbatim (and the interview Q&A, if any); Requirements hold the final agreed requirements; Feature Review Findings contain every finding and its agreed resolution.
 2. `workbench/contracts/CONT-NN-<slug>.md` - Status `Draft`; Scope, Out of Scope, Acceptance Criteria, Working Rules filled.
-3. `workbench/subtasks/P-NN-<slug>/TASK-TT-<task-slug>.md` - one file per task. Every section is mandatory: Problem, Evidence, Required Outcome, Files Expected to Change, Out of Scope, Implementation, Report Requirements. Each task must be small enough for one subagent run and independently verifiable.
+3. `workbench/subtasks/P-NN-<slug>/TASK-TT-<task-slug>.md` - one file per task. Every section is mandatory: Problem, Evidence, Required Outcome, Files Expected to Change, Out of Scope, Implementation, Report Requirements. Each task must be small enough for one subagent run and independently verifiable. Set the header `Baseline` ("Task baseline" in rules.md).
 4. `workbench/tracking/TRK-NN-<slug>.md` - one row per task, all `Not Started`; History row "Plan created".
 5. `workbench/docs/DOC-NN-<slug>.md` - skeleton only (Summary from the plan; other sections empty until tasks complete).
 6. Add a row to `workbench/INDEX.md`: Contract Status `Draft`, Progress `0/<total> Done`.

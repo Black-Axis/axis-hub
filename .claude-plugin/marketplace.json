@@ -13,7 +13,7 @@
       "name": "foreman",
       "source": "./plugins/foreman",
       "description": "Plan, contract, track, delegate, and document feature work in a workbench/ folder.",
-      "version": "1.2.1",
+      "version": "1.3.0",
       "author": {
         "name": "Black-Axis",
         "email": "black_axis@outlook.com"

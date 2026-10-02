@@ -53,7 +53,18 @@ INDEX `Settings` holds two lines:
 
 In `tfvc` and `none` projects, the contract's Commit policy is always `never auto-commit (user checks in)`; do not ask about it.
 
-Never run version control commands that change state (commit, check-in, shelve, checkout, add, delete, rename, undo) except where this table and the command files say so, and then only after telling the user. Read-only commands (`git status`, `git diff`, `git log`, `git ls-files`, `tf status`, `tf diff`, `tf history`) are always fine.
+Never run version control commands that change state (commit, check-in, shelve, checkout, add, delete, rename, undo) except where this table and the command files say so, and then only after telling the user. Read-only commands (`git status`, `git diff`, `git log`, `git ls-files`, `tf status`, `tf diff`, `tf history`, and read-only file listings for modification times) are always fine.
+
+**Task baseline** - the project state a task file was written against, in the task header `Baseline` row. Every command that creates a task file or rewrites its Evidence, Files Expected to Change, or Implementation (`new`, `interview`, `import`, `change`, the `run` pre-check) sets it:
+- git: the current commit, `git log -1 --format=%H`.
+- tfvc with `tf`: the latest changeset, `C<number>` from `tf history . /recursive /stopafter:1 /noprompt`.
+- tfvc without `tf`, and none: the current date and time, `YYYY-MM-DD HH:MM`.
+
+To see what changed in a task's files since its baseline:
+- git: `git log --oneline <hash>..HEAD -- <files>` and `git diff <hash> -- <files>` (includes uncommitted changes).
+- tfvc with `tf`: `tf history <file> /version:C<n+1>~T /noprompt` per file, and `tf status <files>` for pending changes.
+- date baseline (or a value of another version control): the files' modification times compared with the baseline time (read-only command, as for snapshots). This shows that a file changed, not how; read it again in full.
+A missing or unreadable baseline (tasks created before 1.3.0): use the task's Created date as a date baseline.
 
 **Snapshot** (tfvc without `tf`, and none): before the worker starts, copy every existing file in the task's `Files Expected to Change` to `workbench/.baseline/P-NN/TASK-TT/<same relative path>` and note the time. Afterwards:
 - Diff each listed file against its copy (`diff -u <copy> <file>` if a `diff` command exists; otherwise compare them yourself and show the changed lines in unified diff form). A listed file with no copy is new: show it in full.
