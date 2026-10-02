@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Black-Axis Claude Code plugins for building features, fixing bugs, and managing work.",
-    "version": "1.2.0"
+    "version": "1.2.1"
   },
   "plugins": [
     {
