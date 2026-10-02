@@ -94,7 +94,7 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 | `/foreman:import <path(s)>` | Move plans/tasks/progress from another workflow's local files into `workbench/` (preview first; originals untouched) |
 | `/foreman:doctor [P-NN]` | Find inconsistencies in `workbench/`; fix them after your confirmation |
 | `/foreman:report <P-NN>` | Write a stakeholder report to `workbench/reports/REP-NN-<slug>.md` |
-| `/foreman:settings [vcs ...] [workbench ...] [output ...] [fix-rounds N] [claude-md ...] [rules]` | View or change this project's settings and working rules defaults |
+| `/foreman:settings [vcs ...] [workbench ...] [output ...] [fix-rounds N] [claude-md ...] [rules] [reset]` | Settings menu: every setting with current value and default; change by choosing, or directly by argument; reset to defaults |
 
 **Help**
 
@@ -119,6 +119,8 @@ There are two levels. You normally only touch the second.
 | Output | `Concise` (default), `Normal` | `Concise` keeps all foreman replies, worker reports, and files short and token-efficient - no other plugin needed. Affects foreman only. |
 | Fix rounds | `0`-`10` (default `4`) | Automatic fix rounds before a failing task goes on `Hold` |
 | CLAUDE.md | `yes`, `no` (default choice `ask`) | Whether foreman adds a short block about `workbench/` to your project instructions (see below) |
+
+`/foreman:settings` without arguments shows every setting with its current value and its default (your `/config` default, or foreman's built-in one), marking values that differ. You then pick the groups to change - Project (Version control, Workbench, CLAUDE.md), Behavior (Output, Fix rounds), Working rules - and choose each value from a list, with the current and default values labeled. foreman shows a summary of the changes and their side effects (for example, the CLAUDE.md block moving or ignore file lines) and applies them only after you confirm. `/foreman:settings reset` puts everything back to the defaults, with the same summary first. Direct changes still work: `/foreman:settings output normal`.
 
 If a project's settings are missing, the session start summary tells you to run `/foreman:settings`.
 

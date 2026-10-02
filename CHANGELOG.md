@@ -6,6 +6,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ## [Unreleased]
 
+### Changed
+
+- `foreman` 1.4.0: `/foreman:settings` menu with current values and defaults, and `reset` ([changelog](plugins/foreman/CHANGELOG.md)).
+
 ## [1.3.0] - 2026-10-02
 
 ### Changed
