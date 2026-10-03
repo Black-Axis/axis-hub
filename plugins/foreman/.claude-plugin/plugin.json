@@ -9,6 +9,7 @@
   "homepage": "https://github.com/Black-Axis/axis-hub",
   "repository": "https://github.com/Black-Axis/axis-hub",
   "license": "MIT",
+  "icon": "./assets/images/foreman-logo.png",
   "keywords": ["planning", "tasks", "tracking", "workflow", "subagents", "features"],
   "userConfig": {
     "default_output": {

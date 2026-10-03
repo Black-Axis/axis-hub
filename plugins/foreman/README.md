@@ -1,6 +1,12 @@
+<p align="center">
+  <img src="assets/images/foreman-logo.png" alt="foreman" width="240">
+</p>
+
 # foreman
 
 Plan, contract, track, delegate, and document feature work with Claude Code.
+
+Version 1.4.1 - [changelog](CHANGELOG.md). Requires [Node.js](https://nodejs.org/) on `PATH` for the session-start summary.
 
 The main agent acts as the foreman: it reviews requirements, writes the plan, agrees a contract with you, and tracks every task. Implementation of each task is delegated - one task at a time, chosen by you - to the `foreman-worker` subagent running on Sonnet. The main agent then verifies the result, runs tests, and updates tracking and docs.
 
@@ -15,7 +21,7 @@ Other sources (SSH, pinned versions, local clone), shell commands, team setup, a
 
 ## Quick start
 
-Four commands cover the everyday flow:
+Five commands cover the everyday flow (the first is optional):
 
 ```
 /foreman:init                                    # 0. optional: set up workbench/ and your project's defaults
@@ -131,7 +137,7 @@ With `CLAUDE.md: yes`, foreman adds a short block to your project instructions, 
 - **Where**: `CLAUDE.md` when `workbench/` is tracked (shared with your team), `CLAUDE.local.md` when it is ignored (only you; foreman adds it to `.gitignore` or `.tfignore`). Changing Workbench with `/foreman:settings` moves the block.
 - **Yours to control**: the block sits between `<!-- foreman:start -->` and `<!-- foreman:end -->` markers (Claude Code hides these comments from Claude). Foreman never touches anything outside them. `/foreman:settings claude-md no` removes it; `/foreman:doctor` refreshes it after a foreman update.
 - **Projects with `AGENTS.md` only**: creating a CLAUDE file would make Claude Code stop reading `AGENTS.md`, so foreman asks first and, if you agree, starts the file with `@AGENTS.md` to keep it loaded.
-- The block starts with "If the foreman plugin is installed", so it does nothing after you remove the plugin.
+- The block starts with "If the foreman plugin is installed", so Claude ignores it once the plugin is gone. It still stays in the file: run `/foreman:settings claude-md no` before you uninstall foreman to remove it.
 
 ## Permissions
 
@@ -161,7 +167,7 @@ Without `tf.exe` (or without version control), foreman still shows you the diff 
 
 - **`foreman-worker`** (subagent, Sonnet) - implements one task per `/foreman:run`; never edits `workbench/`, never commits. It changes files only with the Edit and Write tools, so every change reaches you as a readable diff; Bash / PowerShell are only for running commands (tests, builds, named generators). Formatters run in check mode and their fixes are applied with Edit. When a named command (generator, install) or a listed delete/rename changes files, the main agent shows you their diff before the task can pass.
 - **`foreman-guide`** (skill) - when you ask for foreman-type work without a command (e.g. "let's build X", "what's left?"), Claude suggests the matching `/foreman:*` command. It never runs it.
-- **SessionStart hook** - at session start, if the project has `workbench/`, shows each active plan with its contract status, progress, tasks In Progress, next ready tasks, plans waiting for `/foreman:close`, and interviews in progress. Requires Node.js on `PATH`; without it the hook does nothing.
+- **SessionStart hook** - at session start, if the project has `workbench/`, shows each active plan with its contract status, progress, tasks In Progress, next ready tasks, plans waiting for `/foreman:close`, and interviews in progress. Requires Node.js on `PATH`; without it, Claude Code reports a SessionStart hook error and shows no summary.
 
 ## Folder structure (in your project)
 
@@ -174,6 +180,7 @@ workbench/
 ├─ subtasks/P-01-user-login/TASK-01-create-api.md
 ├─ docs/DOC-01-user-login.md
 ├─ interviews/INT-02-dark-mode.md             # only with /foreman:interview
+├─ .baseline/P-01/TASK-01/...                 # temporary snapshots during /foreman:run (TFVC without tf.exe, no version control)
 └─ reports/REP-01-user-login.md               # only after /foreman:report
 ```
 
@@ -200,4 +207,4 @@ The main agent owns all status changes and may set `Hold` or `Canceled` itself (
 
 ## License
 
-MIT
+[MIT](../../LICENSE.md)

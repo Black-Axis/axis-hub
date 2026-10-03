@@ -6,7 +6,7 @@ Only the latest released version of each plugin in this marketplace receives sec
 
 | Plugin | Supported version |
 |--------|-------------------|
-| foreman | latest (currently 1.0.0) |
+| foreman | latest (see the [plugin list](README.md#plugins)) |
 
 ## Reporting a vulnerability
 
