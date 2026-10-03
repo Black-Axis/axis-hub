@@ -62,7 +62,7 @@ After creating it, check the link: `gh pr view <n> --json closingIssuesReference
 
 ## Structure
 
-- `.claude-plugin/marketplace.json` lists every plugin with `"source": "./plugins/<name>"`. Adding a plugin = new `plugins/<name>/.claude-plugin/plugin.json` + an entry here. Keep `version`, `description`, and `keywords` in sync between the two manifests (enforced by `tests/manifests.test.js`), and add a `## [version]` entry to the plugin's `CHANGELOG.md` for each version.
+- `.claude-plugin/marketplace.json` lists every plugin with `"source": "./plugins/<name>"`. Adding a plugin = new `plugins/<name>/.claude-plugin/plugin.json` + an entry here. Keep `version`, `description`, and `keywords` in sync between the two manifests, and the version also in the root README plugin table and the plugin README's `Version X.Y.Z` line (all enforced by `tests/manifests.test.js`), and add a `## [version]` entry to the plugin's `CHANGELOG.md` for each version.
 - Plugin commands are invoked namespaced: `commands/new.md` in `foreman` becomes `/foreman:new`; plugin agents become `<plugin>:<agent>` (e.g. `foreman:foreman-worker`).
 - Inside command bodies, plugin-local files are referenced via `${CLAUDE_PLUGIN_ROOT}/...` and user input via `$ARGUMENTS`.
 

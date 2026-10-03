@@ -6,6 +6,10 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 
 ## [1.4.1] - 2026-10-02
 
+### Added
+
+- foreman logo: shown at the top of the README and set as the `icon` in `plugin.json` (#48).
+
 ### Fixed
 
 - Permission prompts after the user answered a question (#42). A command's pre-approved tools last only for the turn it runs in, so a plain-text answer started a new turn in which reading plugin templates was refused and `workbench/` edits asked for permission. Commands now read every template and reference file they need before the first question, and ask with the question dialog (`AskUserQuestion`, free text through "Other"), which keeps the turn. New rule "Questions and follow-up turns" in `reference/rules.md`; applied in `new`, `interview`, `import`, `change`, `doctor`, `run` (auto-close question), and workbench setup. `report` can now ask for a missing plan ID with the dialog.
@@ -17,6 +21,7 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 ### Changed
 
 - Task size rule in `reference/rules.md` (one checkable outcome, about 5 files or fewer, split by outcome), used by `new`, `interview`, and `change` (#24).
+- README: version and Node.js requirement at the top; correct statement about the hook without Node.js; how to remove the CLAUDE.md block before uninstalling; `workbench/.baseline/` in the folder structure; license link (#48).
 
 ## [1.4.0] - 2026-10-02
 

@@ -33,4 +33,16 @@ for (const entry of marketplace.plugins) {
     assert.ok(fs.readFileSync(path.join(repo, 'README.md'), 'utf8').includes(`[${entry.name}]`),
       `${entry.name} is not in the root README plugin table`);
   });
+
+  test(`${entry.name}: plugin README shows the current version`, () => {
+    const text = fs.readFileSync(path.join(repo, entry.source, 'README.md'), 'utf8');
+    assert.ok(text.includes(`Version ${entry.version} `), `plugin README does not say Version ${entry.version}`);
+  });
+
+  test(`${entry.name}: root README plugin table shows the current version`, () => {
+    const row = fs.readFileSync(path.join(repo, 'README.md'), 'utf8').split(/\r?\n/)
+      .find((l) => l.startsWith('|') && l.includes(`[${entry.name}](`));
+    assert.ok(row, `${entry.name} has no row in the root README plugin table`);
+    assert.strictEqual(row.split('|')[2].trim(), entry.version, 'version in the README table');
+  });
 }

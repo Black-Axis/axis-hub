@@ -1,6 +1,15 @@
+<p align="center">
+  <img src="assets/images/axis-hub-marketplace-logo.png" alt="axis-hub" width="560">
+</p>
+
 # axis-hub
 
 Claude Code plugin marketplace by Black-Axis.
+
+## Requirements
+
+- [Claude Code](https://code.claude.com/docs) v2.1.269 or later (the one-step install below needs v2.1.275 or later).
+- [Node.js](https://nodejs.org/) on `PATH` - foreman's session-start summary runs on it.
 
 ## Install
 
@@ -13,7 +22,7 @@ Inside Claude Code (`/plugin marketplace add`) or from your shell (`claude plugi
 | GitHub shorthand | `/plugin marketplace add Black-Axis/axis-hub` |
 | URL (HTTPS) | `/plugin marketplace add https://github.com/Black-Axis/axis-hub.git` |
 | URL (SSH) | `/plugin marketplace add git@github.com:Black-Axis/axis-hub.git` |
-| Pinned version (tag or branch) | `/plugin marketplace add https://github.com/Black-Axis/axis-hub.git#v1.0.0` |
+| Pinned version (tag or branch) | `/plugin marketplace add https://github.com/Black-Axis/axis-hub.git#vX.Y.Z` (a [release tag](https://github.com/Black-Axis/axis-hub/releases)) |
 | Local clone | `/plugin marketplace add ./path/to/axis-hub` (start relative paths with `./` or `../`) |
 
 Always include `https://` in URLs; without it Claude Code reads the text as `owner/repo` shorthand.
@@ -75,7 +84,7 @@ Remove with `claude plugin uninstall foreman@axis-hub` or, to remove the marketp
 
 | Plugin | Version | Description |
 |--------|---------|-------------|
-| [foreman](plugins/foreman/README.md) | 1.0.0 | Plan, contract, track, delegate, and document feature work in a `workbench/` folder |
+| <img src="plugins/foreman/assets/images/foreman-logo.png" alt="" width="20"> [foreman](plugins/foreman/README.md) | 1.4.1 | Plan, contract, track, delegate, and document feature work in a `workbench/` folder |
 
 - What changed: [CHANGELOG.md](CHANGELOG.md) (marketplace) and each plugin's `CHANGELOG.md`.
 - See it in action: [examples/foreman](examples/foreman/README.md) - a sample `workbench/`.

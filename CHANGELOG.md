@@ -8,9 +8,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ## [1.4.1] - 2026-10-02
 
+### Added
+
+- axis-hub logo at the top of the README, the foreman logo in the plugin list, and a Requirements section (#47).
+
 ### Changed
 
 - `foreman` 1.4.1: no more permission prompts for plugin files and `workbench/` edits after answering a question, PowerShell read-only commands pre-approved, escaped pipes in tables, reliable snapshots ([changelog](plugins/foreman/CHANGELOG.md)).
+- README: current plugin version (a test now keeps it in step with the manifests) and a version-neutral pinned-tag example; `SECURITY.md` no longer names a fixed version (#47).
 
 ## [1.4.0] - 2026-10-02
 
