@@ -27,10 +27,14 @@ function markdownFiles(dir) {
   return out;
 }
 
-// Link targets outside fenced and inline code.
+// Link and image targets outside fenced and inline code: Markdown links and
+// images, and src of HTML <img> tags.
 function linkTargets(text) {
   const prose = text.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
-  return [...prose.matchAll(/\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)].map((m) => m[1]);
+  return [
+    ...[...prose.matchAll(/\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)].map((m) => m[1]),
+    ...[...prose.matchAll(/<img\b[^>]*\bsrc=["']([^"']+)["']/gi)].map((m) => m[1]),
+  ];
 }
 
 for (const file of markdownFiles(repo)) {
