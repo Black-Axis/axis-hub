@@ -1,7 +1,7 @@
 ---
-description: Write a stakeholder report for a feature to workbench/reports/
+description: Write a stakeholder report for a feature to workbench/reports/ (composed by the foreman-reporter subagent)
 argument-hint: <P-NN>
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), AskUserQuestion
+allowed-tools: Read, Glob, Write(workbench/reports/**), Agent, AskUserQuestion
 ---
 
 # /foreman:report
@@ -10,7 +10,17 @@ Input: $ARGUMENTS
 
 First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it.
 
-1. Resolve `P-NN` (ask if missing). Load its plan, contract, TRK file, task files, and doc.
-2. Create `workbench/reports/` if it does not exist.
-3. Write `workbench/reports/REP-NN-<slug>.md` from `${CLAUDE_PLUGIN_ROOT}/templates/report.md`, replacing the file if it exists. Content comes only from the `workbench/` files - do not invent progress, dates, or risks. Write it for readers who are not developers: short sentences, no code.
-4. Do not print the report in chat. Reply only with the file path and one line: plan status and progress.
+The `foreman-reporter` subagent reads the feature's files and composes the report, so those files never enter your context. You only save the report it returns. Do not read the plan, contract, tracking, task, or doc files yourself.
+
+1. Resolve `P-NN`: if it is missing, list the features from `workbench/INDEX.md` and ask which one. Find the feature's files by name with `Glob` only: `workbench/plans/P-NN-*.md`, `workbench/contracts/CONT-NN-*.md`, `workbench/tracking/TRK-NN-*.md`, `workbench/docs/DOC-NN-*.md`. If the plan or tracking file is missing, say so and stop.
+2. Launch the `foreman-reporter` subagent (`foreman:foreman-reporter`) with a prompt of exactly these lines and nothing else (its own definition has all instructions):
+
+   ```
+   Plan: workbench/plans/P-NN-<slug>.md
+   Contract: workbench/contracts/CONT-NN-<slug>.md
+   Tracking: workbench/tracking/TRK-NN-<slug>.md
+   Doc: workbench/docs/DOC-NN-<slug>.md
+   Output: <Concise | Normal>
+   ```
+3. On `FAILED: <reason>`, show the reason and stop. Otherwise save everything after the reporter's `STATUS:` line with one `Write` to `workbench/reports/REP-NN-<slug>.md` (the folder is created with it; an existing report is replaced). Save it exactly as returned: do not reword, shorten, or check it again.
+4. Reply with two lines only: the report path, then the text after `STATUS:`. Never print the report in chat.

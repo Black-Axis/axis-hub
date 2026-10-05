@@ -8,6 +8,7 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 
 ### Added
 
+- `foreman-reporter` subagent: `/foreman:report` now delegates the report to it (#22). It reads only the sections the report needs (never task files) and returns the finished report, which the main agent saves without a permission prompt; the feature files stay out of the main session's context.
 - foreman logo: shown at the top of the README and set as the `icon` in `plugin.json` (#48).
 
 ### Fixed

@@ -10,6 +10,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ### Added
 
+- `foreman`: `foreman-reporter` subagent writes `/foreman:report` reports (#22).
 - axis-hub logo at the top of the README, the foreman logo in the plugin list, and a Requirements section (#47).
 
 ### Changed
