@@ -1,5 +1,5 @@
 {
-  "description": "Foreman: show active plans and next ready tasks at session start",
+  "description": "Foreman: show active plans and next ready tasks at session start; let the main agent change workbench/ without prompts and keep subagents out of it",
   "hooks": {
     "SessionStart": [
       {
@@ -7,6 +7,18 @@
           {
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.js\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v node >/dev/null 2>&1 && node \"${CLAUDE_PLUGIN_ROOT}/hooks/workbench-guard.js\" || true",
             "timeout": 10
           }
         ]

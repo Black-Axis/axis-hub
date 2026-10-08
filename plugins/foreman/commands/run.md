@@ -87,7 +87,8 @@ When the worker returns its report:
    Show this before the Pass/Fail decision, so the user sees it even when verification passes.
 4. Run the test/build commands from the contract Working Rules (and any the project obviously uses). Record the results. Compare with the baseline tests: only failures that are new since the baseline fail verification. A baseline failure the user agreed to proceed with does not count against the worker - unless the task's Required Outcome is to fix it. Report baseline failures that still fail in one line.
 5. Log the test run (`Main agent`, `Action`, command + result) and the worker round (`Worker`, `Action`, files changed + commands run from its report).
-6. If every check and test passes, go to step 7 (Pass). Otherwise go to step 6.
+6. **Task File Updates** from the report: apply each correction that matches the code to the task file (detail only - a change to the Required Outcome, scope, or the set of files goes to the user as in the pre-check's big problems) and log it (`Main agent`, `Action`, `task update from worker: <what>`).
+7. If every check and test passes, go to section 7 (Pass). Otherwise go to section 6 (Fix rounds).
 
 ## 6. Fix rounds
 
