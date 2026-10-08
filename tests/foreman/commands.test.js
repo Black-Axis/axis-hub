@@ -31,7 +31,8 @@ test('allowed-tools stay scoped: workbench edits and read-only version control o
     for (const tool of m[1].split(/,\s*(?![^()]*\))/).map((t) => t.trim())) {
       if (/^(Edit|Write|Bash|PowerShell)/.test(tool)) {
         const reportWrite = file === 'report.md' && tool === 'Write(workbench/reports/**)';
-        assert.ok(/^(Edit|Write)\(workbench\/\*\*\)$/.test(tool) || reportWrite || readOnly.test(tool), `${file}: ${tool}`);
+        const stateScript = /^(Bash|PowerShell)\(node "\$\{CLAUDE_PLUGIN_ROOT\}\/scripts\/wb\.js":\*\)$/.test(tool);
+        assert.ok(/^(Edit|Write)\(workbench\/\*\*\)$/.test(tool) || reportWrite || stateScript || readOnly.test(tool), `${file}: ${tool}`);
       }
     }
   }

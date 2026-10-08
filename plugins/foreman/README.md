@@ -6,7 +6,7 @@
 
 Plan, contract, track, delegate, and document feature work with Claude Code.
 
-Version 1.5.0 - [changelog](CHANGELOG.md). Uses [Node.js](https://nodejs.org/) on `PATH` for its two hooks (session-start summary, prompt-free `workbench/` changes); everything else works without it, with no errors.
+Version 1.5.0 - [changelog](CHANGELOG.md). Uses [Node.js](https://nodejs.org/) on `PATH` for its two hooks (session-start summary, prompt-free `workbench/` changes) and its state script (tracking updates); everything else works without it, with no errors.
 
 The main agent acts as the foreman: it reviews requirements, writes the plan, agrees a contract with you, and tracks every task. Implementation of each task is delegated - one task at a time, chosen by you - to the `foreman-worker` subagent running on Sonnet. The main agent then verifies the result, runs tests, and updates tracking and docs.
 
@@ -171,7 +171,8 @@ Without `tf.exe` (or without version control), foreman still shows you the diff 
 - **`foreman-worker`** (subagent, Sonnet) - implements one task per `/foreman:run`; never edits `workbench/`, never commits. It changes files only with the Edit and Write tools, so every change reaches you as a readable diff; Bash / PowerShell are only for running commands (tests, builds, named generators). Formatters run in check mode and their fixes are applied with Edit. When a named command (generator, install) or a listed delete/rename changes files, the main agent shows you their diff before the task can pass.
 - **`foreman-reporter`** (subagent, Sonnet) - writes the stakeholder report for `/foreman:report`. It reads only the sections the report needs (plan overview, risks, and task order; contract scope and change requests; task statuses; doc acceptance), never task files or code, and cannot write any file. It returns the finished report, which the main session saves without a permission prompt; the feature files never enter the main session's context.
 - **`foreman-guide`** (skill) - when you ask for foreman-type work without a command (e.g. "let's build X", "what's left?"), Claude suggests the matching `/foreman:*` command. It never runs it.
-- **PreToolUse hook** (`workbench-guard`) - lets the main agent change `workbench/` without permission prompts blocks subagents from changing it, and blocks the worker's shell file writes (see [Permissions](#permissions)). Requires Node.js on `PATH`; without it the hook is skipped, with no error.
+- **PreToolUse hook** (`workbench-guard`) - lets the main agent change `workbench/` without permission prompts, blocks subagents from changing it, and blocks the worker's shell file writes (see [Permissions](#permissions)). Requires Node.js on `PATH`; without it the hook is skipped, with no error.
+- **State script** (`scripts/wb.js`) - makes every status change in one step (tracking row, History, derived plan status, INDEX progress) and answers overview, ready tasks, and the next feature number, so the tracking files never drift apart. Commands run it as `node "<plugin>/scripts/wb.js" ...`, pre-approved and allowed by the hook. Without Node.js, the main agent updates the files by hand.
 - **SessionStart hook** - at session start, if the project has `workbench/`, shows each active plan with its contract status, progress, tasks In Progress, next ready tasks, plans waiting for `/foreman:close`, and interviews in progress. Requires Node.js on `PATH`; without it there is no summary and no error.
 
 ## Folder structure (in your project)

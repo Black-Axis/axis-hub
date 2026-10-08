@@ -223,6 +223,34 @@ test('read-only version control: deny and ask rules in settings are respected', 
   assert.strictEqual(run(dir, 'PowerShell', { command: 'git diff' }), null);
 });
 
+// foreman's state script (#32): allowed for the main agent, also after the worker ran.
+test('state script: node "<plugin>/scripts/wb.js" is allowed for the main agent only', () => {
+  const dir = project();
+  const wb = path.join(repo, 'plugins', 'foreman', 'scripts', 'wb.js');
+  const fwd = wb.replace(/\\/g, '/');
+  for (const [tool, command] of [
+    ['Bash', `node "${fwd}" overview`],
+    ['Bash', `node "${fwd}" status P-01 TASK-02 In Progress --by "Main agent" --reason "/foreman:run" --note "worker running"`],
+    ['Bash', `node '${wb}' ready P-01`],
+    ['PowerShell', `node "${fwd}" next-number`],
+    ['Bash', `node "${fwd}" status P-01 TASK-02 Done --by "Main agent" --reason "verified; ran npm test | tail"`],
+  ]) assert.strictEqual(run(dir, tool, { command }), 'allow', command);
+  if (process.platform === 'win32') {
+    const gitBash = fwd.replace(/^([A-Za-z]):/, (_, d) => `/${d.toLowerCase()}`);
+    assert.strictEqual(run(dir, 'Bash', { command: `node "${gitBash}" overview` }), 'allow', 'Git Bash path');
+  }
+  for (const command of [
+    `node "${fwd}" overview; rm -rf src`,
+    `node "${fwd}" overview > out.txt`,
+    `node "${fwd}" status P-01 Done --reason "$(whoami)"`,
+    `node "${path.join(dir, 'wb.js').replace(/\\/g, '/')}" overview`,
+    'node scripts/wb.js overview',
+    `node -e "x" "${fwd}"`,
+  ]) assert.strictEqual(run(dir, 'Bash', { command }), null, command);
+  assert.strictEqual(run(dir, 'Bash', { command: `node "${fwd}" overview` }, worker), null, 'subagent');
+  assert.strictEqual(run(project({ deny: ['Edit(workbench/**)'] }), 'Bash', { command: `node "${fwd}" overview` }), null, 'workbench edits denied');
+});
+
 test('other tools and broken input get no decision', () => {
   const dir = project();
   assert.strictEqual(run(dir, 'Read', { file_path: wbFile(dir) }), null);

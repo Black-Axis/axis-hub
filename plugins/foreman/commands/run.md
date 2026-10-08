@@ -1,7 +1,7 @@
 ---
 description: Delegate one task to the Sonnet worker subagent, verify the result, then update tracking and docs
 argument-hint: "[P-NN] [TASK-TT]"
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git status:*), PowerShell(git status:*), Bash(git diff:*), PowerShell(git diff:*), Bash(git ls-files:*), PowerShell(git ls-files:*), Bash(git log:*), PowerShell(git log:*), Bash(git stash create:*), PowerShell(git stash create:*), Bash(tf status:*), PowerShell(tf status:*), Bash(tf diff:*), PowerShell(tf diff:*), Bash(tf history:*), PowerShell(tf history:*), Agent, SendMessage, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git status:*), PowerShell(git status:*), Bash(git diff:*), PowerShell(git diff:*), Bash(git ls-files:*), PowerShell(git ls-files:*), Bash(git log:*), PowerShell(git log:*), Bash(git stash create:*), PowerShell(git stash create:*), Bash(tf status:*), PowerShell(tf status:*), Bash(tf diff:*), PowerShell(tf diff:*), Bash(tf history:*), PowerShell(tf history:*), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), Agent, SendMessage, AskUserQuestion
 ---
 
 # /foreman:run
@@ -10,13 +10,15 @@ Input: $ARGUMENTS
 
 First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it.
 
+State script: `node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js"` ("State script" in rules.md).
+
 Exactly one task is run per invocation. You (the main agent) orchestrate and verify; the `foreman-worker` subagent implements.
 
 ## 1. Resolve and check
 
 1. Parse `P-NN` and `TASK-TT`. Shortcuts:
    - Only `TASK-TT` given: if exactly one plan is active (not `Done`, `Canceled`, or `Hold`), use it; otherwise list the active plans and ask which one.
-   - No arguments: find the ready tasks (`Not Started`, all `Depends On` tasks `Done`) across active plans with an `Approved` contract. Propose the first one as the recommended choice and list the others; ask the user to confirm or pick.
+   - No arguments: get the ready tasks with `wb.js ready` (`Not Started`, all `Depends On` tasks `Done`, active plans with an `Approved` contract). Propose the first one as the recommended choice and list the others; ask the user to confirm or pick.
 
    Never run a task the user has not confirmed.
 2. Load the plan, contract, TRK file, and the task file `workbench/subtasks/P-NN-<slug>/TASK-TT-<task-slug>.md`.
@@ -53,10 +55,12 @@ Then:
 ## 3. Mark In Progress
 
 First, before anything else in this step, set the task to `In Progress` and save every part of it now ("Statuses" in rules.md). Anyone looking at `workbench/` while the worker runs, or after a crash, must see the task as started:
+Run `wb.js status P-NN TASK-TT In Progress --by <By> --reason "<reason>" --note "worker running"`. That one call writes:
 1. TRK `Tasks` row: Status `In Progress`, Updated today, Note `worker running`.
-2. TRK `History`: append `TASK-TT | <old> -> In Progress | <By> | <reason>` now - not later together with the `Done` row.
+2. TRK `History`: `TASK-TT | <old> -> In Progress | <By> | <reason>` now - not later together with the `Done` row.
 3. If the plan goes from `Not Started` to `In Progress`: the `- Plan Status:` line and its History row `P-NN | Not Started -> In Progress | Main agent | first task started`.
 4. INDEX Progress: `<done>/<total> Done, TASK-TT In Progress`.
+Without Node, write these four parts by hand ("State script" in rules.md).
 
 Record the start state so you can isolate the task's changes later ("Version control" in rules.md): git - the start hash (`git stash create`), `git status --porcelain`, and a snapshot of listed files that are untracked ("Start hash" in rules.md); tfvc with `tf` - `tf status`, plus a snapshot; tfvc without `tf` and none - a snapshot in `workbench/.baseline/P-NN/TASK-TT/`. With tfvc, the snapshot is kept even when `tf` works, so the diff of each listed file never depends on the workspace type.
 
@@ -107,7 +111,7 @@ Each round starts with one progress line to the user: `Fix round <n>/<limit>: <c
    - **Not done** - parts of the Required Outcome, Implementation, or Report Requirements still missing.
    - **Wrong** - done but incorrect: new failed tests since the baseline (quote the exact error), wrong behavior, broken rules or standards.
 2. Send the feedback to the **same** worker so it keeps its context (continue it with SendMessage using the agent ID returned in step 4). Send only the feedback lists - no task content, no repeated context. If continuing is not possible, launch a new `foreman-worker` with the same lines as step 4, plus `Fix round: <n>` and the feedback lists (no previous report).
-3. Add a TRK History row: `TASK-TT | In Progress -> In Progress | Main agent | Fix round <n>: <count> issues`, and an Activity row (`Main agent`, `Action`) with the feedback items in short.
+3. Add a TRK History row by hand (no status change, so no `wb.js` call): `TASK-TT | In Progress -> In Progress | Main agent | Fix round <n>: <count> issues`, and an Activity row (`Main agent`, `Action`) with the feedback items in short.
 4. When the worker replies, verify again exactly as in step 5 (all checks, all tests, logging), not only the listed items.
 
 If verification passes, go to step 7 (Pass). If the limit is reached and issues remain, go to step 7 (Fail) with the remaining issues.
@@ -115,7 +119,7 @@ If verification passes, go to step 7 (Pass). If the limit is reached and issues 
 ## 7. Close
 
 - **Pass**:
-  1. Right after verification, set the task to `Done` with a short note that includes the fix rounds used (e.g. `verified; 2 fix rounds`), and save every part of it before the doc update below: TRK row, History row `TASK-TT | In Progress -> Done | Main agent | verified; <n> fix rounds`, INDEX Progress without this task's `In Progress`.
+  1. Right after verification, set the task to `Done` with a short note that includes the fix rounds used (e.g. `verified; 2 fix rounds`), and save every part of it before the doc update below: `wb.js status P-NN TASK-TT Done --by "Main agent" --reason "verified; <n> fix rounds" --note "verified; <n> fix rounds"` (TRK row, History row, INDEX Progress without this task's `In Progress`).
   2. Update `workbench/docs/DOC-NN-<slug>.md`: add an `Implemented Tasks` entry (what changed, files, decisions) and refresh Summary, Architecture / Key Files, How to Extend, Known Limitations as needed. Set Last Updated.
   3. Version control ("Version control" in rules.md):
      - git: apply the contract's commit policy. If it says the main agent commits, follow "Git commit" in rules.md: only the task's files (and, with Workbench `tracked`, this run's `workbench/` changes), shown to the user first, committed on yes.
@@ -127,7 +131,7 @@ If verification passes, go to step 7 (Pass). If the limit is reached and issues 
      - `Yes`: after the report in step 8, run `/foreman:close P-NN` (follow `${CLAUDE_PLUGIN_ROOT}/commands/close.md`).
      - `No`: only tell the user they can run `/foreman:close P-NN`.
 - **Fail** (fix rounds used up, or blocked):
-  - Right away, set `Hold` with the reason `Verification failed after <n> fix rounds` plus the remaining issues in the TRK note, and save every part of it (TRK row, History, INDEX Progress). Delete the task's snapshot folder, if any (a re-run takes a new one). Use `Canceled` only if the task turned out to be obsolete, with the reason.
+  - Right away, set `Hold` with the reason `Verification failed after <n> fix rounds` plus the remaining issues in the TRK note, and save every part of it with `wb.js status P-NN TASK-TT Hold --by "Main agent" --reason "..." --note "..."` (TRK row, History, INDEX Progress). Delete the task's snapshot folder, if any (a re-run takes a new one). Use `Canceled` only if the task turned out to be obsolete, with the reason.
   - Show the user the remaining Revert / Not done / Wrong items and propose the next step: `/foreman:resume` then re-run, `/foreman:change`, or a manual fix.
 
 ## 8. Report to the user

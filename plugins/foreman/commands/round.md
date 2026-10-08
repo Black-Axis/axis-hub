@@ -1,7 +1,7 @@
 ---
 description: Send a task back to the worker for another fix round with your findings, after a fresh re-check
 argument-hint: "[P-NN] [TASK-TT] [what is wrong]"
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git status:*), PowerShell(git status:*), Bash(git diff:*), PowerShell(git diff:*), Bash(git ls-files:*), PowerShell(git ls-files:*), Bash(git log:*), PowerShell(git log:*), Bash(git stash create:*), PowerShell(git stash create:*), Bash(tf status:*), PowerShell(tf status:*), Bash(tf diff:*), PowerShell(tf diff:*), Bash(tf history:*), PowerShell(tf history:*), Agent, SendMessage, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git status:*), PowerShell(git status:*), Bash(git diff:*), PowerShell(git diff:*), Bash(git ls-files:*), PowerShell(git ls-files:*), Bash(git log:*), PowerShell(git log:*), Bash(git stash create:*), PowerShell(git stash create:*), Bash(tf status:*), PowerShell(tf status:*), Bash(tf diff:*), PowerShell(tf diff:*), Bash(tf history:*), PowerShell(tf history:*), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), Agent, SendMessage, AskUserQuestion
 ---
 
 # /foreman:round
@@ -9,6 +9,8 @@ allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(g
 Input: $ARGUMENTS
 
 First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and `${CLAUDE_PLUGIN_ROOT}/commands/run.md` (this command reuses its steps 3-8) and follow them.
+
+State script: `node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js"` ("State script" in rules.md).
 
 Use this when the user finds that a task's result is wrong or incomplete - also after it was marked `Done`. It is rework of the same task, not a scope change: a change to Scope, Out of Scope, Acceptance Criteria, or the task's Required Outcome goes to `/foreman:change`.
 
@@ -42,7 +44,7 @@ Show the three lists (each item with its source: `user` or `found by main agent`
 
 ## 5. Reopen
 
-1. If the task is `Done` or `Hold`, set it to `In Progress` and save every part now ("Statuses" in rules.md): TRK row (Note `fix round requested`), History `TASK-TT | <old> -> In Progress | User | Round requested: <short summary>`, INDEX Progress. A `Done` task's doc entry stays until step 6 updates it.
+1. If the task is `Done` or `Hold`, set it to `In Progress` now with `wb.js status P-NN TASK-TT In Progress --by User --reason "Round requested: <short summary>" --note "fix round requested"` (TRK row, History `TASK-TT | <old> -> In Progress | User | Round requested: ...`, INDEX Progress). A `Done` task's doc entry stays until step 6 updates it.
 2. Record a new start state and run the baseline tests, as in `run` step 3 (start hash or snapshot), so this round's changes are isolated from the earlier ones.
 
 ## 6. Send and finish

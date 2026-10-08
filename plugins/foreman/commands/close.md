@@ -1,7 +1,7 @@
 ---
 description: Close a feature - verify every contract acceptance criterion, run full tests, finalize the doc, mark the plan Done
 argument-hint: <P-NN>
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git status:*), PowerShell(git status:*), Bash(git diff:*), PowerShell(git diff:*), Bash(git ls-files:*), PowerShell(git ls-files:*), Bash(tf status:*), PowerShell(tf status:*), Bash(git log:*), PowerShell(git log:*), Bash(tf diff:*), PowerShell(tf diff:*), Bash(tf history:*), PowerShell(tf history:*), AskUserQuestion
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git status:*), PowerShell(git status:*), Bash(git diff:*), PowerShell(git diff:*), Bash(git ls-files:*), PowerShell(git ls-files:*), Bash(tf status:*), PowerShell(tf status:*), Bash(git log:*), PowerShell(git log:*), Bash(tf diff:*), PowerShell(tf diff:*), Bash(tf history:*), PowerShell(tf history:*), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), AskUserQuestion
 ---
 
 # /foreman:close
@@ -9,6 +9,8 @@ allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(g
 Input: $ARGUMENTS
 
 First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it.
+
+State script: `node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js"` ("State script" in rules.md).
 
 A plan only becomes `Done` through this command (or through `/foreman:import` for work finished before foreman).
 
@@ -31,9 +33,9 @@ Read `Version control` in INDEX (missing: detect and add it, "Version control" i
 ## 3. Close or report
 
 - **All criteria Pass and tests pass**:
-  1. Set the plan status to `Done` in the TRK file; add a History row `P-NN | In Progress -> Done | Main agent | Closed: acceptance verified`.
+  1. Set the plan status to `Done`: `wb.js status P-NN Done --by "Main agent" --reason "Closed: acceptance verified"` (TRK Plan Status and the History row `P-NN | In Progress -> Done | Main agent | Closed: acceptance verified`).
   2. Finalize `workbench/docs/DOC-NN-<slug>.md`: fill the Acceptance section with the results table, refresh Summary, Architecture / Key Files, How to Extend, Known Limitations. Set Last Updated.
-  3. Update `workbench/INDEX.md` Progress.
+  3. `wb.js refresh P-NN` (INDEX Progress).
   4. git: apply the contract's commit policy for any doc/final changes, if it says to commit, as in "Git commit" in rules.md (files: those this command changed; message references `P-NN`). tfvc and none: never commit or check in; for tfvc, tell the user the feature is ready to check in. Delete `workbench/.baseline/P-NN/` if any is left (one shell command, as in "Snapshot" in rules.md).
 - **Any criterion Fails or tests fail**:
   - Leave the plan status unchanged. Show the failing criteria with evidence.

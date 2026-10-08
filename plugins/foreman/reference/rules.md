@@ -20,7 +20,7 @@ workbench/
 ## Naming
 
 - One feature = one plan, one contract, one tracking file, one doc, one subtasks folder. All share the same number `NN` and the same `<slug>`.
-- `NN` is the feature number, zero-padded to 2 digits (`01`, `02`, ... `99`, then `100`). Next number = highest number in `INDEX.md` or in `workbench/interviews/` + 1.
+- `NN` is the feature number, zero-padded to 2 digits (`01`, `02`, ... `99`, then `100`). Next number = highest number in `INDEX.md` or in `workbench/interviews/` + 1 (`wb.js next-number`, "State script").
 - An interview `INT-NN-<slug>` reserves its number and slug: the plan it creates uses the same `NN` and `<slug>`. A canceled interview's number stays used.
 - `TT` is the task number inside its plan, zero-padded to 2 digits, starting at `01` for every plan.
 - `<slug>` is lowercase kebab-case, ASCII letters, digits and hyphens only, max ~40 characters (e.g. `user-login`).
@@ -123,11 +123,29 @@ The INDEX setting `- CLAUDE.md: yes | no` controls a short block that tells Clau
   1. Update the row in the TRK `Tasks` table (Status, Updated date, Note).
   2. Append a row to the TRK `History` table: date, target (`P-NN` or `TASK-TT`), `old -> new`, By (`User` if the user asked for it, otherwise `Main agent`), reason.
   3. Update the `Progress` column in `INDEX.md` as `<done>/<total excluding Canceled> Done`, followed by `, TASK-TT In Progress` for each task that is `In Progress` (e.g. `1/3 Done, TASK-02 In Progress`), so INDEX shows running work.
+- Make every status change with the state script (`wb.js status`, "State script" below): one call writes all three parts, plus the Plan Status and its History row when the derived plan status changes. By hand only when the script cannot run.
 - Write each status change completely - all three parts, plus the Plan Status and its History row when the derived plan status changes - at the moment it happens, as its own step. Never batch it with later changes, and never leave a part for later in the command or for the next command.
 - Plan Status in TRK is derived: `In Progress` when any task is `In Progress` or `Done` (including when all tasks are `Done`); otherwise `Not Started`. Explicit `Hold`/`Canceled` of the whole plan overrides this. A plan becomes `Done` only through `/foreman:close`, after the contract's Acceptance Criteria are verified, or through `/foreman:import` for a feature already finished before foreman.
 - You may set `Hold` or `Canceled` on your own (e.g. blocked, verification failed, task made obsolete), but always write the reason in History and tell the user.
 - History holds task and plan status changes only (target `P-NN` or `TASK-TT`). Contract status changes (approve, amend) are recorded in the contract file, INDEX, and the Activity log (`User`, `Decision`) - never in History.
 - A task's title is the same in the task file, the TRK row, and the plan's Task Breakdown: copy it exactly, add nothing (no `(FEAT-n)` suffix); a retitle changes all three.
+
+## State script
+
+`scripts/wb.js` (Node, in the plugin) does the mechanical `workbench/` updates and answers, so you never edit status cells or count by hand. Every command that uses it has a `State script:` line with the exact command to run (`node "<plugin>/scripts/wb.js"`); run it from the project root, one call at a time, never chained:
+
+| Call | Does |
+|------|------|
+| `status P-NN TASK-TT <status> --by <User\|Main agent> --reason "<text>" [--note "<text>"]` | Task status change: TRK row (Status, Updated, Note - cleared without `--note`), History row, derived Plan Status (with its History row), INDEX Progress |
+| `status P-NN <status> --by ... --reason "..."` | Plan status change (`Hold`, `Canceled`, `Done`, back to `In Progress` / `Not Started`), History row |
+| `refresh P-NN` | After adding or removing task rows, or a contract status change: derived Plan Status, INDEX Progress and Contract Status |
+| `ready [P-NN]` | Tasks that can run now (`Not Started`, dependencies `Done`, plan active, contract `Approved`) |
+| `overview` | One line per feature (plan, contract, progress, next step) and per open interview |
+| `next-number` | The next free feature number `NN` |
+
+- Output: one line per change or answer. `ERROR: <reason>` (exit code 1) means nothing was written: fix the cause (wrong ID, same status, missing table) - never edit the cells by hand to get around it.
+- Write the row text yourself only where no call covers it (new task rows, Activity rows, notes in other files).
+- If the call fails because `node` is not found, do the same updates by hand as described in "Statuses" and "Naming", and tell the user once per command: "Node.js not found - foreman updates the tracking files by hand."
 
 ## Command boundaries
 
