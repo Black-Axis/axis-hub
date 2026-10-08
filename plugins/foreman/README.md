@@ -39,6 +39,7 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 
 ```
 > /foreman:new add a /health endpoint returning {status:"ok"} and the app version
+  Keep workbench/ in version control (tracked) or ignore it?  > ignored
   Add a foreman block to CLAUDE.local.md so Claude knows about workbench/?  > yes
   Applied settings: Version control git, Workbench ignored, Output Concise, Fix rounds 4, CLAUDE.md yes (change with /foreman:settings)
   Feature review - 2 findings:

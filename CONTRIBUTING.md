@@ -107,7 +107,10 @@ The tests check that:
 
 - both manifests agree (name, version, description, keywords);
 - each plugin has a README and a CHANGELOG entry for its current version, and is listed in the root README;
-- the foreman session start hook produces the right summary for the sample in `examples/foreman/`;
+- each plugin's version is the same in the root README plugin table and the plugin README;
+- the foreman hooks work (session start summary for the sample in `examples/foreman/`, the `workbench/` guard), as do the state script `wb.js` and the command files (scoped `allowed-tools`, shared rules read first, every command listed in the README, the catalog order, and the guide skill);
+- the git hooks enforce branch names and keep `main` protected, and `git finish` deletes only merged branches;
+- no Markdown file repeats a `## ` heading;
 - relative links in every Markdown file point to files that exist (plugin templates are skipped);
 - the release script accepts only tags that match the marketplace version, and all workflows pin the same Claude Code version.
 
@@ -116,7 +119,7 @@ GitHub Actions runs:
 | Workflow | When | What |
 |----------|------|------|
 | `validate.yml` | Every pull request and push to `main` | Both validations and `node --test` |
-| `codeql.yml` | Pull requests, pushes to `main`, weekly | CodeQL scan of the JavaScript (skipped while the repository is private) |
+| `codeql.yml` | Pull requests, pushes to `main`, weekly | CodeQL scan of the JavaScript (skipped on private copies, such as private forks) |
 | `release.yml` | Push of a `vX.Y.Z` tag | See [Releasing](#releasing) |
 
 CI installs a pinned Claude Code version (`CLAUDE_CODE_VERSION` in `validate.yml` and `release.yml`). To move to a newer version, change it in both files in one pull request. Dependabot (`.github/dependabot.yml`) opens weekly pull requests to update the GitHub Actions used by the workflows.
@@ -149,9 +152,9 @@ A release is a git tag `vX.Y.Z` that matches `metadata.version` in `.claude-plug
 2. In each changed plugin's `CHANGELOG.md` and in the root `CHANGELOG.md`, rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD` and add a new empty `## [Unreleased]` above it.
 3. Update the version in the root `README.md` plugin table.
 4. Check the notes: `node .github/scripts/release-notes.js vX.Y.Z` (fails if the tag does not match or the changelog has no section).
-5. Merge to `main`, then tag and push the tag:
+5. Merge to `main`, then create an annotated tag on `main` and push it to GitHub (`origin` in a plain clone of `Black-Axis/axis-hub`):
    ```
-   git tag vX.Y.Z
+   git tag -a vX.Y.Z -m "vX.Y.Z"
    git push origin vX.Y.Z
    ```
 

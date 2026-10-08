@@ -34,6 +34,7 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 - A `|` inside a table cell (e.g. a logged command `npm test | tail`, or a task title) broke TRK tables and the SessionStart summary. Cells now escape it as `\|`, and the hook splits only on unescaped pipes (#24).
 - `/foreman:close` checks whether `tf` is available, as the rules say, and has the `git log` / `tf history` commands its Out of Scope check needs; that check now uses the tasks' logged files and baselines (#24).
 - Snapshots (TFVC without `tf`, no version control): copied with one shell command instead of Read + Write, which could change line endings or encoding and could not copy binary files; a `.stamp` file marks the snapshot time instead of a remembered time; date baselines come from a command, never from memory. Snapshot folders are deleted with one shell command, and `/foreman:doctor` can delete leftover ones on confirmation (#24).
+- Docs (#34): the catalog's example hint for `/foreman:run` is `[P-NN] [TASK-TT]` (was `<P-NN> <TASK-TT>`); the README example session asks whether `workbench/` is tracked or ignored, as the default `ask` does. New tests fail when a command is missing from the README command tables, the catalog order, or the guide skill, or does not start by reading `reference/rules.md`.
 
 ### Changed
 

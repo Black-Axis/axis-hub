@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   analyze:
-    # Code scanning on a private repository needs GitHub Code Security; skip until the repository is public.
+    # Code scanning on a private repository needs GitHub Code Security; skip on private copies (e.g. private forks).
     if: ${{ !github.event.repository.private }}
     runs-on: ubuntu-latest
     permissions:
