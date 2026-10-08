@@ -109,7 +109,8 @@ The INDEX setting `- CLAUDE.md: yes | no` controls a short block that tells Clau
 - Every status change of a task or plan must:
   1. Update the row in the TRK `Tasks` table (Status, Updated date, Note).
   2. Append a row to the TRK `History` table: date, target (`P-NN` or `TASK-TT`), `old -> new`, By (`User` if the user asked for it, otherwise `Main agent`), reason.
-  3. Update the `Progress` column in `INDEX.md` as `<done>/<total excluding Canceled> Done`.
+  3. Update the `Progress` column in `INDEX.md` as `<done>/<total excluding Canceled> Done`, followed by `, TASK-TT In Progress` for each task that is `In Progress` (e.g. `1/3 Done, TASK-02 In Progress`), so INDEX shows running work.
+- Write each status change completely - all three parts, plus the Plan Status and its History row when the derived plan status changes - at the moment it happens, as its own step. Never batch it with later changes, and never leave a part for later in the command or for the next command.
 - Plan Status in TRK is derived: `In Progress` when any task is `In Progress` or `Done` (including when all tasks are `Done`); otherwise `Not Started`. Explicit `Hold`/`Canceled` of the whole plan overrides this. A plan becomes `Done` only through `/foreman:close`, after the contract's Acceptance Criteria are verified, or through `/foreman:import` for a feature already finished before foreman.
 - You may set `Hold` or `Canceled` on your own (e.g. blocked, verification failed, task made obsolete), but always write the reason in History and tell the user.
 

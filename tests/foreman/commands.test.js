@@ -75,6 +75,18 @@ test('foreman-reporter: read-only tools, path-only prompt from report.md', () =>
   assert.match(report, /^allowed-tools: .*Write\(workbench\/reports\/\*\*\)/m, 'main agent saves the report');
 });
 
+// A status change is saved before the next step starts: the worker is launched only
+// after In Progress is written, and Done / Hold are written right after verification (#50).
+test('run.md saves In Progress before the worker and Done / Hold right away', () => {
+  const run = fs.readFileSync(path.join(commandsDir, 'run.md'), 'utf8');
+  const rules = fs.readFileSync(path.join(plugin, 'reference', 'rules.md'), 'utf8');
+  assert.match(run, /## 4\. Delegate\s+Launch the worker only after every write of step 3 is saved/);
+  assert.match(run, /Right after verification, set the task to `Done`/);
+  assert.match(run, /Right away, set `Hold`/);
+  assert.match(rules, /`, TASK-TT In Progress` for each task that is `In Progress`/);
+  assert.match(rules, /Write each status change completely/);
+});
+
 // allowed-tools end with the user's next message, so a command must read every
 // plugin file it needs before its first question and keep the turn with
 // AskUserQuestion (rules.md "Questions and follow-up turns", issue #42).
