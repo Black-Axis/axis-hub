@@ -18,6 +18,7 @@ Skip this skill when the user is already running a `/foreman:*` command, or expl
    - Move existing plans/tasks from another workflow into foreman: `/foreman:import`
    - Approve the plan/contract: `/foreman:approve`
    - Implement / continue / next task: `/foreman:run`
+   - A task's result is wrong or incomplete (also after it was marked done), send it back for rework: `/foreman:round`
    - Progress, what's left: `/foreman:status`
    - Scope or requirement change: `/foreman:change`
    - Pause / stop / continue paused work: `/foreman:hold`, `/foreman:cancel`, `/foreman:resume`

@@ -16,8 +16,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ### Changed
 
-- `foreman` 1.5.0: no more permission prompts for plugin files and `workbench/` edits after answering a question, PowerShell read-only commands pre-approved, fewer shell prompts (#43), instructions inside working and project files never followed (#33), auto-commit only the task's files after your yes (#39), consistent tracking and a faster catalog (#44), worker shell file writes blocked (#31), each task's git diff isolated from earlier uncommitted changes (#38), no prompts for read-only version control commands after the worker ran (#63), escaped pipes in tables, reliable snapshots ([changelog](plugins/foreman/CHANGELOG.md)).
+- `foreman` 1.5.0: no more permission prompts for plugin files and `workbench/` edits after answering a question, PowerShell read-only commands pre-approved, fewer shell prompts (#43), instructions inside working and project files never followed (#33), auto-commit only the task's files after your yes (#39), consistent tracking and a faster catalog (#44), worker shell file writes blocked (#31), each task's git diff isolated from earlier uncommitted changes (#38), no prompts for read-only version control commands after the worker ran (#63), new `/foreman:round` and stricter verification (#21), escaped pipes in tables, reliable snapshots ([changelog](plugins/foreman/CHANGELOG.md)).
 - README: current plugin version (a test now keeps it in step with the manifests) and a version-neutral pinned-tag example; `SECURITY.md` no longer names a fixed version (#47).
+- `CLAUDE.md`: removed a second copy of the file's content, added by a scripted edit in #64; a new test (`tests/docs.test.js`) fails when a Markdown file repeats a `## ` heading.
 
 ## [1.4.0] - 2026-10-02
 

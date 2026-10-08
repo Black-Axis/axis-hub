@@ -138,6 +138,22 @@ test('git: start hash isolates the task\'s changes', () => {
   assert.match(fs.readFileSync(path.join(commandsDir, 'close.md'), 'utf8'), /`start state: <hash>`/);
 });
 
+// /foreman:round sends a task back with the user's findings (#21).
+test('round: reuses run, refuses closed plans, confirms the lists, logs the user', () => {
+  const round = fs.readFileSync(path.join(commandsDir, 'round.md'), 'utf8');
+  const run = fs.readFileSync(path.join(commandsDir, 'run.md'), 'utf8');
+  assert.strictEqual(/^allowed-tools: (.+)$/m.exec(round)[1], /^allowed-tools: (.+)$/m.exec(run)[1], 'same tools as run');
+  assert.match(round, /The plan is `Done` \(closed\) or `Canceled`: suggest `\/foreman:change/);
+  assert.match(round, /marked `\(found by main agent\)`/);
+  assert.match(round, /`TASK-TT \| <old> -> In Progress \| User \| Round requested/);
+  assert.match(round, /`Fix round: <n>`/);
+  assert.match(round, /counts again from zero/);
+  assert.match(run, /\*\*Checklist\*\*: mark each point of the Required Outcome and each Implementation requirement `Pass` or `Fail`, with evidence/);
+  assert.match(fs.readFileSync(path.join(plugin, 'commands', 'catalog.md'), 'utf8'), /`run`, `round`, `status`/);
+  assert.match(fs.readFileSync(path.join(plugin, 'skills', 'foreman-guide', 'SKILL.md'), 'utf8'), /`\/foreman:round`/);
+  assert.match(fs.readFileSync(path.join(plugin, 'README.md'), 'utf8'), /\| `\/foreman:round /);
+});
+
 // Auto-commit stages only the task's files, by path, after the user's yes (#39).
 test('git commit: only the task\'s files, shown first, never add -A / . / commit -a', () => {
   const rules = fs.readFileSync(path.join(plugin, 'reference', 'rules.md'), 'utf8');
@@ -180,6 +196,7 @@ test('templates are read before the question that precedes writing them', () => 
     ['commands/import.md', 'Before asking, read the templates', 'Ask the user with `AskUserQuestion` to confirm or correct'],
     ['commands/interview.md', 'read `${CLAUDE_PLUGIN_ROOT}/commands/new.md` and the templates', '## 3. Interview rounds'],
     ['reference/setup.md', 'Before asking anything, read `${CLAUDE_PLUGIN_ROOT}/templates/INDEX.md`', 'Ask the settings together'],
+    ['commands/round.md', '`${CLAUDE_PLUGIN_ROOT}/commands/run.md` (this command reuses', 'ask what is wrong with `AskUserQuestion`'],
     ['commands/run.md', 'read `${CLAUDE_PLUGIN_ROOT}/commands/close.md` first', '"All tasks Done. Run /foreman:close P-NN now?"'],
   ];
   for (const [file, read, ask] of cases) {

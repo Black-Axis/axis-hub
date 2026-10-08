@@ -26,7 +26,7 @@ A component type with no matches means the plugin provides none of it.
 
 ## 2. Output
 
-Print exactly four sections in this order, each with a Markdown table. Number rows from 1 within each table, sorted by the natural workflow for commands (`init`, `new`, `interview`, `import`, `approve`, `run`, `status`, `change`, `hold`, `cancel`, `resume`, `close`, `doctor`, `report`, `settings`, `ask`, `catalog`, then any others alphabetically) and alphabetically for the rest. Keep each "What it does" to one short sentence.
+Print exactly four sections in this order, each with a Markdown table. Number rows from 1 within each table, sorted by the natural workflow for commands (`init`, `new`, `interview`, `import`, `approve`, `run`, `round`, `status`, `change`, `hold`, `cancel`, `resume`, `close`, `doctor`, `report`, `settings`, `ask`, `catalog`, then any others alphabetically) and alphabetically for the rest. Keep each "What it does" to one short sentence.
 
 ### Commands
 

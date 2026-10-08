@@ -8,6 +8,8 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 
 ### Added
 
+- `/foreman:round [P-NN] [TASK-TT] [what is wrong]`: send a task back to the worker when its result is wrong or incomplete, also after it was marked `Done` (#21). The main agent sorts your findings into Revert / Not done / Wrong, re-checks the task from scratch and adds what it finds, lets you confirm the lists, reopens the task (`By: User`), and runs the fix round with the normal verification and automatic fix rounds (limit counted again). It works when the original worker is gone (a new worker gets `Fix round: <n>`); closed plans are refused with a pointer to `/foreman:change`. Listed in the README, catalog, and guide skill.
+- Stricter verification in `/foreman:run`: every Required Outcome and Implementation point is marked `Pass` / `Fail` with evidence (file:line, test, command output) and logged in Activity; `/foreman:round` re-checks against it (#21).
 - `foreman-reporter` subagent: `/foreman:report` now delegates the report to it (#22). It reads only the sections the report needs (never task files) and returns the finished report, which the main agent saves without a permission prompt; the feature files stay out of the main session's context.
 - foreman logo: shown at the top of the README and set as the `icon` in `plugin.json` (#48).
 
