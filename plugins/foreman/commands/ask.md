@@ -40,4 +40,4 @@ If no foreman command covers the need, say so clearly, then suggest the closest 
 
 ## 5. Offer to run
 
-Ask the user: "Run it now?" Only on an explicit yes, run the recommended command (invoke it, e.g. via the Skill tool with its name; if that is not available, follow the instructions in `${CLAUDE_PLUGIN_ROOT}/commands/<name>.md` with the chosen arguments). On no, stop.
+Ask the user with `AskUserQuestion`: "Run it now?" Only on an explicit yes, run the recommended command through the Skill tool (its name, e.g. `foreman:run`, with the arguments), so it loads with its own permissions and the user's defaults. If the Skill tool is not available or fails, never follow the command's file yourself: give the exact command for the user to type. On no, stop.

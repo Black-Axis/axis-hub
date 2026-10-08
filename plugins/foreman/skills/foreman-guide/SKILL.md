@@ -1,13 +1,17 @@
 ---
 name: foreman-guide
-description: Suggests the right /foreman command when the user, without using a /foreman command, asks to build or add a feature, wants to brainstorm a feature idea, has feature requirements or working files, wants to continue or resume planned work, asks about progress or task status, wants to change scope, pause or cancel work, close/finish a feature, or wants a status report. Suggest only - never runs commands.
+description: Suggests the right /foreman command, only in a project that already uses foreman (it has workbench/INDEX.md) or when the user explicitly asks to plan, track, or contract feature work. Then for - without a /foreman command - building a feature, a feature idea or requirements, continuing planned work, progress, scope changes, pausing or canceling, closing a feature, or a status report. Suggest only - never runs commands. In other projects, do not use it for ordinary coding requests.
 ---
 
 # Foreman guide
 
 The user described a need that a foreman command handles, but did not use one. Suggest the command; do not run it and do not start the work yourself.
 
-Skip this skill when the user is already running a `/foreman:*` command, or explicitly asked to work without foreman.
+Use it only when one of these is true; otherwise do nothing and never mention foreman:
+- `workbench/INDEX.md` exists in the project (check with Glob), or
+- the user explicitly asks to plan, track, or contract feature work (e.g. "plan this feature with tasks", "track progress", "use foreman").
+
+Skip it also when the user is already running a `/foreman:*` command, explicitly asked to work without foreman, or you already suggested a foreman command for this same topic in this session (suggest at most once per topic).
 
 ## Steps
 

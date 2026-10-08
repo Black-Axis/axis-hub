@@ -155,6 +155,16 @@ test('round: reuses run, refuses closed plans, confirms the lists, logs the user
   assert.match(fs.readFileSync(path.join(plugin, 'README.md'), 'utf8'), /\| `\/foreman:round /);
 });
 
+// #36: the guide skill only where foreman is used; ask never runs a command's file itself.
+test('guide skill is gated on workbench/INDEX.md; ask runs commands only via Skill', () => {
+  const skill = fs.readFileSync(path.join(plugin, 'skills', 'foreman-guide', 'SKILL.md'), 'utf8');
+  assert.match(/^description: (.+)$/m.exec(skill)[1], /only in a project that already uses foreman \(it has workbench\/INDEX\.md\)/);
+  assert.match(skill, /suggest at most once per topic/);
+  const ask = fs.readFileSync(path.join(commandsDir, 'ask.md'), 'utf8');
+  assert.doesNotMatch(ask, /follow the instructions in `\$\{CLAUDE_PLUGIN_ROOT\}\/commands\/<name>\.md`/);
+  assert.match(ask, /never follow the command's file yourself: give the exact command for the user to type/);
+});
+
 // Auto-commit stages only the task's files, by path, after the user's yes (#39).
 test('git commit: only the task\'s files, shown first, never add -A / . / commit -a', () => {
   const rules = fs.readFileSync(path.join(plugin, 'reference', 'rules.md'), 'utf8');

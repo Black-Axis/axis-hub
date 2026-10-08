@@ -107,7 +107,7 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 
 | Command | Purpose |
 |---------|---------|
-| `/foreman:ask [what you want]` | Describe your need; get the right command with arguments filled in, and optionally run it |
+| `/foreman:ask [what you want]` | Describe your need; get the right command with arguments filled in, and optionally run it (or type it yourself) |
 | `/foreman:catalog` | List all commands, subagents, skills, and hooks in the plugin |
 
 ## Settings
@@ -170,7 +170,7 @@ Without `tf.exe` (or without version control), foreman still shows you the diff 
 
 - **`foreman-worker`** (subagent, Sonnet) - implements one task per `/foreman:run`; never edits `workbench/`, never commits. It changes files only with the Edit and Write tools, so every change reaches you as a readable diff; Bash / PowerShell are only for running commands (tests, builds, named generators). Formatters run in check mode and their fixes are applied with Edit. When a named command (generator, install) or a listed delete/rename changes files, the main agent shows you their diff before the task can pass.
 - **`foreman-reporter`** (subagent, Sonnet) - writes the stakeholder report for `/foreman:report`. It reads only the sections the report needs (plan overview, risks, and task order; contract scope and change requests; task statuses; doc acceptance), never task files or code, and cannot write any file. It returns the finished report, which the main session saves without a permission prompt; the feature files never enter the main session's context.
-- **`foreman-guide`** (skill) - when you ask for foreman-type work without a command (e.g. "let's build X", "what's left?"), Claude suggests the matching `/foreman:*` command. It never runs it.
+- **`foreman-guide`** (skill) - in a project that uses foreman (`workbench/INDEX.md` exists), when you ask for foreman-type work without a command (e.g. "let's build X", "what's left?"), Claude suggests the matching `/foreman:*` command, at most once per topic. In other projects it stays silent unless you explicitly ask to plan or track feature work. It never runs a command.
 - **PreToolUse hook** (`workbench-guard`) - lets the main agent change `workbench/` without permission prompts, blocks subagents from changing it, and blocks the worker's shell file writes (see [Permissions](#permissions)). Requires Node.js on `PATH`; without it the hook is skipped, with no error.
 - **State script** (`scripts/wb.js`) - makes every status change in one step (tracking row, History, derived plan status, INDEX progress) and answers overview, ready tasks, and the next feature number; `check` runs the mechanical consistency checks that `/foreman:doctor` reports (and every command runs after it changed a feature), so the tracking files never drift apart. Commands run it as `node "<plugin>/scripts/wb.js" ...`, pre-approved and allowed by the hook. Without Node.js, the main agent updates the files by hand.
 - **SessionStart hook** - at session start, if the project has `workbench/`, shows each active plan with its contract status, progress, tasks In Progress, next ready tasks, plans waiting for `/foreman:close`, and interviews in progress. Requires Node.js on `PATH`; without it there is no summary and no error.
