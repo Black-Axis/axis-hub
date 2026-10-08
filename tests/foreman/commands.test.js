@@ -30,7 +30,8 @@ test('allowed-tools stay scoped: workbench edits and read-only version control o
     if (!m) continue;
     for (const tool of m[1].split(/,\s*(?![^()]*\))/).map((t) => t.trim())) {
       if (/^(Edit|Write|Bash|PowerShell)/.test(tool)) {
-        assert.ok(/^(Edit|Write)\(workbench\/\*\*\)$/.test(tool) || readOnly.test(tool), `${file}: ${tool}`);
+        const reportWrite = file === 'report.md' && tool === 'Write(workbench/reports/**)';
+        assert.ok(/^(Edit|Write)\(workbench\/\*\*\)$/.test(tool) || reportWrite || readOnly.test(tool), `${file}: ${tool}`);
       }
     }
   }
@@ -57,6 +58,21 @@ test('settings.md carries every user_config placeholder (its menu shows the defa
 test('setup.md itself has no user_config placeholders', () => {
   const text = fs.readFileSync(path.join(plugin, 'reference', 'setup.md'), 'utf8');
   assert.doesNotMatch(text, /\$\{user_config\.[a-z_]+\}/);
+});
+
+// The reporter only reads: subagents don't get a command's Edit/Write pre-approvals,
+// so the main agent saves the report it returns.
+test('foreman-reporter: read-only tools, path-only prompt from report.md', () => {
+  const agent = fs.readFileSync(path.join(plugin, 'agents', 'foreman-reporter.md'), 'utf8');
+  assert.match(agent, /^name: foreman-reporter$/m);
+  assert.match(agent, /^model: \S+$/m);
+  assert.match(agent, /^tools: Read, Grep, Glob$/m);
+  const report = fs.readFileSync(path.join(commandsDir, 'report.md'), 'utf8');
+  assert.match(report, /foreman:foreman-reporter/);
+  for (const line of ['Plan:', 'Contract:', 'Tracking:', 'Doc:', 'Output:']) {
+    assert.ok(report.includes(`   ${line} `) && agent.includes(`${line} <`), `prompt line ${line}`);
+  }
+  assert.match(report, /^allowed-tools: .*Write\(workbench\/reports\/\*\*\)/m, 'main agent saves the report');
 });
 
 // allowed-tools end with the user's next message, so a command must read every

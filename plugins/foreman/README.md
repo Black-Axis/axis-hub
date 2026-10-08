@@ -99,7 +99,7 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 |---------|---------|
 | `/foreman:import <path(s)>` | Move plans/tasks/progress from another workflow's local files into `workbench/` (preview first; originals untouched) |
 | `/foreman:doctor [P-NN]` | Find inconsistencies in `workbench/`; fix them after your confirmation |
-| `/foreman:report <P-NN>` | Write a stakeholder report to `workbench/reports/REP-NN-<slug>.md` |
+| `/foreman:report <P-NN>` | Write a stakeholder report to `workbench/reports/REP-NN-<slug>.md` (by the `foreman-reporter` subagent) |
 | `/foreman:settings [vcs ...] [workbench ...] [output ...] [fix-rounds N] [claude-md ...] [rules] [reset]` | Settings menu: every setting with current value and default; change by choosing, or directly by argument; reset to defaults |
 
 **Help**
@@ -163,9 +163,10 @@ Without `tf.exe` (or without version control), foreman still shows you the diff 
 
 `/foreman:import <folder or files>` reads your old plans, tasks, and trackers (any text format), maps them to features, tasks, and statuses, and shows a preview. Unknown status words get a proposed mapping for you to confirm. Nothing is written until you confirm. Unfinished features get a `Draft` contract (approve before running); fully finished features are imported as `Done` with a doc. Anything not found in the sources is marked `Missing - from import`, never invented. Your old files are never changed. Run `/foreman:doctor` afterwards.
 
-## Subagent, skill, hook
+## Subagents, skill, hook
 
 - **`foreman-worker`** (subagent, Sonnet) - implements one task per `/foreman:run`; never edits `workbench/`, never commits. It changes files only with the Edit and Write tools, so every change reaches you as a readable diff; Bash / PowerShell are only for running commands (tests, builds, named generators). Formatters run in check mode and their fixes are applied with Edit. When a named command (generator, install) or a listed delete/rename changes files, the main agent shows you their diff before the task can pass.
+- **`foreman-reporter`** (subagent, Sonnet) - writes the stakeholder report for `/foreman:report`. It reads only the sections the report needs (plan overview, risks, and task order; contract scope and change requests; task statuses; doc acceptance), never task files or code, and cannot write any file. It returns the finished report, which the main session saves without a permission prompt; the feature files never enter the main session's context.
 - **`foreman-guide`** (skill) - when you ask for foreman-type work without a command (e.g. "let's build X", "what's left?"), Claude suggests the matching `/foreman:*` command. It never runs it.
 - **SessionStart hook** - at session start, if the project has `workbench/`, shows each active plan with its contract status, progress, tasks In Progress, next ready tasks, plans waiting for `/foreman:close`, and interviews in progress. Requires Node.js on `PATH`; without it, Claude Code reports a SessionStart hook error and shows no summary.
 
