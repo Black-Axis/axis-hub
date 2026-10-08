@@ -52,13 +52,19 @@ Then:
 
 ## 3. Mark In Progress
 
-Set the task to `In Progress` following the status rules (TRK table, History, INDEX).
+First, before anything else in this step, set the task to `In Progress` and save every part of it now ("Statuses" in rules.md). Anyone looking at `workbench/` while the worker runs, or after a crash, must see the task as started:
+1. TRK `Tasks` row: Status `In Progress`, Updated today, Note `worker running`.
+2. TRK `History`: append `TASK-TT | <old> -> In Progress | <By> | <reason>` now - not later together with the `Done` row.
+3. If the plan goes from `Not Started` to `In Progress`: the `- Plan Status:` line and its History row `P-NN | Not Started -> In Progress | Main agent | first task started`.
+4. INDEX Progress: `<done>/<total> Done, TASK-TT In Progress`.
 
 Record the start state so you can isolate the task's changes later ("Version control" in rules.md): git - `git status --porcelain` and `git diff --stat`; tfvc with `tf` - `tf status`, plus a snapshot; tfvc without `tf` and none - a snapshot in `workbench/.baseline/P-NN/TASK-TT/`. With tfvc, the snapshot is kept even when `tf` works, so the diff of each listed file never depends on the workspace type.
 
 **Baseline tests**: unless the contract's Working Rules say `Baseline tests: no` (missing = `yes`), run the contract's test/build commands now, before the worker starts. Record each command with the failing tests (names and exact errors) in the Activity log (`Main agent`, `Action`, `baseline tests: ...`). If anything already fails, tell the user which tests fail before the task and ask: proceed (those failures are not counted against the worker), or stop and fix them first (`Hold` with the reason). Log the answer (`User`, `Decision`).
 
 ## 4. Delegate
+
+Launch the worker only after every write of step 3 is saved - in a later message, never in the same message as those writes. Check first: the TRK History has this task's `-> In Progress` row with today's date, and INDEX shows `TASK-TT In Progress`. If not, write them now.
 
 Launch the `foreman-worker` subagent (`foreman:foreman-worker`) with a prompt of exactly these lines and nothing else - never paste file contents, summaries, or instructions (the worker's own definition already has them):
 
@@ -108,7 +114,7 @@ If verification passes, go to step 7 (Pass). If the limit is reached and issues 
 ## 7. Close
 
 - **Pass**:
-  1. Set the task to `Done` with a short note that includes the fix rounds used (e.g. `verified; 2 fix rounds`).
+  1. Right after verification, set the task to `Done` with a short note that includes the fix rounds used (e.g. `verified; 2 fix rounds`), and save every part of it before the doc update below: TRK row, History row `TASK-TT | In Progress -> Done | Main agent | verified; <n> fix rounds`, INDEX Progress without this task's `In Progress`.
   2. Update `workbench/docs/DOC-NN-<slug>.md`: add an `Implemented Tasks` entry (what changed, files, decisions) and refresh Summary, Architecture / Key Files, How to Extend, Known Limitations as needed. Set Last Updated.
   3. Version control ("Version control" in rules.md):
      - git: apply the contract's commit policy (commit only if the policy says so; the commit message references `P-NN TASK-TT`). Log a commit as `Main agent`, `Action`, with its hash.
@@ -120,7 +126,7 @@ If verification passes, go to step 7 (Pass). If the limit is reached and issues 
      - `Yes`: after the report in step 8, run `/foreman:close P-NN` (follow `${CLAUDE_PLUGIN_ROOT}/commands/close.md`).
      - `No`: only tell the user they can run `/foreman:close P-NN`.
 - **Fail** (fix rounds used up, or blocked):
-  - Set `Hold` with the reason `Verification failed after <n> fix rounds` plus the remaining issues in the TRK note. Delete the task's snapshot folder, if any (a re-run takes a new one). Use `Canceled` only if the task turned out to be obsolete, with the reason.
+  - Right away, set `Hold` with the reason `Verification failed after <n> fix rounds` plus the remaining issues in the TRK note, and save every part of it (TRK row, History, INDEX Progress). Delete the task's snapshot folder, if any (a re-run takes a new one). Use `Canceled` only if the task turned out to be obsolete, with the reason.
   - Show the user the remaining Revert / Not done / Wrong items and propose the next step: `/foreman:resume` then re-run, `/foreman:change`, or a manual fix.
 
 ## 8. Report to the user
