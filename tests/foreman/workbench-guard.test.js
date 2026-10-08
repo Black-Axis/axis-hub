@@ -128,9 +128,9 @@ test('other tools and broken input get no decision', () => {
   assert.strictEqual(res.stdout, '');
 });
 
-test('hooks.json runs the guard only when node exists', () => {
+test('hooks.json runs the guard on file and shell tools', () => {
   const hooks = JSON.parse(fs.readFileSync(path.join(repo, 'plugins', 'foreman', 'hooks', 'hooks.json'), 'utf8')).hooks;
   const entry = hooks.PreToolUse[0];
   assert.strictEqual(entry.matcher, 'Edit|Write|MultiEdit|NotebookEdit|Bash|PowerShell');
-  assert.match(entry.hooks[0].command, /^command -v node >\/dev\/null 2>&1 && node "\$\{CLAUDE_PLUGIN_ROOT\}\/hooks\/workbench-guard\.js" \|\| true$/);
+  assert.match(entry.hooks[0].command, /hooks\/workbench-guard\.js"; exit 0$/);
 });

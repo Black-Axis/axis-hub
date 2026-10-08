@@ -11,7 +11,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 ### Added
 
 - `foreman`: `foreman-reporter` subagent writes `/foreman:report` reports (#22).
-- `foreman`: `workbench/` changes no longer ask for permission (#51); `In Progress` is saved before the worker starts, and INDEX shows running tasks (#50).
+- `foreman`: no hook errors without Node.js (#25); `workbench/` changes no longer ask for permission (#51); `In Progress` is saved before the worker starts, and INDEX shows running tasks (#50).
 - axis-hub logo at the top of the README, the foreman logo in the plugin list, and a Requirements section (#47).
 
 ### Changed
