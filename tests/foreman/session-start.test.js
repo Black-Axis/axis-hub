@@ -145,3 +145,15 @@ test('survives a broken tracking file', () => {
   fs.writeFileSync(path.join(dir, 'workbench', TRK), '| broken');
   run(dir); // must not throw or exit non-zero
 });
+
+// Without Node, a hook must not show an error. Hooks run in Git Bash, or in
+// PowerShell on Windows without Git Bash, so the command must work in both:
+// `node "<script>"; exit 0` exits 0 in both shells when node is missing (#25).
+test('every foreman hook command exits 0 without node, in bash and PowerShell', () => {
+  const hooks = JSON.parse(fs.readFileSync(path.join(repo, 'plugins', 'foreman', 'hooks', 'hooks.json'), 'utf8')).hooks;
+  const commands = Object.values(hooks).flat().flatMap((m) => m.hooks).map((h) => h.command);
+  assert.ok(commands.length >= 2);
+  for (const command of commands) {
+    assert.match(command, /^node "\$\{CLAUDE_PLUGIN_ROOT\}\/hooks\/[a-z-]+\.js"; exit 0$/, command);
+  }
+});

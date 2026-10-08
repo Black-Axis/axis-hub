@@ -9,7 +9,7 @@ Claude Code plugin marketplace by Black-Axis.
 ## Requirements
 
 - [Claude Code](https://code.claude.com/docs) v2.1.269 or later (the one-step install below needs v2.1.275 or later).
-- [Node.js](https://nodejs.org/) on `PATH` - foreman's session-start summary runs on it.
+- [Node.js](https://nodejs.org/) on `PATH` (optional) - foreman's hooks use it: the session-start summary and prompt-free `workbench/` changes. Without it they are skipped, with no errors.
 
 ## Install
 
