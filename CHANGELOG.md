@@ -10,6 +10,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ### Added
 
+- e2e scenarios without a model (#29): `e2e/` plays the plugin flows on a sample project in `e2e/.work/` (gitignored) - foreman: lifecycle, fix rounds and Hold, run all and test runs, doctor, hooks, setup from the templates, change requests, report / catalog / guide. Runs with `node e2e/run.js` and under `node --test` (CI). A coverage check fails when a command, agent, skill, hook, or `wb.js` subcommand has no scenario.
 - `foreman`: `foreman-reporter` subagent writes `/foreman:report` reports (#22).
 - `foreman`: no hook errors without Node.js (#25); `workbench/` changes no longer ask for permission (#51); `In Progress` is saved before the worker starts, and INDEX shows running tasks (#50).
 - axis-hub logo at the top of the README, the foreman logo in the plugin list, and a Requirements section (#47).

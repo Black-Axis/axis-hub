@@ -1,0 +1,9 @@
+{
+  "name": "notes-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Small in-memory notes HTTP API (foreman e2e fixture)",
+  "scripts": {
+    "test": "node --test \"spec/*.spec.js\""
+  }
+}

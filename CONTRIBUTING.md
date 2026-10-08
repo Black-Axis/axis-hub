@@ -20,6 +20,7 @@ axis-hub/
 │     └─ README.md                   # user-facing docs for the plugin
 ├─ examples/<plugin>/                # sample output (also test fixtures)
 ├─ tests/                            # node --test suites (manifests, hooks)
+├─ e2e/                              # plugin flows on sample projects, no model (see e2e/README.md)
 ├─ .github/                          # workflows, release script, Dependabot, main branch ruleset, issue and PR templates
 ├─ .githooks/                        # git hooks: branch rules (no commits on or pushes to main)
 ├─ .claude/                          # Claude Code settings for this repo (applies the branch rules to Claude)
@@ -100,7 +101,8 @@ Run these before every push:
 ```
 claude plugin validate .                  # marketplace.json
 claude plugin validate plugins/<plugin>   # the plugin's plugin.json
-node --test                               # all tests (finds every *.test.js)
+node --test                               # all tests (finds every *.test.js), e2e scenarios included
+node e2e/run.js [plugin] [scenario]       # e2e scenarios only, readable output
 ```
 
 The tests check that:
@@ -111,6 +113,7 @@ The tests check that:
 - the foreman hooks work (session start summary for the sample in `examples/foreman/`, the `workbench/` guard), as do the state script `wb.js` and the command files (scoped `allowed-tools`, shared rules read first, every command listed in the README, the catalog order, and the guide skill);
 - the git hooks enforce branch names and keep `main` protected, and `git finish` deletes only merged branches;
 - no Markdown file repeats a `## ` heading;
+- every e2e scenario in `e2e/` passes, and every command, agent, skill, hook, and script subcommand of each plugin is covered by a scenario ([e2e/README.md](e2e/README.md));
 - relative links in every Markdown file point to files that exist (plugin templates are skipped);
 - the release script accepts only tags that match the marketplace version, and all workflows pin the same Claude Code version.
 
@@ -135,13 +138,15 @@ Then check in a Claude Code session that the plugin loads: its commands appear w
 5. Add it to the `Plugin` dropdowns in `.github/ISSUE_TEMPLATE/bug_report.yml` and `feature_request.yml`, and to the checklist in `.github/pull_request_template.md`. Create a `plugin: <name>` label on GitHub for its issues and pull requests (maintainers: `gh label create "plugin: <name>" --color 1D76DB --description "The <name> plugin"`).
 6. Add a section to `CLAUDE.md` for any design rule that spans several files and is not obvious from reading one of them.
 7. If it has hook scripts, add tests under `tests/<name>/` (and a sample under `examples/<name>/` if they need fixtures).
-8. Validate and test as described above.
+8. Add e2e scenarios under `e2e/<name>/` (a fixture project and scenarios) that cover every command, agent, skill, and hook ([e2e/README.md](e2e/README.md)).
+9. Validate and test as described above.
 
 ## Changing a plugin
 
 - **Versions**: bump `version` in both `plugin.json` and the plugin's `marketplace.json` entry for every change you ship, and keep them equal. Use semantic versioning: patch for fixes, minor for new commands or options, major for changes that break existing users (e.g. renamed commands, changed file formats).
 - **Manifests in sync**: `description` and `keywords` must match between `plugin.json` and `marketplace.json`.
 - **Changelog**: add your change under `## [Unreleased]` in the plugin's `CHANGELOG.md` (and the root `CHANGELOG.md` for repository-level changes). On release, rename it to the new version with the date.
+- **e2e**: every new or changed command, agent, skill, hook, or script subcommand gets an e2e scenario step in `e2e/<plugin>/scenarios/` (the coverage check fails for anything new without one). Run `node e2e/run.js` before you commit and push.
 - **Docs**: update the plugin's `README.md` whenever commands, arguments, settings, or behavior change, and `CLAUDE.md` when a cross-file design rule changes.
 
 ## Releasing

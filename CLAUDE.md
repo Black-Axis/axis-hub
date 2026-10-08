@@ -14,11 +14,16 @@ claude plugin validate plugins/<name>        # validate a plugin's plugin.json
 claude --plugin-dir plugins/<name>           # load a plugin without installing (restart to pick up edits)
 node --test                                  # all tests (manifest sync, changelog entries, foreman hook)
 node --test tests/foreman/session-start.test.js   # a single test file
+node e2e/run.js [plugin] [scenario]          # e2e flows on sample projects, no model
 ```
 
 CI (`.github/workflows/validate.yml`) runs the validations and `node --test` on PRs and pushes to `main`, with Claude Code pinned by `CLAUDE_CODE_VERSION` (keep it equal in `validate.yml` and `release.yml`; a test enforces this). `release.yml` runs on `vX.Y.Z` tags, which must match `metadata.version` in `marketplace.json`, and builds release notes from the root `CHANGELOG.md` via `.github/scripts/release-notes.js`. `tests/links.test.js` fails on broken relative Markdown links (plugin templates are skipped). `examples/foreman/workbench/` is both user-facing sample and the hook test fixture — keep it in step with `plugins/foreman/templates/`.
 
 Marketplace-level test inside Claude Code: `/plugin marketplace add <repo path>`, `/plugin install <name>@axis-hub`; after edits `/plugin marketplace update axis-hub` and restart the session.
+
+## e2e scenarios
+
+`e2e/` plays each plugin's flows on a sample project without a model (`node e2e/run.js`; also part of `node --test` and CI). **Anything added to or changed in a plugin - command, agent, skill, hook script, `wb.js` subcommand, template, check, hook decision - gets an e2e scenario or scenario step in the same PR**; a coverage test fails for any component no scenario `covers`. Details: [e2e/CLAUDE.md](e2e/CLAUDE.md).
 
 ## Branches
 
