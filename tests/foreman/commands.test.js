@@ -219,3 +219,31 @@ test('templates are read before the question that precedes writing them', () => 
     assert.ok(r < q, `${file}: the read must come before the question`);
   }
 });
+
+// Docs stay in step with the command files (issue #34).
+test('every command is listed in the README, the catalog order, and the guide skill', () => {
+  const readme = fs.readFileSync(path.join(plugin, 'README.md'), 'utf8');
+  const catalog = fs.readFileSync(path.join(commandsDir, 'catalog.md'), 'utf8');
+  const order = catalog.match(/sorted by the natural workflow for commands \(([^)]*)\)/);
+  assert.ok(order, 'catalog.md: command order list not found');
+  const guide = fs.readFileSync(path.join(plugin, 'skills', 'foreman-guide', 'SKILL.md'), 'utf8');
+  for (const file of fs.readdirSync(commandsDir).filter((f) => f.endsWith('.md'))) {
+    const name = file.slice(0, -3);
+    assert.ok(new RegExp(`^\\| \`/foreman:${name}[ \`]`, 'm').test(readme),`README command tables miss /foreman:${name}`);
+    assert.ok(order[1].includes(`\`${name}\``), `catalog.md command order misses ${name}`);
+    assert.match(guide, new RegExp(`\`/foreman:${name}\``), `foreman-guide SKILL.md misses /foreman:${name}`);
+  }
+});
+
+test('every command except catalog starts by reading rules.md', () => {
+  for (const file of fs.readdirSync(commandsDir).filter((f) => f.endsWith('.md') && f !== 'catalog.md')) {
+    const body = fs.readFileSync(path.join(commandsDir, file), 'utf8').split(/\r?\n---\r?\n/).slice(1).join('\n---\n');
+    const first = body.split(/\r?\n/).find((l) => l.trim() && !l.startsWith('#') && !l.startsWith('Input: '));
+    assert.match(first, /^First read `\$\{CLAUDE_PLUGIN_ROOT\}\/reference\/rules\.md`/, `${file}: first instruction is not reading rules.md`);
+  }
+});
+
+test('catalog example hint matches run.md argument-hint', () => {
+  const hint = fs.readFileSync(path.join(commandsDir, 'run.md'), 'utf8').match(/^argument-hint: "(.*)"$/m)[1];
+  assert.ok(fs.readFileSync(path.join(commandsDir, 'catalog.md'), 'utf8').includes(`\`/foreman:run ${hint}\``));
+});

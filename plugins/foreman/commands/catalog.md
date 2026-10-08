@@ -17,7 +17,7 @@ All paths are under `${CLAUDE_PLUGIN_ROOT}`. Use exactly these three calls (run 
 
 Build the rows from those results:
 
-- **Commands**: every `commands/*.md`. Name = `/foreman:<file name without .md>`. Description = the `description` field. Append the `argument-hint` (if any) after the command name, e.g. `/foreman:run <P-NN> <TASK-TT>`.
+- **Commands**: every `commands/*.md`. Name = `/foreman:<file name without .md>`. Description = the `description` field. Append the `argument-hint` (if any) after the command name, e.g. `/foreman:run [P-NN] [TASK-TT]`.
 - **Subagents**: every `agents/*.md`. Name = the `name` field. Description = the `description` field, plus the model in parentheses if a `model` field exists (e.g. "(model: sonnet)").
 - **Skills**: every `skills/*/SKILL.md`. Name = the `name` field (or the folder name). Description = the `description` field.
 - **Hooks**: one row per hook in `hooks.json`: Name = the event (e.g. `SessionStart`) plus the matcher if any; description = what the script's first comment says.

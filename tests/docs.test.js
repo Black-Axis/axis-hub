@@ -22,3 +22,8 @@ test('no Markdown file repeats a level-2 heading', () => {
     }
   }
 });
+
+test('SECURITY.md names no fixed plugin version', () => {
+  const text = fs.readFileSync(path.join(repo, 'SECURITY.md'), 'utf8');
+  assert.ok(!/\b\d+\.\d+\.\d+\b/.test(text), 'SECURITY.md names a fixed version; say "latest" instead');
+});
