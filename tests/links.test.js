@@ -10,7 +10,8 @@ const path = require('path');
 
 const repo = path.resolve(__dirname, '..');
 const skipDirs = new Set(['.git', 'node_modules', '.claude']);
-const skipPaths = [path.join('plugins', 'foreman', 'templates')];
+// e2e/.work holds throwaway sample projects built by the e2e scenarios (gitignored).
+const skipPaths = [path.join('plugins', 'foreman', 'templates'), path.join('e2e', '.work')];
 
 function markdownFiles(dir) {
   const out = [];

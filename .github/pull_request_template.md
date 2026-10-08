@@ -11,7 +11,8 @@
 
 - [ ] Branch named `<type>/<short-name>` (e.g. `feat/foreman-bug-command`).
 - [ ] `claude plugin validate .` and `claude plugin validate plugins/<plugin>` pass.
-- [ ] `node --test` passes.
+- [ ] `node --test` passes (includes the e2e scenarios; `node e2e/run.js` for readable output).
+- [ ] New or changed commands, agents, skills, hooks, or script subcommands are covered by an e2e scenario in `e2e/<plugin>/`.
 - [ ] Tried the changed commands, agents, skills, or hooks in Claude Code.
 - [ ] `version` bumped and equal in `plugin.json` and `marketplace.json`; `description` and `keywords` in sync.
 - [ ] `CHANGELOG.md` updated (plugin and/or root).

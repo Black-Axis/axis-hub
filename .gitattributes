@@ -1,2 +1,4 @@
 # Git hooks are shell scripts: keep LF line endings on every platform.
 .githooks/* text eol=lf
+# e2e fixtures: scenarios edit them with LF-based patterns; keep LF on every platform.
+e2e/*/fixtures/** text eol=lf
