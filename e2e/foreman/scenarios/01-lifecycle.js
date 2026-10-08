@@ -39,7 +39,7 @@ module.exports = {
     assert.strictEqual(guard(p, 'Edit', { file_path: p.path(f.trk) }, 'worker'), 'deny');
     p.edit('src/notes.js', 'module.exports = { list, create, reset, parseTerms };',
       'function stats(req, res) {\n  sendJson(res, 200, { notes: store.length });\n}\n\nmodule.exports = { list, create, reset, parseTerms, stats };');
-    p.edit('src/app.js', "  'POST /notes': notes.create,\n", "  'POST /notes': notes.create,\n  'GET /notes/stats': notes.stats,\n");
+    p.edit('src/app.js', "  ['POST /notes', notes.create],\n", "  ['POST /notes', notes.create],\n  ['GET /notes/stats', notes.stats],\n");
     p.edit('spec/notes.spec.js', /$/, `
 test('GET /notes/stats counts notes', async () => {
   await withServer(async (base) => {
