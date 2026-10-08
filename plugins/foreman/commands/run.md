@@ -118,7 +118,7 @@ If verification passes, go to step 7 (Pass). If the limit is reached and issues 
   1. Right after verification, set the task to `Done` with a short note that includes the fix rounds used (e.g. `verified; 2 fix rounds`), and save every part of it before the doc update below: TRK row, History row `TASK-TT | In Progress -> Done | Main agent | verified; <n> fix rounds`, INDEX Progress without this task's `In Progress`.
   2. Update `workbench/docs/DOC-NN-<slug>.md`: add an `Implemented Tasks` entry (what changed, files, decisions) and refresh Summary, Architecture / Key Files, How to Extend, Known Limitations as needed. Set Last Updated.
   3. Version control ("Version control" in rules.md):
-     - git: apply the contract's commit policy (commit only if the policy says so; the commit message references `P-NN TASK-TT`). Log a commit as `Main agent`, `Action`, with its hash.
+     - git: apply the contract's commit policy. If it says the main agent commits, follow "Git commit" in rules.md: only the task's files (and, with Workbench `tracked`, this run's `workbench/` changes), shown to the user first, committed on yes.
      - tfvc: never check in. Deletes and renames the worker reported as needed, and new files: with `tf` available, propose `tf delete` / `tf rename` / `tf add` for those files and run them only on the user's yes; without `tf`, list them for the user to do in Visual Studio. Then tell the user the task's changes are ready to review and check in (pending changes). Log what was run.
      - none: nothing to do.
      - Delete the task's snapshot folder `workbench/.baseline/P-NN/TASK-TT/`, if any ("Snapshot" in rules.md).
