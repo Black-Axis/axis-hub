@@ -9,7 +9,7 @@ The calling command gives you the user's defaults (only a command file gets them
 
 ## 1. Settings
 
-First detect the version control ("Version control" in rules.md). In Auto mode use the result; if detection gives `none`, ask once (`git` / `tfvc` / `none`), since TFVC server workspaces leave no marker. In Ask all mode, ask with the detected value as the recommended option.
+First detect the version control ("Version control" in rules.md). In Auto mode use the result; if detection gives `none`, ask once (`git` / `tfvc` / `none`), since TFVC server workspaces leave no marker. In Ask all mode, ask with the detected value as the recommended option. Then read the vcs file for the chosen value ("Per version control rules" in rules.md).
 
 | Setting | Auto | Ask all |
 |---------|------|---------|
@@ -44,8 +44,8 @@ In Auto mode, remove the `Working Rules Defaults` section from INDEX; each featu
    - git (Workbench `tracked` or `ignored`): with `Write` only, never the shell - write an empty `.gitkeep` in each subfolder; `Write` creates the folders with it, and the folders survive a clone while empty.
    - tfvc and none: no `.gitkeep`. One command: `mkdir -p workbench/plans workbench/contracts ...`, or PowerShell `New-Item -ItemType Directory -Force 'workbench/<folder>' | Out-Null` per folder (exact forms; the foreman hook allows them without a prompt).
 2. `workbench/INDEX.md` from `${CLAUDE_PLUGIN_ROOT}/templates/INDEX.md` with the chosen values and Created = today.
-3. Workbench `ignored`: add `workbench/` to the ignore file of the version control (`.gitignore` or `.tfignore`, see "Version control" in rules.md; create it if missing; no duplicate line).
-4. Workbench `tracked`: for git and tfvc, add `workbench/.baseline/` to the ignore file (temporary snapshots).
+3. Workbench `ignored`: add `workbench/` to the ignore file ("Ignore file" in the vcs file; create it if missing; no duplicate line).
+4. Workbench `tracked`: for git and tfvc, add `workbench/.baseline/` to the ignore file (temporary snapshots; "Ignore file" in the vcs file).
 5. CLAUDE.md `yes`: write the block ("Project instructions block" in rules.md).
 
 ## 4. Tell the user

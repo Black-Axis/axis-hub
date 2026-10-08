@@ -41,7 +41,7 @@ Working rules values live in the INDEX `Working Rules Defaults` section (missing
 
 ## 1. Read
 
-Read the `Settings` block and the `Working Rules Defaults` section of `workbench/INDEX.md`. A missing line counts as `not set`; an old `Git:` line is the Workbench value (`committed` = `tracked`); a missing Version control shows the detected value, marked `(detected)`.
+Read the `Settings` block and the `Working Rules Defaults` section of `workbench/INDEX.md`. A missing line counts as `not set`; an old `Git:` line is the Workbench value (`committed` = `tracked`); a missing Version control shows the detected value, marked `(detected)`. Read the vcs file `${CLAUDE_PLUGIN_ROOT}/reference/vcs-<value>.md` for that value ("Version control" in rules.md); when Version control is changed, also read the new value's file before applying.
 
 ## 2. Mode
 
@@ -77,7 +77,7 @@ Build the change list: every setting to its default - Version control re-detecte
 
 ## 7. Side effects
 
-- **Workbench** (ignore file per "Version control" in rules.md):
+- **Workbench** ("Ignore file" in the vcs file):
   - To `ignored`, git: add `workbench/` to `.gitignore` (create it if missing; no duplicate line). If `git ls-files workbench` lists tracked files, warn that they stay tracked until removed from the index, and offer to run `git rm -r --cached workbench`. Run it only on explicit yes.
   - To `ignored`, tfvc: add `\workbench` to `.tfignore` (create it if missing; no duplicate line). Warn that files already in source control stay there until the user removes them in Visual Studio (`.tfignore` only affects new files). Never delete anything from source control.
   - To `tracked`: remove the `workbench/` (or `\workbench`) line from the ignore file if present. Add `workbench/.baseline/` instead (git and tfvc). Do not stage, commit, add, or check in anything.

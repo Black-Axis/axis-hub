@@ -23,7 +23,7 @@ Use this when the user finds that a task's result is wrong or incomplete - also 
    - The plan is `Hold`: suggest `/foreman:resume P-NN` first.
    - The task is `Not Started` (suggest `/foreman:run`) or `Canceled`.
    - Contract Status is not `Approved` (suggest `/foreman:approve P-NN`).
-4. Read `Version control` in INDEX; for `tfvc`, check once whether `tf` is available.
+4. Read `Version control` in INDEX, then read the vcs file `${CLAUDE_PLUGIN_ROOT}/reference/vcs-<value>.md` ("Version control" in rules.md); for `tfvc`, check once whether `tf` is available ("`tf` availability" in the vcs file).
 
 ## 2. User findings
 

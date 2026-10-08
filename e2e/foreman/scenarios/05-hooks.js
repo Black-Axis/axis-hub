@@ -1,5 +1,7 @@
 // Hooks on the real tool-call shapes: workbench-guard decisions for the main agent,
 // the worker, and the reporter; the session start summary for each feature state.
+const fs = require('fs');
+const path = require('path');
 const { feature, guard, wbOk } = require('../lib');
 
 module.exports = {
@@ -33,6 +35,23 @@ module.exports = {
     for (const [who, tool, input, expected] of cases) {
       p.step(`guard: ${who} ${tool} ${input.command || input.file_path.slice(p.dir.length + 1)} -> ${expected}`);
       assert.strictEqual(guard(p, tool, input, who), expected);
+    }
+
+    p.step('vcs file: the one INDEX names exists');
+    const vcs = /^- Version control: (\S+)/m.exec(p.read('workbench/INDEX.md'))[1];
+    assert.ok(fs.existsSync(path.join(p.pluginRoot, 'reference', `vcs-${vcs}.md`)), `reference/vcs-${vcs}.md`);
+
+    // Every git / tf command a vcs file names: read-only ones run without a prompt,
+    // state-changing ones (add, commit, checkout, delete, rename) get no decision.
+    const sample = { 'start hash': 'abc123', hash: 'abc123', message: 'P-02 TASK-02', 'n+1': '6' };
+    for (const v of ['git', 'tfvc', 'none']) {
+      const text = fs.readFileSync(path.join(p.pluginRoot, 'reference', `vcs-${v}.md`), 'utf8');
+      for (const [, span] of text.matchAll(/`((?:git|tf) [^`]*)`/g)) {
+        const command = span.replace(/<([^>]+)>/g, (m, k) => sample[k] || 'src/app.js');
+        const readOnly = /^(git (status|diff|log|ls-files|stash create)|tf (status|diff|history))\b/.test(command);
+        p.step(`vcs-${v}.md: main Bash ${command} -> ${readOnly ? 'allow' : null}`);
+        assert.strictEqual(guard(p, 'Bash', { command }, 'main'), readOnly ? 'allow' : null);
+      }
     }
 
     p.step('guard: no decision in plan mode');

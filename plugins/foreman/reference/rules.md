@@ -38,55 +38,22 @@ INDEX `Settings` holds two lines:
 
 **Detection** (setup, doctor, and any command that finds the `Version control` line missing): a `.git` folder or file in the project root or a parent folder → `git`; a `$tf` or `.tf` folder (TFVC local workspace) or a `.tfignore` file in the root or a parent folder → `tfvc`; otherwise `none`. TFVC server workspaces leave no marker: when the result is `none`, ask the user (`git` / `tfvc` / `none`). When the line is missing, add the detected value and tell the user in one line.
 
-**`tf` availability** (tfvc only): at the start of `/foreman:run` and `/foreman:close`, run `tf status` once. If the command is not found or fails, `tf` is unavailable for that run: use snapshots and ask the user for source control actions.
+**Per version control rules**: everything that depends on the version control - ignore file, empty subfolders, commit policy, a task's start state and changes, commits or check-ins, deletes and renames, read-only files, `tf` availability, the task baseline, baseline test reuse - is in `${CLAUDE_PLUGIN_ROOT}/reference/vcs-<value>.md` (`vcs-git.md`, `vcs-tfvc.md`, `vcs-none.md`). A command that does any of these reads only the file for the INDEX value (after detection when the line is missing), before its first question ("Questions and follow-up turns"); `/foreman:settings` also reads the file of a new value. The three files share their section names: "<Section>" in the vcs file means that section of the project's file.
 
-| Operation | git | tfvc | none |
-|-----------|-----|------|------|
-| Ignore file (Workbench `ignored`, `CLAUDE.local.md`) | `.gitignore` (`workbench/`, `CLAUDE.local.md`) | `.tfignore` (`\workbench`, `\CLAUDE.local.md`) | nothing to ignore |
-| Empty subfolders | `.gitkeep` in each (`tracked` or `ignored`) | not needed (TFVC versions folders) | not needed |
-| Start state of a task | start hash (`git stash create`), `git status --porcelain`, and a snapshot of listed files that are untracked ("Start hash" below) | `tf status` (if available), and a snapshot | snapshot |
-| Changes of a task | `git diff <start hash>`, untracked files new since the start, and the snapshot diff of files untracked at the start | `tf diff /format:unified` and `tf status` (if available), otherwise the snapshot | the snapshot |
-| Commit after a task | as the contract's commit policy says, only the task's files, on the user's yes ("Git commit" below) | never: the user checks in | never |
-| Read-only files | - | possible (server workspace): see pre-check in `/foreman:run` | - |
-| Deletes and renames | worker, listed files only | main agent: `tf delete` / `tf rename` if `tf` is available, on the user's yes; otherwise the user does it in Visual Studio | worker, listed files only |
-| New files | - | `tf add` if `tf` is available, on the user's yes; otherwise list them for the user to add | - |
+Never run version control commands that change state (commit, check-in, shelve, checkout, add, delete, rename, undo) except where the vcs file and the command files say so, and then only after telling the user. Read-only commands (`git status`, `git diff`, `git log`, `git ls-files`, `git stash create` (writes only an unreferenced commit object), `tf status`, `tf diff`, `tf history`, and read-only file listings for modification times) are always fine.
 
-In `tfvc` and `none` projects, the contract's Commit policy is always `never auto-commit (user checks in)`; do not ask about it.
+**Task baseline** - the project state a task file was written against, in the task header `Baseline` row. Every command that creates a task file or rewrites its Evidence, Files Expected to Change, or Implementation (`new`, `interview`, `import`, `change`, the `run` pre-check) sets it as "Task baseline" in the vcs file says, and uses it to see what changed in the task's files since.
+- **Date baseline** (none, tfvc without `tf`): the current date and time, `YYYY-MM-DD HH:MM`, taken from a command (`date '+%Y-%m-%d %H:%M'`, or PowerShell `Get-Date -Format 'yyyy-MM-dd HH:mm'`), never from memory. What changed since: the files' modification times compared with the baseline time (read-only command, as for snapshots). This shows that a file changed, not how; read it again in full. A date baseline (or a value of another version control) is compared this way in every project.
+- A missing or unreadable baseline (tasks created before 1.3.0): use the task's Created date as a date baseline.
 
-**Start hash** (git) - isolates the task's changes from earlier uncommitted ones (an earlier task's or the user's) in the same files:
-- Before the worker starts, run `git stash create`. It stores the current tracked files and index as a commit object and prints its hash; it changes no file, the index, any branch, or the stash list. Empty output means a clean tree: use `git log -1 --format=%H`. If it fails (e.g. an unfinished merge), use `git log -1 --format=%H` and tell the user that earlier uncommitted changes will show in the task's diff.
-- Also record `git status --porcelain` (the untracked files at the start). `git stash create` does not include untracked files, so snapshot every file in the task's `Files Expected to Change` that is untracked at the start (e.g. new and not yet committed by an earlier task), as in "Snapshot" below.
-- Log it (`Main agent`, `Action`, `start state: <hash>`).
-- The task's changes, at verification and in every fix round: `git diff <start hash>` (tracked files), files untracked now but not at the start (new: show in full), and the snapshot diff of files untracked at the start. Never plain `git diff`, which also shows earlier uncommitted changes.
-
-**Git commit** (only when the contract's commit policy says the main agent commits; `/foreman:run` Pass and `/foreman:close`):
-1. **Files**: only the task's own changes, by explicit path - the files of its verified diff (changed, new, deleted, renamed since the recorded start state). Workbench `tracked`: also the `workbench/` files this command changed (TRK, doc, task file, INDEX), written before the commit; never `workbench/.baseline/`. Workbench `ignored`: no `workbench/` files.
-2. **Not the task's**: if a listed file also has changes that are not the task's (the user's changes kept at the pre-check, another task's uncommitted changes), show them and ask whether to include the whole file or leave it out of this commit.
-3. **Show and ask**: show the file list (`git status --porcelain -- <paths>`, `git diff HEAD --stat -- <paths>`) and the commit message (references `P-NN TASK-TT`), then ask with `AskUserQuestion`: commit, or leave the changes uncommitted. Log the answer (`User`, `Decision`).
-4. **Commit** on yes: `git add -- <new files>` for untracked files only, then `git commit -m "<message>" -- <paths>`. This commits exactly those paths; anything else the user has staged stays staged and is not committed. Never `git add -A`, `git add .`, `git add -u`, or `git commit -a`.
-5. **Log** the commit (`Main agent`, `Action`, with its hash). This Activity row is written after the commit, so it goes into the next commit.
-
-Never run version control commands that change state (commit, check-in, shelve, checkout, add, delete, rename, undo) except where this table and the command files say so, and then only after telling the user. Read-only commands (`git status`, `git diff`, `git log`, `git ls-files`, `git stash create` (writes only an unreferenced commit object), `tf status`, `tf diff`, `tf history`, and read-only file listings for modification times) are always fine.
-
-**Task baseline** - the project state a task file was written against, in the task header `Baseline` row. Every command that creates a task file or rewrites its Evidence, Files Expected to Change, or Implementation (`new`, `interview`, `import`, `change`, the `run` pre-check) sets it:
-- git: the current commit, `git log -1 --format=%H`.
-- tfvc with `tf`: the latest changeset, `C<number>` from `tf history . /recursive /stopafter:1 /noprompt`.
-- tfvc without `tf`, and none: the current date and time, `YYYY-MM-DD HH:MM`, taken from a command (`date '+%Y-%m-%d %H:%M'`, or PowerShell `Get-Date -Format 'yyyy-MM-dd HH:mm'`), never from memory.
-
-To see what changed in a task's files since its baseline:
-- git: `git log --oneline <hash>..HEAD -- <files>` and `git diff <hash> -- <files>` (includes uncommitted changes).
-- tfvc with `tf`: `tf history <file> /version:C<n+1>~T /noprompt` per file, and `tf status <files>` for pending changes.
-- date baseline (or a value of another version control): the files' modification times compared with the baseline time (read-only command, as for snapshots). This shows that a file changed, not how; read it again in full.
-A missing or unreadable baseline (tasks created before 1.3.0): use the task's Created date as a date baseline.
-
-**Snapshot** (tfvc without `tf`, and none): before the worker starts, copy every existing file in the task's `Files Expected to Change` to `workbench/.baseline/P-NN/TASK-TT/<same relative path>` and create the stamp file `.stamp` there; its modification time is the snapshot time. Do it with one shell command (the user's normal permission prompt applies), never with Read + Write, which can change line endings, a BOM, or the encoding, cannot copy binary files, and loads every file into context:
+**Snapshot** (tfvc and none; git only for listed files untracked at the start): before the worker starts, copy every existing file in the task's `Files Expected to Change` to `workbench/.baseline/P-NN/TASK-TT/<same relative path>` and create the stamp file `.stamp` there; its modification time is the snapshot time. Do it with one shell command (the user's normal permission prompt applies), never with Read + Write, which can change line endings, a BOM, or the encoding, cannot copy binary files, and loads every file into context:
 - shell: `mkdir -p <dir> && tar cf - <files> | tar xf - -C <dir> && touch <dir>/.stamp`
 - PowerShell: `foreach ($f in @('<file>', ...)) { $d = Join-Path '<dir>' $f; New-Item -ItemType Directory -Force (Split-Path $d) | Out-Null; Copy-Item $f $d }; New-Item -ItemType File '<dir>/.stamp' | Out-Null`
 
 Afterwards:
 - Diff each listed file against its copy (`diff -u <copy> <file>` if a `diff` command exists; otherwise compare them yourself and show the changed lines in unified diff form). A listed file with no copy is new: show it in full.
 - Find files changed outside the list: list files modified after the stamp with a read-only command (`find . -newer <dir>/.stamp -type f`, or PowerShell `Get-ChildItem -Recurse -File | Where-Object LastWriteTime -gt (Get-Item '<dir>/.stamp').LastWriteTime`), excluding `workbench/` and dependency and build folders. Without version control this cannot see deleted files or every change; tell the user once per task that changes outside the list are checked by modification time only.
-- Delete `workbench/.baseline/P-NN/TASK-TT/` when the task leaves `In Progress`, with one shell command (`rm -rf <dir>`, or PowerShell `Remove-Item -Recurse -Force '<dir>'`; the user's normal permission prompt applies). Keep `workbench/.baseline/` out of version control (add it to the ignore file when Workbench is `tracked`).
+- Delete `workbench/.baseline/P-NN/TASK-TT/` when the task leaves `In Progress`, with one shell command (`rm -rf <dir>`, or PowerShell `Remove-Item -Recurse -Force '<dir>'`; the user's normal permission prompt applies). Keep `workbench/.baseline/` out of version control ("Ignore file" in the vcs file).
 
 ## Templates
 
@@ -108,7 +75,7 @@ Create files from these templates, replacing every `{{...}}` placeholder:
 
 The INDEX setting `- CLAUDE.md: yes | no` controls a short block that tells Claude about `workbench/` in every session of the project. The block is the full content of the `claude-md.md` template, from `<!-- foreman:start` to `<!-- foreman:end -->`. Never change text outside these markers.
 
-- **Target file**: if Workbench is `tracked`, the project's shared instructions: `CLAUDE.md` at the project root, or `.claude/CLAUDE.md` if that exists and the root one does not. If Workbench is `ignored`, the personal `CLAUDE.local.md` at the project root, and add `CLAUDE.local.md` to the ignore file of the project's version control (see "Version control"; no duplicate line).
+- **Target file**: if Workbench is `tracked`, the project's shared instructions: `CLAUDE.md` at the project root, or `.claude/CLAUDE.md` if that exists and the root one does not. If Workbench is `ignored`, the personal `CLAUDE.local.md` at the project root, and add `CLAUDE.local.md` to the ignore file ("Ignore file" in the vcs file; no duplicate line).
 - **AGENTS.md projects**: if the project has an `AGENTS.md` and none of `CLAUDE.md`, `.claude/CLAUDE.md`, `CLAUDE.local.md`, creating a CLAUDE file makes Claude Code stop reading `AGENTS.md`. Tell the user and ask: create the file starting with the line `@AGENTS.md` (keeps AGENTS.md loaded - recommended), or do not add the block (set `CLAUDE.md: no`). Never write the block into `AGENTS.md`.
 - **Write (`yes`)**: if the target file has the markers, replace everything between and including them with the template; otherwise append the block at the end, after one blank line (create the file if missing). Remove a foreman block from the other CLAUDE file if one is there.
 - **Remove (`no`)**: delete the block, markers included, from every CLAUDE file that has one. If a file is left empty (or only `@AGENTS.md` that foreman added), ask before deleting the file.
@@ -220,12 +187,8 @@ Which tests `/foreman:run` and `/foreman:close` run, so a slow suite does not ru
 - **Task tests**: the optional task header row `Tests` holds the targeted command(s) for that task (one test file, one package), e.g. `node --test test/words.test.js`. `new`, `interview`, and `change` fill it when the project has an obvious targeted command for the task's files; otherwise, and in older tasks without the row, it is `—` and the contract's Tests apply. A task's tests are its `Tests` row when set, else the contract's Tests.
 - **Full tests** (contract Working Rule, missing = `close`): `close` - during `/foreman:run`, a task with a `Tests` row runs only those (baseline, verification, fix rounds); the contract's Tests run in full at `/foreman:close`. `each task` - also run the contract's Tests once after the task's own tests pass, before `Done`; a new failure there fails verification like any other. `/foreman:close` always runs the contract's Tests in full, never a task's `Tests` row.
 - **Fix rounds**: after a fix round, run the tests that failed first (when the test runner can select them, e.g. one test file or a name filter); once they pass, run the task's tests in full. Verification counts only the full run.
-- **Baseline reuse** (git only; tfvc and none always run the baseline): skip the baseline run and reuse the last recorded test run when all of these hold, else run it:
-  1. The last test run in this TRK's Activity used exactly the same commands and recorded `state: <hash>, untracked: none` (see below).
-  2. `git diff --stat <hash> -- . ":!workbench"` prints nothing (no tracked change outside `workbench/` since then).
-  3. `git status --porcelain --untracked-files=all -- . ":!workbench"` lists no untracked file now (untracked content cannot be compared; the recorded run must say `untracked: none` too).
-  Then log `Main agent`, `Action`, `baseline reused from TASK-xx: <commands> -> <result>`; the failures of that run count as the baseline. Otherwise run the baseline and add `(not reused: <which check failed>)` to its Activity row, so every baseline shows the decision.
-  **Recording the state**: after each verification test run, run `git stash create` (or `git log -1 --format=%H` when it prints nothing, a clean tree) and `git status --porcelain --untracked-files=all -- . ":!workbench"`, and add `state: <hash>, untracked: none` (or `untracked: yes`) to that run's Activity row. When the main agent then commits the task ("Git commit"), record the same again after the commit (`git log -1 --format=%H` and the untracked check) in the commit's Activity row: the task's new files are tracked now, so the next task can reuse that run.
+- **Baseline reuse**: whether the baseline run can be skipped, and how a test run's state is recorded, is "Baseline reuse" in the vcs file (git only; tfvc and none always run the baseline).
+- **Output**: keep only what verification needs, in context, replies, the Activity log, and worker feedback. A passing run is one line (`<command> -> pass` with the count when shown). A failing run: the failing test names and their exact errors, nothing else - never the full output. When writing a task `Tests` row or the contract's Tests, prefer the runner's quiet or failures-only output when it has one and failures still print their errors (e.g. `node --test --test-reporter=dot`, `pytest -q`, `go test` without `-v`).
 
 ## Scope discipline
 

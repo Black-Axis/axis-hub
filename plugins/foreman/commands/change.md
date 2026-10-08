@@ -13,7 +13,7 @@ First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it.
 State script: `node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js"` ("State script" in rules.md).
 
 1. Parse `P-NN` and the change request text. If either is missing, ask.
-2. Load the plan, contract, TRK file, and task files.
+2. Load the plan, contract, TRK file, and task files, and read the vcs file for the INDEX `Version control` (new or rewritten tasks get a "Task baseline", rules.md).
 3. Analyze the impact of the request:
    - Which requirements, acceptance criteria, scope, or out-of-scope items change.
    - Which tasks are added, modified, or made obsolete. Tasks already `Done` are never rewritten; if a done task's work must change, add a new task for it.
