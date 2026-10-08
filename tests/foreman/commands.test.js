@@ -256,3 +256,19 @@ test('doctor: no feature-file reads with Node, only the files it fixes', () => {
   assert.match(text, /Read only the files you fix/);
   assert.doesNotMatch(text.split(/\r?\n---\r?\n/)[0], /\bAgent\b/, 'doctor delegates to no subagent');
 });
+
+test('run all: one confirmation, chain order, full flow per task, stop rules (#28)', () => {
+  const text = fs.readFileSync(path.join(commandsDir, 'run.md'), 'utf8');
+  assert.match(text, /^argument-hint: "\[P-NN\] \[TASK-TT \| all\]"$/m);
+  const all = text.slice(text.indexOf('## Run all'), text.indexOf('## 1. Resolve'));
+  assert.match(all, /`wb\.js chain P-NN`/);
+  assert.match(all, /Confirm once/);
+  assert.match(all, /exactly as a single run/);
+  assert.match(all, /\*\*Stop\*\* after the current task/);
+  for (const stop of [/`Hold`/, /big problems/, /uncommitted changes/, /already fail/, /permission was denied/, /anything other than continuing/, /no longer `Not Started`/]) {
+    assert.match(all, stop);
+  }
+  assert.match(fs.readFileSync(path.join(plugin, 'reference', 'rules.md'), 'utf8'), /\| `chain P-NN` \|/);
+  assert.match(fs.readFileSync(path.join(plugin, 'README.md'), 'utf8'), /`\/foreman:run P-01 all`/);
+  assert.match(fs.readFileSync(path.join(plugin, 'skills', 'foreman-guide', 'SKILL.md'), 'utf8'), /`\/foreman:run P-NN all`/);
+});

@@ -21,7 +21,7 @@ Skip it also when the user is already running a `/foreman:*` command, explicitly
    - Has only an idea, wants to brainstorm or be questioned about a feature, or continue an open interview: `/foreman:interview`
    - Move existing plans/tasks from another workflow into foreman: `/foreman:import`
    - Approve the plan/contract: `/foreman:approve`
-   - Implement / continue / next task: `/foreman:run`
+   - Implement / continue / next task: `/foreman:run`; all remaining tasks of a plan in one go: `/foreman:run P-NN all`
    - A task's result is wrong or incomplete (also after it was marked done), send it back for rework: `/foreman:round`
    - Progress, what's left: `/foreman:status`
    - Scope or requirement change: `/foreman:change`

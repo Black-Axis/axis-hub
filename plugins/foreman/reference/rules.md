@@ -140,6 +140,7 @@ The INDEX setting `- CLAUDE.md: yes | no` controls a short block that tells Clau
 | `status P-NN <status> --by ... --reason "..."` | Plan status change (`Hold`, `Canceled`, `Done`, back to `In Progress` / `Not Started`), History row |
 | `refresh P-NN` | After adding or removing task rows, or a contract status change: derived Plan Status, INDEX Progress and Contract Status |
 | `ready [P-NN]` | Tasks that can run now (`Not Started`, dependencies `Done`, plan active, contract `Approved`) |
+| `chain P-NN` | Run order for `/foreman:run P-NN all`: every `Not Started` task in dependency order (assuming each finishes `Done`), then `blocked:` lines for tasks waiting on a task outside that order; `ERROR:` if the contract is not `Approved` or the plan is `Hold` / `Canceled` / `Done` |
 | `overview` | One line per feature (plan, contract, progress, next step) and per open interview |
 | `next-number` | The next free feature number `NN` |
 | `check [P-NN]` | The mechanical `/foreman:doctor` checks (files, naming, numbering, tables in sync, statuses, derivation, INDEX); one `finding:` line per problem, exit code 2 when there are findings |
