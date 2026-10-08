@@ -39,10 +39,12 @@ In Auto mode, remove the `Working Rules Defaults` section from INDEX; each featu
 
 ## 3. Create
 
-1. `workbench/` with subfolders `plans/`, `contracts/`, `tracking/`, `subtasks/`, `docs/`, `interviews/`, `reports/`, in one command: `mkdir -p workbench/plans workbench/contracts ...`, or PowerShell `New-Item -ItemType Directory -Force 'workbench/<folder>' | Out-Null` per folder (exact forms; the foreman hook allows them without a prompt).
+1. `workbench/` with subfolders `plans/`, `contracts/`, `tracking/`, `subtasks/`, `docs/`, `interviews/`, `reports/`:
+   - git (Workbench `tracked` or `ignored`): with `Write` only, never the shell - write an empty `.gitkeep` in each subfolder; `Write` creates the folders with it, and the folders survive a clone while empty.
+   - tfvc and none: no `.gitkeep`. One command: `mkdir -p workbench/plans workbench/contracts ...`, or PowerShell `New-Item -ItemType Directory -Force 'workbench/<folder>' | Out-Null` per folder (exact forms; the foreman hook allows them without a prompt).
 2. `workbench/INDEX.md` from `${CLAUDE_PLUGIN_ROOT}/templates/INDEX.md` with the chosen values and Created = today.
 3. Workbench `ignored`: add `workbench/` to the ignore file of the version control (`.gitignore` or `.tfignore`, see "Version control" in rules.md; create it if missing; no duplicate line).
-4. Workbench `tracked`: for git, put an empty `.gitkeep` in each subfolder, so the folders survive a clone while empty. For git and tfvc, add `workbench/.baseline/` to the ignore file (temporary snapshots).
+4. Workbench `tracked`: for git and tfvc, add `workbench/.baseline/` to the ignore file (temporary snapshots).
 5. CLAUDE.md `yes`: write the block ("Project instructions block" in rules.md).
 
 ## 4. Tell the user

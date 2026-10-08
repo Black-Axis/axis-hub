@@ -87,6 +87,17 @@ test('run.md saves In Progress before the worker and Done / Hold right away', ()
   assert.match(rules, /Write each status change completely/);
 });
 
+// A chained or `cd`-prefixed shell command asks even when each part is allowed (#43).
+test('shell use: one command per call, no cd prefix, files read with Read/Glob/Grep', () => {
+  const rules = fs.readFileSync(path.join(plugin, 'reference', 'rules.md'), 'utf8');
+  const worker = fs.readFileSync(path.join(plugin, 'agents', 'foreman-worker.md'), 'utf8');
+  const setup = fs.readFileSync(path.join(plugin, 'reference', 'setup.md'), 'utf8');
+  assert.match(rules, /^## Shell use$/m);
+  assert.match(rules, /One command per call, run from the project root/);
+  assert.match(worker, /one command per call: no `cd` prefix/);
+  assert.match(setup, /git \(Workbench `tracked` or `ignored`\): with `Write` only, never the shell/);
+});
+
 // allowed-tools end with the user's next message, so a command must read every
 // plugin file it needs before its first question and keep the turn with
 // AskUserQuestion (rules.md "Questions and follow-up turns", issue #42).

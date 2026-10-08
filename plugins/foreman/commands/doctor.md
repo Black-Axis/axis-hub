@@ -14,7 +14,7 @@ With `P-NN`, check only that feature; otherwise check all of `workbench/`. If `w
 
 ## 1. Check
 
-List the folders explicitly (`workbench/plans/`, `contracts/`, `tracking/`, `subtasks/`, `docs/`, `interviews/`, `reports/`) and check:
+List the folders explicitly with `Glob`, never the shell ("Shell use" in rules.md) (`workbench/plans/`, `contracts/`, `tracking/`, `subtasks/`, `docs/`, `interviews/`, `reports/`) and check:
 
 1. **Feature files** (ignore `.gitkeep` files and `workbench/.baseline/`) - every feature in INDEX has its plan, contract, tracking, doc, and subtasks folder, with the same number and slug. Any of those files without an INDEX row.
 2. **Naming** - file names follow the rules (prefix, 2-digit zero padding, kebab-case slug).
