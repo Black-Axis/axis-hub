@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // PreToolUse hook: stops Claude from committing on main, pushing to main on
-// GitHub, or creating branches not named <type>/<short-name>. The rules live in
+// GitHub, creating branches not named <type>/<short-name>, or merging pull
+// requests (`gh pr merge`, merge calls through `gh api`). The branch rules live in
 // .githooks/guard.js (shared with the git hooks). Always exits 0; a refusal is
 // returned as a "deny" decision with the reason.
 'use strict';
@@ -68,14 +69,36 @@ function withoutRedirects(tokens) {
   return out;
 }
 
-// Returns { sub, args } for a git invocation, or null.
-function gitCall(rawTokens) {
+// Returns { sub, args, cwd } for a git invocation, or null. `cwd` follows
+// `-C <path>` options (relative ones resolve against the previous directory).
+function gitCall(rawTokens, cwd) {
   const tokens = withoutRedirects(rawTokens);
   if (!/^git(\.exe)?$/i.test(tokens[0] || '')) return null;
   let i = 1;
-  while (i < tokens.length && tokens[i].startsWith('-')) i += ['-c', '-C'].includes(tokens[i]) ? 2 : 1;
+  while (i < tokens.length && tokens[i].startsWith('-')) {
+    if (tokens[i] === '-C' && tokens[i + 1] !== undefined) cwd = path.resolve(cwd || '.', tokens[i + 1]);
+    i += ['-c', '-C'].includes(tokens[i]) ? 2 : 1;
+  }
   if (i >= tokens.length) return null;
-  return { sub: tokens[i], args: tokens.slice(i + 1) };
+  return { sub: tokens[i], args: tokens.slice(i + 1), cwd };
+}
+
+const MERGE_DENIED = 'Merging pull requests is not allowed: the user reviews and merges every pull request.';
+
+// Error text for a gh call that merges a pull request, or null.
+function checkGh(rawTokens) {
+  const tokens = withoutRedirects(rawTokens);
+  if (!/^gh(\.exe)?$/i.test(tokens[0] || '')) return null;
+  const pos = positionals(tokens.slice(1));
+  if (pos[0] === 'pr' && pos[1] === 'merge') return MERGE_DENIED;
+  if (pos[0] === 'api') {
+    const text = tokens.join(' ');
+    if (/\bmergePullRequest\b|\benablePullRequestAutoMerge\b/.test(text)) return MERGE_DENIED;
+    const put = tokens.some((t, i) => /^(-X|--method)$/.test(tokens[i - 1] || '') && /^put$/i.test(t)) ||
+      tokens.some((t) => /^(-XPUT|--method=put)$/i.test(t));
+    if (put && /pulls\/[^/\s]+\/merge\b/.test(text)) return MERGE_DENIED;
+  }
+  return null;
 }
 
 function git(cwd, args) {
@@ -132,13 +155,19 @@ function checkPushCall(args, branch, cwd, newTags = new Set()) {
 }
 
 // Walks the command in order, tracking branch switches, and returns the first set of errors.
+// Branches are tracked per repository, so `git -C <path>` is checked against that repository.
 function check(command, cwd) {
-  let branch = guard.currentBranch(cwd);
+  const branches = new Map();
   const newTags = new Set();
   for (const tokens of segments(command)) {
-    const call = gitCall(tokens);
+    const ghError = checkGh(tokens);
+    if (ghError) return [ghError];
+    const call = gitCall(tokens, cwd);
     if (!call) continue;
     const { sub, args } = call;
+    const dir = call.cwd;
+    if (!branches.has(dir)) branches.set(dir, guard.currentBranch(dir));
+    let branch = branches.get(dir);
     let errors = [];
     if (sub === 'switch' || sub === 'checkout') {
       const createAt = args.findIndex((a) => ['-c', '-C', '-b', '-B', '--create', '--force-create'].includes(a));
@@ -165,9 +194,10 @@ function check(command, cwd) {
       const tag = createdTag(args);
       if (tag) newTags.add(tag);
     } else if (sub === 'push') {
-      errors = checkPushCall(args, branch, cwd, newTags);
+      errors = checkPushCall(args, branch, dir, newTags);
     }
     if (errors.length) return errors;
+    branches.set(dir, branch);
   }
   return [];
 }
@@ -180,7 +210,7 @@ if (require.main === module) {
     process.exit(0);
   }
   const command = (input.tool_input && input.tool_input.command) || '';
-  if (/\bgit\b/.test(command)) {
+  if (/\b(git|gh)\b/.test(command)) {
     const errors = check(command, input.cwd || process.cwd());
     if (errors.length) {
       process.stdout.write(JSON.stringify({
@@ -195,4 +225,4 @@ if (require.main === module) {
   process.exit(0);
 }
 
-module.exports = { segments, gitCall, check };
+module.exports = { segments, gitCall, checkGh, check };

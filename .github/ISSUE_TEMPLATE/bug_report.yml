@@ -1,6 +1,8 @@
 name: Bug report
 description: A plugin does not work as documented
 labels: [bug]
+type: Bug
+assignees: [krypton225]
 body:
   - type: markdown
     attributes:

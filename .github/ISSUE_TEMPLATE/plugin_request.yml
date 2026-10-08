@@ -1,6 +1,8 @@
 name: New plugin proposal
 description: Propose a new plugin for the marketplace
 labels: [new-plugin]
+type: Feature
+assignees: [krypton225]
 body:
   - type: input
     id: name

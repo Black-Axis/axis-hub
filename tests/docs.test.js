@@ -27,3 +27,13 @@ test('SECURITY.md names no fixed plugin version', () => {
   const text = fs.readFileSync(path.join(repo, 'SECURITY.md'), 'utf8');
   assert.ok(!/\b\d+\.\d+\.\d+\b/.test(text), 'SECURITY.md names a fixed version; say "latest" instead');
 });
+
+test('issue forms set labels, Type, and assignee', () => {
+  const types = { 'bug_report.yml': 'Bug', 'feature_request.yml': 'Feature', 'plugin_request.yml': 'Feature' };
+  for (const [file, type] of Object.entries(types)) {
+    const text = fs.readFileSync(path.join(repo, '.github', 'ISSUE_TEMPLATE', file), 'utf8');
+    assert.match(text, /^labels: \[.+\]$/m, `${file}: labels`);
+    assert.match(text, new RegExp(`^type: ${type}$`, 'm'), `${file}: type`);
+    assert.match(text, /^assignees: \[krypton225\]$/m, `${file}: assignees`);
+  }
+});

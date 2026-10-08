@@ -107,3 +107,36 @@ test('Claude hook: deny output and silent otherwise', () => {
   assert.strictEqual(allowed.status, 0);
   assert.strictEqual(allowed.stdout, '');
 });
+
+test('Claude hook: merging pull requests is denied', () => {
+  const dir = tempRepo();
+  for (const cmd of [
+    'gh pr merge 12 --squash',
+    'gh pr merge --auto --merge',
+    'gh.exe pr merge 5',
+    'git push -u origin feat/x && gh pr merge',
+    'gh api -X PUT repos/Black-Axis/axis-hub/pulls/12/merge',
+    'gh api --method put /repos/o/r/pulls/3/merge -f merge_method=squash',
+    "gh api graphql -f query='mutation { mergePullRequest(input:{pullRequestId:\"x\"}) { clientMutationId } }'",
+    "gh api graphql -f query='mutation { enablePullRequestAutoMerge(input:{pullRequestId:\"x\"}) { clientMutationId } }'",
+  ]) assert.match(check(cmd, dir).join(' '), /user reviews and merges/, cmd);
+  for (const cmd of [
+    'gh pr view 12 --json state',
+    'gh pr create --title "x" --body "do not run gh pr merge"',
+    'gh api repos/o/r/pulls/12/merge',
+    "cat > pr.md <<'EOF'\ngh pr merge 12\nEOF\ngh pr create --body-file pr.md",
+  ]) assert.strictEqual(check(cmd, dir).length, 0, cmd);
+});
+
+test('Claude hook: git -C checks that repository', () => {
+  const onMain = tempRepo();
+  const onBranch = tempRepo();
+  execFileSync('git', ['switch', '-q', '-c', 'feat/x'], { cwd: onBranch });
+  assert.strictEqual(check(`git -C "${onBranch}" commit -m y`, onMain).length, 0, 'other repo on a branch');
+  assert.ok(check(`git -C "${onMain}" commit -m y`, onBranch).length, 'other repo on main');
+  assert.ok(check(`git -C "${onMain}" push origin HEAD`, onBranch).length, 'push HEAD of the other repo');
+  assert.strictEqual(check(`git -C "${onMain}" switch -c fix/z && git -C "${onMain}" commit -m y`, onBranch).length, 0, 'switch tracked per repo');
+  assert.strictEqual(check(`git -C "${onMain}" switch -c fix/z && git commit -m y`, onBranch).length, 0, 'own repo untouched by the other');
+  const rel = path.relative(path.dirname(onBranch), onBranch);
+  assert.strictEqual(check(`git -C .. -C ${rel} commit -m y`, onMain).length, 0, 'relative -C chain');
+});

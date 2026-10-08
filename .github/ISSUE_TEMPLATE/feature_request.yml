@@ -1,6 +1,8 @@
 name: Feature request
 description: Improve an existing plugin
 labels: [enhancement]
+type: Feature
+assignees: [krypton225]
 body:
   - type: dropdown
     id: plugin
