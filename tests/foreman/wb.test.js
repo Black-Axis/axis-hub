@@ -127,6 +127,59 @@ test('keeps CRLF line endings', () => {
   assert.ok(!/[^\r]\n/.test(text), 'every line ends with CRLF');
 });
 
+test('check: the example has no findings', () => {
+  const dir = project();
+  assert.deepStrictEqual(wb(dir, 'check'), { code: 0, out: 'OK - no findings' });
+  assert.deepStrictEqual(wb(dir, 'check', 'P-01'), { code: 0, out: 'OK (P-01) - no findings' });
+});
+
+test('check: finds the mechanical doctor problems', () => {
+  const dir = project();
+  const TASK = 'workbench/subtasks/P-01-health-endpoint/TASK-02-add-health-tests.md';
+  edit(dir, TRK, /\| Add health route tests \| Not Started \|/, '| Add health route tests (FEAT-1) | not started |');
+  edit(dir, TRK, /(\| Plan created \|)/, '$1\n| 2026-09-20 | P-01 | Draft -> Approved | User | contract approved |');
+  edit(dir, 'workbench/INDEX.md', /- Fix rounds: 4/, '- Fix rounds: 12');
+  edit(dir, 'workbench/INDEX.md', /\| 1\/2 Done \|/, '| 2/2 Done |');
+  edit(dir, TASK, /## Evidence\r?\n\r?\n[^#]+/, '## Evidence\n\n{{facts}}\n\n');
+  fs.mkdirSync(path.join(dir, 'workbench', '.baseline', 'P-01', 'TASK-01'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'workbench', 'plans', 'P-01-Health.md'), '# x\n');
+  const r = wb(dir, 'check');
+  assert.strictEqual(r.code, 2, r.out);
+  for (const want of [
+    /finding: INDEX\.md: invalid Fix rounds value "12"/,
+    /finding: plans\/P-01-Health\.md: name does not follow P-NN-<slug>\.md/,
+    /finding: tracking\/TRK-01-health-endpoint\.md: TASK-02 has invalid status "not started"/,
+    /finding: tracking\/TRK-01-health-endpoint\.md: History row "P-01 \| Draft -> Approved" is not a task or plan status change/,
+    /finding: tracking\/TRK-01-health-endpoint\.md: TASK-02 title differs: "Add health route tests" \/ "Add health route tests \(FEAT-1\)" \/ "Add health route tests"/,
+    /finding: subtasks\/P-01-health-endpoint\/TASK-02-add-health-tests\.md: section "Evidence" is empty or still a \{\{\.\.\.\}\} placeholder/,
+    /finding: INDEX\.md: P-01 Progress "2\/2 Done" should be "1\/2 Done"/,
+    /finding: \.baseline\/P-01\/TASK-01\/: leftover snapshot of a task that is not In Progress/,
+  ]) assert.match(r.out, want);
+  assert.match(r.out, /\d+ finding\(s\)$/);
+});
+
+test('check: status history, derivation, and Done without close', () => {
+  const dir = project();
+  edit(dir, TRK, /- Plan Status: In Progress/, '- Plan Status: Done');
+  edit(dir, TRK, /\| Add health route tests \| Not Started \|/, '| Add health route tests | Done |');
+  edit(dir, 'workbench/INDEX.md', /\| 1\/2 Done \|/, '| 2/2 Done |');
+  let out = wb(dir, 'check').out;
+  assert.match(out, /TASK-02 is "Done" but has no History entry/);
+  assert.match(out, /plan is Done without a "Closed" or "Imported" History entry/);
+  const d2 = project();
+  edit(d2, TRK, /- Plan Status: In Progress/, '- Plan Status: Not Started');
+  out = wb(d2, 'check').out;
+  assert.match(out, /Plan Status should be "In Progress" \(derived from the task statuses\)/);
+});
+
+test('check after status calls stays clean', () => {
+  const dir = project();
+  wb(dir, 'status', 'P-01', 'TASK-02', 'In Progress', '--by', 'Main agent', '--reason', 'run');
+  wb(dir, 'status', 'P-01', 'TASK-02', 'Done', '--by', 'Main agent', '--reason', 'verified');
+  wb(dir, 'status', 'P-01', 'Done', '--by', 'Main agent', '--reason', 'Closed: acceptance verified');
+  assert.deepStrictEqual(wb(dir, 'check'), { code: 0, out: 'OK - no findings' });
+});
+
 test('without workbench/: a clear error', () => {
   const r = wb(project(false), 'overview');
   assert.strictEqual(r.code, 1);
