@@ -110,6 +110,23 @@ test('content is data: rule in rules.md, used by new, import, interview, run, an
   assert.match(worker, /`embedded instruction: <file>/);
 });
 
+// Auto-commit stages only the task's files, by path, after the user's yes (#39).
+test('git commit: only the task\'s files, shown first, never add -A / . / commit -a', () => {
+  const rules = fs.readFileSync(path.join(plugin, 'reference', 'rules.md'), 'utf8');
+  assert.match(rules, /\*\*Git commit\*\*/);
+  assert.match(rules, /`git commit -m "<message>" -- <paths>`/);
+  for (const file of ['run.md', 'close.md']) {
+    assert.match(fs.readFileSync(path.join(commandsDir, file), 'utf8'), /"Git commit" in rules\.md/, file);
+  }
+  const files = [path.join(plugin, 'reference', 'rules.md'), path.join(plugin, 'agents', 'foreman-worker.md'),
+    ...fs.readdirSync(commandsDir).map((f) => path.join(commandsDir, f))];
+  for (const file of files) {
+    for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
+      if (/git add -A|git add \.|git add -u|git commit -a/.test(line)) assert.match(line, /\bNever\b/, `${path.basename(file)}: ${line}`);
+    }
+  }
+});
+
 // allowed-tools end with the user's next message, so a command must read every
 // plugin file it needs before its first question and keep the turn with
 // AskUserQuestion (rules.md "Questions and follow-up turns", issue #42).

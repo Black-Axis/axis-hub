@@ -34,7 +34,7 @@ Read `Version control` in INDEX (missing: detect and add it, "Version control" i
   1. Set the plan status to `Done` in the TRK file; add a History row `P-NN | In Progress -> Done | Main agent | Closed: acceptance verified`.
   2. Finalize `workbench/docs/DOC-NN-<slug>.md`: fill the Acceptance section with the results table, refresh Summary, Architecture / Key Files, How to Extend, Known Limitations. Set Last Updated.
   3. Update `workbench/INDEX.md` Progress.
-  4. git: apply the contract's commit policy for any doc/final changes, if it says to commit. tfvc and none: never commit or check in; for tfvc, tell the user the feature is ready to check in. Delete `workbench/.baseline/P-NN/` if any is left (one shell command, as in "Snapshot" in rules.md).
+  4. git: apply the contract's commit policy for any doc/final changes, if it says to commit, as in "Git commit" in rules.md (files: those this command changed; message references `P-NN`). tfvc and none: never commit or check in; for tfvc, tell the user the feature is ready to check in. Delete `workbench/.baseline/P-NN/` if any is left (one shell command, as in "Snapshot" in rules.md).
 - **Any criterion Fails or tests fail**:
   - Leave the plan status unchanged. Show the failing criteria with evidence.
   - Propose the fix: usually `/foreman:change P-NN <add task for ...>` to add follow-up tasks, then `/foreman:run`.

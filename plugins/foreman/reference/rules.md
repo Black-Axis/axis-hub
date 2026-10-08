@@ -46,12 +46,19 @@ INDEX `Settings` holds two lines:
 | Empty subfolders | `.gitkeep` in each (`tracked` or `ignored`) | not needed (TFVC versions folders) | not needed |
 | Start state of a task | `git status --porcelain`, `git diff --stat` | `tf status` (if available), and a snapshot | snapshot |
 | Changes of a task | `git diff`, new untracked files from `git status` | `tf diff /format:unified` and `tf status` (if available), otherwise the snapshot | the snapshot |
-| Commit after a task | as the contract's commit policy says | never: the user checks in | never |
+| Commit after a task | as the contract's commit policy says, only the task's files, on the user's yes ("Git commit" below) | never: the user checks in | never |
 | Read-only files | - | possible (server workspace): see pre-check in `/foreman:run` | - |
 | Deletes and renames | worker, listed files only | main agent: `tf delete` / `tf rename` if `tf` is available, on the user's yes; otherwise the user does it in Visual Studio | worker, listed files only |
 | New files | - | `tf add` if `tf` is available, on the user's yes; otherwise list them for the user to add | - |
 
 In `tfvc` and `none` projects, the contract's Commit policy is always `never auto-commit (user checks in)`; do not ask about it.
+
+**Git commit** (only when the contract's commit policy says the main agent commits; `/foreman:run` Pass and `/foreman:close`):
+1. **Files**: only the task's own changes, by explicit path - the files of its verified diff (changed, new, deleted, renamed since the recorded start state). Workbench `tracked`: also the `workbench/` files this command changed (TRK, doc, task file, INDEX), written before the commit; never `workbench/.baseline/`. Workbench `ignored`: no `workbench/` files.
+2. **Not the task's**: if a listed file also has changes that are not the task's (the user's changes kept at the pre-check, another task's uncommitted changes), show them and ask whether to include the whole file or leave it out of this commit.
+3. **Show and ask**: show the file list (`git status --porcelain -- <paths>`, `git diff HEAD --stat -- <paths>`) and the commit message (references `P-NN TASK-TT`), then ask with `AskUserQuestion`: commit, or leave the changes uncommitted. Log the answer (`User`, `Decision`).
+4. **Commit** on yes: `git add -- <new files>` for untracked files only, then `git commit -m "<message>" -- <paths>`. This commits exactly those paths; anything else the user has staged stays staged and is not committed. Never `git add -A`, `git add .`, `git add -u`, or `git commit -a`.
+5. **Log** the commit (`Main agent`, `Action`, with its hash). This Activity row is written after the commit, so it goes into the next commit.
 
 Never run version control commands that change state (commit, check-in, shelve, checkout, add, delete, rename, undo) except where this table and the command files say so, and then only after telling the user. Read-only commands (`git status`, `git diff`, `git log`, `git ls-files`, `tf status`, `tf diff`, `tf history`, and read-only file listings for modification times) are always fine.
 
