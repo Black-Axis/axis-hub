@@ -24,7 +24,7 @@ test('commands running setup.md carry every user_config placeholder', () => {
 });
 
 test('allowed-tools stay scoped: workbench edits and read-only version control only', () => {
-  const readOnly = /^(Bash|PowerShell)\((git (status|diff|ls-files|log)|tf (status|diff|history)):\*\)$/;
+  const readOnly = /^(Bash|PowerShell)\((git (status|diff|ls-files|log|stash create)|tf (status|diff|history)):\*\)$/;
   for (const file of fs.readdirSync(commandsDir)) {
     const m = /^allowed-tools:\s*(.+)$/m.exec(fs.readFileSync(path.join(commandsDir, file), 'utf8'));
     if (!m) continue;
@@ -125,6 +125,17 @@ test('catalog: frontmatter Grep, no full-file reads', () => {
   assert.match(text, /^allowed-tools: Read, Glob, Grep$/m);
   assert.match(text, /never read a command, agent, skill, or script file in full/);
   assert.match(text, /`\^\(name\|description\|argument-hint\|model\):`/);
+});
+
+// A task's git changes are diffed against its start hash, not HEAD (#38).
+test('git: start hash isolates the task\'s changes', () => {
+  const rules = fs.readFileSync(path.join(plugin, 'reference', 'rules.md'), 'utf8');
+  const run = fs.readFileSync(path.join(commandsDir, 'run.md'), 'utf8');
+  assert.match(rules, /\*\*Start hash\*\* \(git\)/);
+  assert.match(rules, /run `git stash create`/);
+  assert.match(run, /^allowed-tools: .*Bash\(git stash create:\*\), PowerShell\(git stash create:\*\)/m);
+  assert.match(run, /`git diff <start hash>`/);
+  assert.match(fs.readFileSync(path.join(commandsDir, 'close.md'), 'utf8'), /`start state: <hash>`/);
 });
 
 // Auto-commit stages only the task's files, by path, after the user's yes (#39).

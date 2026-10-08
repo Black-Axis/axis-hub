@@ -44,14 +44,20 @@ INDEX `Settings` holds two lines:
 |-----------|-----|------|------|
 | Ignore file (Workbench `ignored`, `CLAUDE.local.md`) | `.gitignore` (`workbench/`, `CLAUDE.local.md`) | `.tfignore` (`\workbench`, `\CLAUDE.local.md`) | nothing to ignore |
 | Empty subfolders | `.gitkeep` in each (`tracked` or `ignored`) | not needed (TFVC versions folders) | not needed |
-| Start state of a task | `git status --porcelain`, `git diff --stat` | `tf status` (if available), and a snapshot | snapshot |
-| Changes of a task | `git diff`, new untracked files from `git status` | `tf diff /format:unified` and `tf status` (if available), otherwise the snapshot | the snapshot |
+| Start state of a task | start hash (`git stash create`), `git status --porcelain`, and a snapshot of listed files that are untracked ("Start hash" below) | `tf status` (if available), and a snapshot | snapshot |
+| Changes of a task | `git diff <start hash>`, untracked files new since the start, and the snapshot diff of files untracked at the start | `tf diff /format:unified` and `tf status` (if available), otherwise the snapshot | the snapshot |
 | Commit after a task | as the contract's commit policy says, only the task's files, on the user's yes ("Git commit" below) | never: the user checks in | never |
 | Read-only files | - | possible (server workspace): see pre-check in `/foreman:run` | - |
 | Deletes and renames | worker, listed files only | main agent: `tf delete` / `tf rename` if `tf` is available, on the user's yes; otherwise the user does it in Visual Studio | worker, listed files only |
 | New files | - | `tf add` if `tf` is available, on the user's yes; otherwise list them for the user to add | - |
 
 In `tfvc` and `none` projects, the contract's Commit policy is always `never auto-commit (user checks in)`; do not ask about it.
+
+**Start hash** (git) - isolates the task's changes from earlier uncommitted ones (an earlier task's or the user's) in the same files:
+- Before the worker starts, run `git stash create`. It stores the current tracked files and index as a commit object and prints its hash; it changes no file, the index, any branch, or the stash list. Empty output means a clean tree: use `git log -1 --format=%H`. If it fails (e.g. an unfinished merge), use `git log -1 --format=%H` and tell the user that earlier uncommitted changes will show in the task's diff.
+- Also record `git status --porcelain` (the untracked files at the start). `git stash create` does not include untracked files, so snapshot every file in the task's `Files Expected to Change` that is untracked at the start (e.g. new and not yet committed by an earlier task), as in "Snapshot" below.
+- Log it (`Main agent`, `Action`, `start state: <hash>`).
+- The task's changes, at verification and in every fix round: `git diff <start hash>` (tracked files), files untracked now but not at the start (new: show in full), and the snapshot diff of files untracked at the start. Never plain `git diff`, which also shows earlier uncommitted changes.
 
 **Git commit** (only when the contract's commit policy says the main agent commits; `/foreman:run` Pass and `/foreman:close`):
 1. **Files**: only the task's own changes, by explicit path - the files of its verified diff (changed, new, deleted, renamed since the recorded start state). Workbench `tracked`: also the `workbench/` files this command changed (TRK, doc, task file, INDEX), written before the commit; never `workbench/.baseline/`. Workbench `ignored`: no `workbench/` files.
@@ -60,7 +66,7 @@ In `tfvc` and `none` projects, the contract's Commit policy is always `never aut
 4. **Commit** on yes: `git add -- <new files>` for untracked files only, then `git commit -m "<message>" -- <paths>`. This commits exactly those paths; anything else the user has staged stays staged and is not committed. Never `git add -A`, `git add .`, `git add -u`, or `git commit -a`.
 5. **Log** the commit (`Main agent`, `Action`, with its hash). This Activity row is written after the commit, so it goes into the next commit.
 
-Never run version control commands that change state (commit, check-in, shelve, checkout, add, delete, rename, undo) except where this table and the command files say so, and then only after telling the user. Read-only commands (`git status`, `git diff`, `git log`, `git ls-files`, `tf status`, `tf diff`, `tf history`, and read-only file listings for modification times) are always fine.
+Never run version control commands that change state (commit, check-in, shelve, checkout, add, delete, rename, undo) except where this table and the command files say so, and then only after telling the user. Read-only commands (`git status`, `git diff`, `git log`, `git ls-files`, `git stash create` (writes only an unreferenced commit object), `tf status`, `tf diff`, `tf history`, and read-only file listings for modification times) are always fine.
 
 **Task baseline** - the project state a task file was written against, in the task header `Baseline` row. Every command that creates a task file or rewrites its Evidence, Files Expected to Change, or Implementation (`new`, `interview`, `import`, `change`, the `run` pre-check) sets it:
 - git: the current commit, `git log -1 --format=%H`.
@@ -136,7 +142,7 @@ Log in the feature's TRK `Activity` table (date, target, By, Type, details - one
 
 ## Permissions
 
-Never work around the user's permission mode. Foreman pre-approves only its own `workbench/` changes and read-only version control commands (`git status`, `git diff`, `git ls-files`, `git log`, `tf status`, `tf diff`, `tf history`, through Bash or PowerShell); every other edit and command - by you or the worker - goes through the user's normal permission prompts. Never suggest granting broader or session-wide permissions.
+Never work around the user's permission mode. Foreman pre-approves only its own `workbench/` changes and read-only version control commands (`git status`, `git diff`, `git ls-files`, `git log`, `git stash create`, `tf status`, `tf diff`, `tf history`, through Bash or PowerShell); every other edit and command - by you or the worker - goes through the user's normal permission prompts. Never suggest granting broader or session-wide permissions.
 
 `workbench/` changes never ask the user: the plugin's PreToolUse hook (`hooks/workbench-guard.js`) allows your `Edit` / `Write` there in every turn (also after the worker ran) and the fixed shell forms of this file inside `workbench/` (setup folders, the `date` command, snapshot copy and delete in "Snapshot"); use those forms exactly, or the user is asked. It refuses subagent edits in `workbench/` and worker shell commands that write files. Without Node.js the hook does not run, and only the command's `allowed-tools` pre-approve `workbench/` edits (in the command's turn, until the first `Agent` call).
 
