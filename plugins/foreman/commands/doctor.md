@@ -1,7 +1,7 @@
 ---
 description: Check workbench/ for inconsistencies and fix them after your confirmation
 argument-hint: "[P-NN]"
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), AskUserQuestion
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), AskUserQuestion
 ---
 
 # /foreman:doctor
@@ -10,9 +10,13 @@ Input: $ARGUMENTS
 
 First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it.
 
+State script: `node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js"` ("State script" in rules.md).
+
 With `P-NN`, check only that feature; otherwise check all of `workbench/`. If `workbench/INDEX.md` does not exist, tell the user to start with `/foreman:init` or `/foreman:new` and stop.
 
 ## 1. Check
+
+First run `wb.js check [P-NN]` (one call). It does every mechanical check below and prints one `finding:` line per problem and `note:` lines for report-only items (exit code 2 when there are findings; the tool result shows it, so run the command alone, without `echo` or anything after it). Take its findings as they are; do yourself only the checks it cannot do, marked **(you)** below: Version control detection, the ignore file, and the CLAUDE.md block. Without Node, do every check below yourself.
 
 List the folders explicitly with `Glob`, never the shell ("Shell use" in rules.md) (`workbench/plans/`, `contracts/`, `tracking/`, `subtasks/`, `docs/`, `interviews/`, `reports/`) and check:
 
@@ -23,11 +27,11 @@ List the folders explicitly with `Glob`, never the shell ("Shell use" in rules.m
 5. **Tasks vs plan** - the plan's Task Breakdown lists the same tasks; `Depends On` references tasks that exist.
 6. **Statuses** - every status is a valid value (exact Title Case); the TRK table matches the last History entry for each target; the plan status follows the derivation rule; a plan is `Done` only if a `Closed` or `Imported` History entry exists; History has only task and plan rows (a contract status row, e.g. from an older version: propose moving it to Activity as `User`, `Decision`).
 7. **Contract** - valid Status; Auto-close is `Ask`, `Yes`, or `No`; Baseline tests, if present, is `yes` or `no`; `Approved` has a date; Change Requests with an Approved date only if the contract is `Approved`.
-8. **INDEX** - Settings has valid Version control (`git` / `tfvc` / `none`, and it matches the detection in rules.md - a mismatch is a judgement call; a missing line gets the detected value), Workbench (`tracked` / `ignored`; an old `Git: committed / ignored` line is valid - propose renaming it to `Workbench: tracked / ignored`), the ignore file matches Workbench (and `workbench/.baseline/` is ignored when tracked, git and tfvc), no leftover `workbench/.baseline/` folders for tasks that are not `In Progress`, Output (`Concise` / `Normal`), Fix rounds (whole number 0-10), and CLAUDE.md (`yes` / `no`) values; if a `Working Rules Defaults` section exists, it has the fields of the INDEX template, Auto-close is `Ask`, `Yes`, or `No`, and Baseline tests is `yes` or `no` (a missing section, or a missing Baseline tests line from before 1.3.0, is fine); Contract Status and Progress match the contract and TRK files (Progress `<done>/<total> Done`, plus `, TASK-TT In Progress` for each task In Progress; an older value without that part is reported, and the fix adds it).
+8. **INDEX** - Settings has valid Version control (`git` / `tfvc` / `none`, and **(you)** it matches the detection in rules.md - a mismatch is a judgement call; a missing line gets the detected value), Workbench (`tracked` / `ignored`; an old `Git: committed / ignored` line is valid - propose renaming it to `Workbench: tracked / ignored`), **(you)** the ignore file matches Workbench (and `workbench/.baseline/` is ignored when tracked, git and tfvc), no leftover `workbench/.baseline/` folders for tasks that are not `In Progress`, Output (`Concise` / `Normal`), Fix rounds (whole number 0-10), and CLAUDE.md (`yes` / `no`) values; if a `Working Rules Defaults` section exists, it has the fields of the INDEX template, Auto-close is `Ask`, `Yes`, or `No`, and Baseline tests is `yes` or `no` (a missing section, or a missing Baseline tests line from before 1.3.0, is fine); Contract Status and Progress match the contract and TRK files (Progress `<done>/<total> Done`, plus `, TASK-TT In Progress` for each task In Progress; an older value without that part is reported, and the fix adds it).
 9. **Task files** - all mandatory sections exist and are not empty or still `{{...}}` placeholders. A missing `Baseline` header row (tasks from before 1.3.0) is fine: report only.
 10. **Tracking format** - every TRK file has the `History` table with a `By` column and an `Activity` table (older files: propose adding them, empty; never back-fill guessed rows).
 11. **Imported gaps** - list every `Missing - from import` field (report only; the user fills them).
-12. **CLAUDE.md block** ("Project instructions block" in rules.md) - `yes`: the block is in the right target file for the Workbench setting, only there, and matches `${CLAUDE_PLUGIN_ROOT}/templates/claude-md.md` exactly (an outdated block is refreshed from the template); `no`: no CLAUDE file has a foreman block.
+12. **(you)** **CLAUDE.md block** ("Project instructions block" in rules.md) - `yes`: the block is in the right target file for the Workbench setting, only there, and matches `${CLAUDE_PLUGIN_ROOT}/templates/claude-md.md` exactly (an outdated block is refreshed from the template); `no`: no CLAUDE file has a foreman block.
 13. **Interviews** - names follow `INT-NN-<slug>.md`; Status is `In Progress`, `Done`, or `Canceled`; a `Done` interview links an existing plan with the same number and slug, and that plan's Source Type is `interview`; no interview number is used by a different feature. List `In Progress` interviews (report only; `/foreman:interview INT-NN` continues them).
 
 ## 2. Report

@@ -7,11 +7,13 @@
 //   node wb.js ready [P-NN]        tasks that can run now
 //   node wb.js overview            one line per feature and open interview
 //   node wb.js next-number         next free feature number NN
+//   node wb.js check [P-NN]        mechanical consistency checks (/foreman:doctor); exit 2 with findings
 // Exit 0 on success; 1 with "ERROR: <reason>" (nothing written) on bad input or state.
 
 const fs = require('fs');
 const path = require('path');
 const { readText, listDir, cells, tableAt, tableRows, field, taskIds, findFile } = require('./lib');
+const { check } = require('./check');
 
 const STATUSES = ['Not Started', 'In Progress', 'Hold', 'Done', 'Canceled'];
 const BY = ['User', 'Main agent'];
@@ -290,7 +292,16 @@ function cmdNextNumber() {
   return [String(max + 1).padStart(2, '0')];
 }
 
-const COMMANDS = { status: cmdStatus, refresh: cmdRefresh, ready: cmdReady, overview: cmdOverview, 'next-number': cmdNextNumber };
+function cmdCheck(args) {
+  const wb = workbench();
+  const only = args[0] ? planId(args[0]) : null;
+  const { findings, notes } = check(wb, only);
+  const out = [...findings.map((x) => `finding: ${x}`), ...notes.map((x) => `note: ${x}`)];
+  out.push(findings.length ? `${findings.length} finding(s)` : `OK${only ? ` (P-${only})` : ''} - no findings`);
+  return { out, code: findings.length ? 2 : 0 };
+}
+
+const COMMANDS = { status: cmdStatus, refresh: cmdRefresh, ready: cmdReady, overview: cmdOverview, 'next-number': cmdNextNumber, check: cmdCheck };
 
 function main(argv) {
   const [name, ...args] = argv;
@@ -300,8 +311,10 @@ function main(argv) {
     return 1;
   }
   try {
-    process.stdout.write(`${cmd(args).join('\n')}\n`);
-    return 0;
+    const r = cmd(args);
+    const { out, code } = Array.isArray(r) ? { out: r, code: 0 } : r;
+    process.stdout.write(`${out.join('\n')}\n`);
+    return code;
   } catch (e) {
     process.stdout.write(`ERROR: ${e instanceof WbError ? e.message : e.stack}\n`);
     return 1;

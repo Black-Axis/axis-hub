@@ -132,7 +132,7 @@ The INDEX setting `- CLAUDE.md: yes | no` controls a short block that tells Clau
 
 ## State script
 
-`scripts/wb.js` (Node, in the plugin) does the mechanical `workbench/` updates and answers, so you never edit status cells or count by hand. Every command that uses it has a `State script:` line with the exact command to run (`node "<plugin>/scripts/wb.js"`); run it from the project root, one call at a time, never chained:
+`scripts/wb.js` (Node, in the plugin) does the mechanical `workbench/` updates and answers, so you never edit status cells or count by hand. Every command that uses it has a `State script:` line with the exact command to run (`node "<plugin>/scripts/wb.js"`); run it from the project root, one call at a time, never chained - not even `; echo $?`: the tool result already shows the exit code:
 
 | Call | Does |
 |------|------|
@@ -142,8 +142,10 @@ The INDEX setting `- CLAUDE.md: yes | no` controls a short block that tells Clau
 | `ready [P-NN]` | Tasks that can run now (`Not Started`, dependencies `Done`, plan active, contract `Approved`) |
 | `overview` | One line per feature (plan, contract, progress, next step) and per open interview |
 | `next-number` | The next free feature number `NN` |
+| `check [P-NN]` | The mechanical `/foreman:doctor` checks (files, naming, numbering, tables in sync, statuses, derivation, INDEX); one `finding:` line per problem, exit code 2 when there are findings |
 
 - Output: one line per change or answer. `ERROR: <reason>` (exit code 1) means nothing was written: fix the cause (wrong ID, same status, missing table) - never edit the cells by hand to get around it.
+- At the end of every command that wrote `workbench/` files of a feature, run `check P-NN` once. If it prints findings, tell the user in one line and point to `/foreman:doctor` ("Command boundaries"); never fix them in that command.
 - Write the row text yourself only where no call covers it (new task rows, Activity rows, notes in other files).
 - If the call fails because `node` is not found, do the same updates by hand as described in "Statuses" and "Naming", and tell the user once per command: "Node.js not found - foreman updates the tracking files by hand."
 
