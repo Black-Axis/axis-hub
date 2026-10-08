@@ -13,8 +13,9 @@ function createApp() {
   return http.createServer((req, res) => {
     const q = req.url.indexOf('?');
     const pathname = q === -1 ? req.url : req.url.slice(0, q);
-    const handler = routes.get(`${req.method} ${pathname}`);
-    if (!handler) return sendJson(res, 404, { error: 'not found' });
+    const key = `${req.method} ${pathname}`;
+    const handler = routes.has(key) ? routes.get(key) : null;
+    if (typeof handler !== 'function') return sendJson(res, 404, { error: 'not found' });
     return handler(req, res, readJson);
   });
 }
