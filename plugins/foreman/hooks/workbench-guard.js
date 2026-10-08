@@ -168,6 +168,17 @@ function readOnlyVcs(command) {
   return READ_ONLY_VCS.test(cmd) && !/(^|\s)--output\b/.test(cmd);
 }
 
+// foreman's own state script, run as `node "<this plugin>/scripts/wb.js" <args>`: one
+// command, plain or quoted arguments only. It changes nothing outside workbench/.
+const WB_SCRIPT = path.join(__dirname, '..', 'scripts', 'wb.js');
+function stateScript(command) {
+  const m = new RegExp(String.raw`^node\s+(${ARG})((?:\s+${ARG})*)$`).exec(command.trim());
+  if (!m) return false;
+  let target = unquote(m[1]);
+  if (WIN) target = target.replace(/^\/([a-zA-Z])\//, '$1:/'); // Git Bash form /c/Users/...
+  return path.isAbsolute(target) && norm(path.resolve(target)) === norm(path.resolve(WB_SCRIPT));
+}
+
 // True when the user's settings deny or ask for this shell command (a hook allow
 // would override those rules).
 function settingsRestrictShell(root, tool, command) {
@@ -226,6 +237,10 @@ function decide(input) {
       return { permissionDecision: 'deny', permissionDecisionReason: 'foreman: the worker changes files only with Edit / Write, never through the shell. Make the change with Edit / Write, or report it under Deviations / Blockers.' };
     }
     return null;
+  }
+  if (stateScript(ti.command)) {
+    if (settingsDenyWorkbench(root) || settingsRestrictShell(root, tool, ti.command)) return null;
+    return { permissionDecision: 'allow', permissionDecisionReason: 'foreman: state script' };
   }
   if (readOnlyVcs(ti.command)) {
     if (!fs.existsSync(path.join(wbPath, 'INDEX.md')) || settingsRestrictShell(root, tool, ti.command)) return null;

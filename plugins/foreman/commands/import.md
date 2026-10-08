@@ -1,7 +1,7 @@
 ---
 description: Import plans, tasks, and progress from another workflow's local files into workbench/ (originals are never changed)
 argument-hint: <path(s) to old workflow files or folders>
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), PowerShell(git log:*), Bash(tf history:*), PowerShell(tf history:*), AskUserQuestion
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), PowerShell(git log:*), Bash(tf history:*), PowerShell(tf history:*), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), AskUserQuestion
 ---
 
 # /foreman:import
@@ -10,13 +10,15 @@ Input: $ARGUMENTS
 
 First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it.
 
+State script: `node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js"` ("State script" in rules.md).
+
 Sources are local files only (md, txt, json, yaml, or any text). Never move, edit, or delete source files.
 
 ## 1. Prepare
 
 1. If no path is given, ask for the folder(s) or file(s) of the old workflow. Check every path exists; ask about any that does not.
 2. If `workbench/INDEX.md` does not exist, follow `${CLAUDE_PLUGIN_ROOT}/reference/setup.md` in **Auto** mode with the user's defaults (set when the plugin was enabled; change with `/config`): output `${user_config.default_output}`, workbench `${user_config.default_git}`, fix rounds `${user_config.default_fix_rounds}`, CLAUDE.md block `${user_config.default_claude_md}`.
-3. Next feature number = highest in INDEX or in `workbench/interviews/` + 1.
+3. Next feature number = `wb.js next-number` (highest in INDEX or in `workbench/interviews/` + 1).
 
 ## 2. Scan and map
 
@@ -50,7 +52,7 @@ Per feature, from the templates:
 - **Tasks**: all mandatory sections; header Source = the old source file path. Fill from sources; fill Evidence and Files Expected to Change from the codebase where you can verify them; otherwise `Missing - from import`. Done tasks: summarize what was done in Required Outcome.
 - **Tracking**: one row per task with its mapped status and note `imported`. History: one row per task and one for the plan, `— -> <status> | Main agent | Imported from <source path>`.
 - **Doc**: Implemented Tasks from Done tasks (what, files, decisions if known). For a fully finished feature, also Summary, Architecture / Key Files, How to Extend; Acceptance: `Not verified - imported`.
-- **INDEX**: one row per feature.
+- **INDEX**: one row per feature; then `wb.js refresh P-NN` for each imported feature.
 
 ## 5. Report
 

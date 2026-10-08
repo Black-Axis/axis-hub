@@ -1,7 +1,7 @@
 ---
 description: Record a change request for a feature - amend the contract, plan, and tasks; small changes are approved inline, big ones need re-approval
 argument-hint: <P-NN> <change request>
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), PowerShell(git log:*), Bash(tf history:*), PowerShell(tf history:*), AskUserQuestion
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), PowerShell(git log:*), Bash(tf history:*), PowerShell(tf history:*), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), AskUserQuestion
 ---
 
 # /foreman:change
@@ -9,6 +9,8 @@ allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(g
 Input: $ARGUMENTS
 
 First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it.
+
+State script: `node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js"` ("State script" in rules.md).
 
 1. Parse `P-NN` and the change request text. If either is missing, ask.
 2. Load the plan, contract, TRK file, and task files.
@@ -27,7 +29,7 @@ First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it.
    - Plan: update affected sections and the Task Breakdown; add a note under Open Questions if anything remains open.
    - Tasks: create new `TASK-TT` files ("Task size" in rules.md; continue numbering from the highest existing task; Source = `FEAT-n`), edit not-yet-done task files, set obsolete tasks to `Canceled` with reason "FEAT-n".
    - TRK: add rows for new tasks (`Not Started`; title exactly as in the task file), History rows for task status changes (e.g. `Canceled`), and an Activity row (`Main agent`, `Action`) listing what `FEAT-n` changed. A contract status change goes to Activity, never History ("Statuses" in rules.md).
-   - INDEX: update Contract Status and Progress.
+   - Status changes (e.g. obsolete tasks to `Canceled`) with `wb.js status`, one call per task. After all rows are written: `wb.js refresh P-NN` (derived Plan Status, INDEX Contract Status and Progress).
 7. Tell the user the result:
    - Small: approved; tasks can run now.
    - Big: no task can run until they run `/foreman:approve P-NN` again.

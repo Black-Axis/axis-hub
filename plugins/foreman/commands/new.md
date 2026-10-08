@@ -1,7 +1,7 @@
 ---
 description: Start a new feature from working file(s) and/or text - review it, then create plan, contract, tracking, and subtasks in workbench/
 argument-hint: "[working file path(s)] [feature description / notes]"
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), PowerShell(git log:*), Bash(tf history:*), PowerShell(tf history:*), AskUserQuestion
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), PowerShell(git log:*), Bash(tf history:*), PowerShell(tf history:*), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), AskUserQuestion
 ---
 
 # /foreman:new
@@ -9,6 +9,8 @@ allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(g
 Input: $ARGUMENTS
 
 First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it throughout.
+
+State script: `node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js"` ("State script" in rules.md).
 
 ## 1. Initialize `workbench/` (first time only)
 
@@ -20,7 +22,7 @@ If `workbench/INDEX.md` does not exist in the project root, follow `${CLAUDE_PLU
 
 ## 2. Determine the feature number
 
-Read `workbench/INDEX.md` and list `workbench/interviews/`. `NN` = highest feature or interview number + 1 (or `01`).
+Read `workbench/INDEX.md` and list `workbench/interviews/`. `NN` = `wb.js next-number` (highest feature or interview number + 1, or `01`).
 
 ## 3. Get the requirements
 
@@ -64,7 +66,7 @@ Pick the `<slug>` from the feature name. Create, from templates:
 3. `workbench/subtasks/P-NN-<slug>/TASK-TT-<task-slug>.md` - one file per task. Every section is mandatory: Problem, Evidence, Required Outcome, Files Expected to Change, Out of Scope, Implementation, Report Requirements. Each task follows "Task size" in rules.md. Set the header `Baseline` ("Task baseline" in rules.md).
 4. `workbench/tracking/TRK-NN-<slug>.md` - one row per task, all `Not Started`; History row "Plan created".
 5. `workbench/docs/DOC-NN-<slug>.md` - skeleton only (Summary from the plan; other sections empty until tasks complete).
-6. Add a row to `workbench/INDEX.md`: Contract Status `Draft`, Progress `0/<total> Done`.
+6. Add a row to `workbench/INDEX.md`: Contract Status `Draft`, Progress `0/<total> Done`. Then run `wb.js refresh P-NN` to confirm the counts.
 
 ## 8. Hand off
 

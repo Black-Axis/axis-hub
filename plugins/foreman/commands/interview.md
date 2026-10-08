@@ -1,7 +1,7 @@
 ---
 description: Deep interview as a tech lead - grill the user on every part of a feature, challenge weak answers, agree the files to change, then create plan, contract, tracking, and subtasks
 argument-hint: "[feature idea | INT-NN]"
-allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), PowerShell(git log:*), Bash(tf history:*), PowerShell(tf history:*), AskUserQuestion
+allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), PowerShell(git log:*), Bash(tf history:*), PowerShell(tf history:*), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), AskUserQuestion
 ---
 
 # /foreman:interview
@@ -9,6 +9,8 @@ allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(g
 Input: $ARGUMENTS
 
 First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it throughout.
+
+State script: `node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js"` ("State script" in rules.md).
 
 You are an experienced tech lead interviewing the person who wants this feature. Your job: leave no part of the feature vague, so the plan and every task can be written without guessing. Use this when the user has an idea but no finished description; for working files or a written description, `/foreman:new` is enough.
 
@@ -27,7 +29,7 @@ You are an experienced tech lead interviewing the person who wants this feature.
 2. **Resume** if the input is `INT-NN`: open `workbench/interviews/INT-NN-<slug>.md`. If its Status is not `In Progress`, say so and stop. Show the Coverage table and Open Gaps in short, then continue at step 3 with the first open topic.
 3. **Open interviews**: if the input is empty and `workbench/interviews/` has files with Status `In Progress`, list them and ask: resume one, or start a new interview.
 4. **New interview**: if the input is empty, ask for the idea in a few sentences. Then:
-   - `NN` = next feature number (see Naming in rules.md); pick the `<slug>` from the idea.
+   - `NN` = next feature number (`wb.js next-number`; see Naming in rules.md); pick the `<slug>` from the idea.
    - Create `workbench/interviews/INT-NN-<slug>.md` from `${CLAUDE_PLUGIN_ROOT}/templates/interview.md`: Status `In Progress`, Idea = the user's words verbatim, every Coverage topic `Open`.
 
 ## 2. Study the codebase first

@@ -5,6 +5,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { readText, listDir, tableRows, field, taskIds, findFile } = require('../scripts/lib');
 
 function readStdin() {
   try {
@@ -12,52 +13,6 @@ function readStdin() {
   } catch {
     return {};
   }
-}
-
-function readText(file) {
-  try {
-    return fs.readFileSync(file, 'utf8');
-  } catch {
-    return null;
-  }
-}
-
-function listDir(dir) {
-  try {
-    return fs.readdirSync(dir);
-  } catch {
-    return [];
-  }
-}
-
-// Returns cells of every Markdown table row under `## <heading>`. Cells are split
-// on unescaped `|` only; `\|` inside a cell is a literal pipe.
-function tableRows(text, heading) {
-  const lines = text.split(/\r?\n/);
-  const start = lines.findIndex((l) => l.trim().toLowerCase() === `## ${heading}`.toLowerCase());
-  if (start === -1) return [];
-  const rows = [];
-  for (let i = start + 1; i < lines.length && !lines[i].startsWith('## '); i++) {
-    const line = lines[i].trim();
-    if (!line.startsWith('|') || /^\|[\s|:-]+\|$/.test(line)) continue;
-    rows.push(line.slice(1, -1).split(/(?<!\\)\|/).map((c) => c.trim().replace(/\\\|/g, '|')));
-  }
-  return rows.slice(1); // drop header row
-}
-
-function field(text, name) {
-  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const m = text && text.match(new RegExp(`^- ${escaped}:\\s*(.+)$`, 'mi'));
-  return m ? m[1].trim() : '';
-}
-
-function taskIds(cell) {
-  return (cell.match(/TASK-\d+/g) || []);
-}
-
-function findFile(dir, prefix) {
-  const name = listDir(dir).find((f) => f.startsWith(prefix) && f.endsWith('.md'));
-  return name ? path.join(dir, name) : null;
 }
 
 function main() {
