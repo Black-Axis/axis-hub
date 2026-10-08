@@ -247,3 +247,12 @@ test('catalog example hint matches run.md argument-hint', () => {
   const hint = fs.readFileSync(path.join(commandsDir, 'run.md'), 'utf8').match(/^argument-hint: "(.*)"$/m)[1];
   assert.ok(fs.readFileSync(path.join(commandsDir, 'catalog.md'), 'utf8').includes(`\`/foreman:run ${hint}\``));
 });
+
+// #23: the scan lives in wb.js check; doctor reads only what it judges or fixes.
+test('doctor: no feature-file reads with Node, only the files it fixes', () => {
+  const text = fs.readFileSync(path.join(commandsDir, 'doctor.md'), 'utf8');
+  assert.match(text, /`wb\.js check \[P-NN\]`/);
+  assert.match(text, /With Node, read nothing else to check: not the feature files/);
+  assert.match(text, /Read only the files you fix/);
+  assert.doesNotMatch(text.split(/\r?\n---\r?\n/)[0], /\bAgent\b/, 'doctor delegates to no subagent');
+});
