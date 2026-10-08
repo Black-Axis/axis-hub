@@ -185,3 +185,21 @@ test('without workbench/: a clear error', () => {
   assert.strictEqual(r.code, 1);
   assert.match(r.out, /^ERROR: workbench\/INDEX\.md not found/);
 });
+
+test('chain: Not Started tasks in dependency order, then blocked ones (#28)', () => {
+  const dir = project();
+  const PLAN = path.join('workbench', 'plans', 'P-01-health-endpoint.md');
+  edit(dir, PLAN, /(\| TASK-02 \| Add health route tests \| TASK-01 \|)/,
+    '$1\n| TASK-03 | Docs | TASK-04 |\n| TASK-04 | Config | — |\n| TASK-05 | Metrics | TASK-06 |\n| TASK-06 | Exporter | — |');
+  edit(dir, TRK, /(\| \[TASK-02\][^\n]*\| Not Started \| 2026-09-20 \| \|)/,
+    '$1\n| TASK-03 | Docs | Not Started | 2026-09-20 | |\n| TASK-04 | Config | Not Started | 2026-09-20 | |\n| TASK-05 | Metrics | Not Started | 2026-09-20 | |\n| TASK-06 | Exporter | Hold | 2026-09-20 | |');
+  assert.deepStrictEqual(wb(dir, 'chain', 'P-01'), { code: 0, out: [
+    '1. P-01 TASK-02 Add health route tests',
+    '2. P-01 TASK-04 Config',
+    '3. P-01 TASK-03 Docs',
+    'blocked: P-01 TASK-05 Metrics (waits for TASK-06 Hold)',
+  ].join('\n') });
+  edit(dir, path.join('workbench', 'contracts', 'CONT-01-health-endpoint.md'), /- Status: Approved/, '- Status: Draft');
+  assert.match(wb(dir, 'chain', 'P-01').out, /^ERROR: P-01 contract is "Draft", not Approved/);
+  assert.strictEqual(wb(dir, 'chain', 'P-01').code, 1);
+});

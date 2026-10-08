@@ -1,6 +1,6 @@
 ---
-description: Delegate one task to the Sonnet worker subagent, verify the result, then update tracking and docs
-argument-hint: "[P-NN] [TASK-TT]"
+description: Delegate one task (or all of a plan's tasks, one after another) to the Sonnet worker subagent, verify each result, then update tracking and docs
+argument-hint: "[P-NN] [TASK-TT | all]"
 allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git status:*), PowerShell(git status:*), Bash(git diff:*), PowerShell(git diff:*), Bash(git ls-files:*), PowerShell(git ls-files:*), Bash(git log:*), PowerShell(git log:*), Bash(git stash create:*), PowerShell(git stash create:*), Bash(tf status:*), PowerShell(tf status:*), Bash(tf diff:*), PowerShell(tf diff:*), Bash(tf history:*), PowerShell(tf history:*), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), Agent, SendMessage, AskUserQuestion
 ---
 
@@ -12,7 +12,23 @@ First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it.
 
 State script: `node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js"` ("State script" in rules.md).
 
-Exactly one task is run per invocation. You (the main agent) orchestrate and verify; the `foreman-worker` subagent implements.
+One task is run per invocation, or with `all` every remaining task of one plan, one after another (see "Run all" below). You (the main agent) orchestrate and verify; the `foreman-worker` subagent implements.
+
+## Run all (`P-NN all`)
+
+With `all` (`P-NN all`, or `all` alone when exactly one plan is active - otherwise list the active plans and ask which one):
+1. Get the run order with `wb.js chain P-NN`: every `Not Started` task in dependency order, including tasks that become ready as earlier ones finish, then `blocked:` lines for tasks waiting on a task outside that order (Hold, In Progress, Canceled). An `ERROR:` (contract not `Approved`, plan `Hold` / `Canceled` / `Done`) is refused as in step 1.3. `none`: tell the user there is nothing to run and stop. Without Node, build the same order by hand from the TRK `Tasks` table and the plan's `Task Breakdown`.
+2. Confirm once: show the numbered order and the blocked tasks, and ask with `AskUserQuestion` whether to run them all. Log the answer (`User`, `Decision`, `run all: TASK-a, TASK-b, ...`). Never start without a yes. This one confirmation replaces the per-task confirmation of step 1.1.
+3. Run each task in that order through sections 1 (from step 1.2) to 7, exactly as a single run: pre-check, In Progress, baseline tests, worker, verification, fix rounds, Done or Hold, doc, version control, and all tracking and logging. Before each task, check that it is still `Not Started` and that its `Depends On` tasks are `Done`; if not, stop before it.
+4. After each task - the first one too - one progress line as text to the user: `[k/n] TASK-TT <title>: Done (<f> fix rounds)` (or the status it ended in). Skip the per-task report of section 8.
+5. Questions that are part of a normal run - the commit confirmation of "Git commit" in rules.md, `tf` commands, the Auto-close `Ask` after the last task - are asked as usual; on the expected answer the run continues.
+6. **Stop** after the current task, starting no further one, when:
+   - verification fails and the task goes on `Hold` (or it is `Canceled`);
+   - the pre-check finds big problems, the user's own uncommitted changes in the task's files, or baseline tests that already fail - ask the question of that step as a single run does and apply the answer to this task;
+   - a permission was denied to you or the worker;
+   - the user answers any question with anything other than continuing;
+   - the next task is no longer `Not Started` or one of its `Depends On` tasks is not `Done`.
+7. At the end, the report of section 8 for the whole run: one row per task run (result, fix rounds, files changed, tests), where and why the run stopped (if it did), the tasks not run, and the next step. Suggest `/clear` before the next command when several tasks ran (their reports fill the context; `workbench/` holds everything needed).
 
 ## 1. Resolve and check
 

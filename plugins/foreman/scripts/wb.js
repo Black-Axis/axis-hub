@@ -5,6 +5,7 @@
 //   node wb.js status P-NN [TASK-TT] <status> --by <User|Main agent> --reason "<text>" [--note "<text>"]  (no --note: note cleared)
 //   node wb.js refresh P-NN        recompute derived Plan Status, INDEX Progress and Contract Status
 //   node wb.js ready [P-NN]        tasks that can run now
+//   node wb.js chain P-NN          Not Started tasks in run order (/foreman:run P-NN all), then blocked ones
 //   node wb.js overview            one line per feature and open interview
 //   node wb.js next-number         next free feature number NN
 //   node wb.js check [P-NN]        mechanical consistency checks (/foreman:doctor); exit 2 with findings
@@ -126,6 +127,37 @@ function ready(f) {
   return tasks.filter((t) => t.status === 'Not Started' && (deps[t.id] || []).every((d) => statusOf[d] === 'Done'));
 }
 
+// Not Started tasks of an active, approved plan in dependency order (ties by task
+// number), assuming each runs to Done; tasks that wait on a task outside that
+// order (Hold, In Progress, Canceled, unknown, or a cycle) are returned as blocked.
+function chain(f) {
+  const trk = readText(f.trk) || '';
+  const plan = canonStatus(field(trk, 'Plan Status')) || 'Not Started';
+  const contract = field(readText(f.contract || '') || '', 'Status');
+  if (!/^approved$/i.test(contract)) fail(`P-${f.nn} contract is "${contract || 'missing'}", not Approved - run /foreman:approve P-${f.nn}`);
+  if (['Hold', 'Canceled', 'Done'].includes(plan)) fail(`P-${f.nn} is ${plan}`);
+  const tasks = tasksOf(trk);
+  const deps = depsOf(readText(f.plan || ''));
+  const statusOf = Object.fromEntries(tasks.map((t) => [t.id, t.status]));
+  const num = (id) => Number(id.slice(5));
+  const done = new Set(tasks.filter((t) => t.status === 'Done').map((t) => t.id));
+  let left = tasks.filter((t) => t.status === 'Not Started').sort((a, b) => num(a.id) - num(b.id));
+  const order = [];
+  for (;;) {
+    const next = left.find((t) => (deps[t.id] || []).every((d) => done.has(d)));
+    if (!next) break;
+    order.push(next);
+    done.add(next.id);
+    left = left.filter((t) => t !== next);
+  }
+  const blocked = left.map((t) => {
+    const waits = (deps[t.id] || []).filter((d) => !done.has(d))
+      .map((d) => `${d} ${statusOf[d] && statusOf[d] !== 'Not Started' ? statusOf[d] : statusOf[d] ? 'blocked' : 'unknown'}`);
+    return { ...t, waits };
+  });
+  return { order, blocked };
+}
+
 function appendHistory(doc, cs) {
   const t = tableAt(doc.lines, 'History');
   if (!t || t.header === -1) fail(`${path.basename(doc.file)} has no History table`);
@@ -244,6 +276,14 @@ function cmdReady(args) {
   return out.length ? out : ['none'];
 }
 
+function cmdChain(args) {
+  const f = feature(workbench(), planId(args[0]));
+  const { order, blocked } = chain(f);
+  const out = order.map((t, i) => `${i + 1}. P-${f.nn} ${t.id} ${t.title}`);
+  for (const t of blocked) out.push(`blocked: P-${f.nn} ${t.id} ${t.title} (waits for ${t.waits.join(', ')})`);
+  return out.length ? out : ['none'];
+}
+
 function cmdOverview() {
   const wb = workbench();
   const out = [];
@@ -301,7 +341,7 @@ function cmdCheck(args) {
   return { out, code: findings.length ? 2 : 0 };
 }
 
-const COMMANDS = { status: cmdStatus, refresh: cmdRefresh, ready: cmdReady, overview: cmdOverview, 'next-number': cmdNextNumber, check: cmdCheck };
+const COMMANDS = { status: cmdStatus, refresh: cmdRefresh, ready: cmdReady, chain: cmdChain, overview: cmdOverview, 'next-number': cmdNextNumber, check: cmdCheck };
 
 function main(argv) {
   const [name, ...args] = argv;
