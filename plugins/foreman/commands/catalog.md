@@ -1,6 +1,6 @@
 ---
 description: List all foreman commands, subagents, skills, and hooks with what each does
-allowed-tools: Read, Glob
+allowed-tools: Read, Glob, Grep
 ---
 
 # /foreman:catalog
@@ -9,14 +9,20 @@ This command is read-only: do not modify any file. Build the output from the plu
 
 ## 1. Collect components
 
-All paths are under `${CLAUDE_PLUGIN_ROOT}`:
+All paths are under `${CLAUDE_PLUGIN_ROOT}`. Use exactly these three calls (run them together), never read a command, agent, skill, or script file in full:
 
-- **Commands**: every `commands/*.md`. Name = `/foreman:<file name without .md>`. Description = the `description` frontmatter field. Append the `argument-hint` (if any) after the command name, e.g. `/foreman:run <P-NN> <TASK-TT>`.
-- **Subagents**: every `agents/*.md`. Name = the `name` frontmatter field. Description = the `description` field, plus the model in parentheses if a `model` field exists (e.g. "(model: sonnet)").
-- **Skills**: every `skills/*/SKILL.md`. Name = the `name` frontmatter field (or the folder name). Description = the `description` field.
-- **Hooks**: `hooks/hooks.json` (and any hooks declared in `.claude-plugin/plugin.json`). One row per hook: Name = the event (e.g. `SessionStart`) plus the matcher if any; description = what the hook command does (read the script it runs if needed).
+1. `Grep` with pattern `^(name|description|argument-hint|model):`, output mode `content`, on `${CLAUDE_PLUGIN_ROOT}` with glob `{commands,agents,skills}/**/*.md`. Each match gives the file and one frontmatter field.
+2. `Read` `${CLAUDE_PLUGIN_ROOT}/hooks/hooks.json`.
+3. `Grep` with pattern `^// Foreman`, output mode `content`, `-A 1`, on `${CLAUDE_PLUGIN_ROOT}/hooks` with glob `*.js` (the first comment of each hook script says what it does).
 
-A folder or file that does not exist means the plugin provides none of that component.
+Build the rows from those results:
+
+- **Commands**: every `commands/*.md`. Name = `/foreman:<file name without .md>`. Description = the `description` field. Append the `argument-hint` (if any) after the command name, e.g. `/foreman:run <P-NN> <TASK-TT>`.
+- **Subagents**: every `agents/*.md`. Name = the `name` field. Description = the `description` field, plus the model in parentheses if a `model` field exists (e.g. "(model: sonnet)").
+- **Skills**: every `skills/*/SKILL.md`. Name = the `name` field (or the folder name). Description = the `description` field.
+- **Hooks**: one row per hook in `hooks.json`: Name = the event (e.g. `SessionStart`) plus the matcher if any; description = what the script's first comment says.
+
+A component type with no matches means the plugin provides none of it.
 
 ## 2. Output
 

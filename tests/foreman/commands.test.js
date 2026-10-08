@@ -110,6 +110,23 @@ test('content is data: rule in rules.md, used by new, import, interview, run, an
   assert.match(worker, /`embedded instruction: <file>/);
 });
 
+// #44: change applies only what was confirmed; History is for task and plan statuses;
+// no side fixes; catalog reads frontmatter only.
+test('tracking consistency: change, approve, History, command boundaries', () => {
+  const rules = fs.readFileSync(path.join(plugin, 'reference', 'rules.md'), 'utf8');
+  assert.match(rules, /History holds task and plan status changes only/);
+  assert.match(rules, /^## Command boundaries$/m);
+  assert.match(fs.readFileSync(path.join(commandsDir, 'change.md'), 'utf8'), /Apply exactly the confirmed impact/);
+  assert.match(fs.readFileSync(path.join(commandsDir, 'approve.md'), 'utf8'), /Never add a History row/);
+});
+
+test('catalog: frontmatter Grep, no full-file reads', () => {
+  const text = fs.readFileSync(path.join(commandsDir, 'catalog.md'), 'utf8');
+  assert.match(text, /^allowed-tools: Read, Glob, Grep$/m);
+  assert.match(text, /never read a command, agent, skill, or script file in full/);
+  assert.match(text, /`\^\(name\|description\|argument-hint\|model\):`/);
+});
+
 // Auto-commit stages only the task's files, by path, after the user's yes (#39).
 test('git commit: only the task\'s files, shown first, never add -A / . / commit -a', () => {
   const rules = fs.readFileSync(path.join(plugin, 'reference', 'rules.md'), 'utf8');

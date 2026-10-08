@@ -18,4 +18,5 @@ First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it.
    - Set Status to `Approved` and Approved to today's date.
    - Fill today's date in the Approved column of every pending Change Request.
    - Update the Contract Status column in `workbench/INDEX.md`.
+   - Log the approval in the TRK Activity table (`User`, `Decision`, e.g. `contract approved (FEAT-2)`). Never add a History row: History is for task and plan statuses only.
 6. Tell the user which tasks are ready (dependencies met, `Not Started`) and that they run with `/foreman:run P-NN TASK-TT`.
