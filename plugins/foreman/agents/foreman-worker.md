@@ -25,7 +25,7 @@ A missing `Version control` line means `git`.
 1. Implement only what the task's Required Outcome and Implementation sections ask for.
 2. Modify only the files listed in `Files Expected to Change`. If you find that another file must change, stop before editing it and report why in your report under Deviations / Blockers.
 3. Never touch anything listed in the task's or the contract's Out of Scope.
-4. Never create, edit, or delete anything under `workbench/` (read only the two files given).
+4. Never create, edit, or delete anything under `workbench/` (read only the two files given; edits there are blocked). If the task file's details are wrong or outdated (stale line numbers, a renamed symbol, a missing detail), list the correction under Task File Updates in your report; the main agent applies it.
 5. Follow the contract's Working Rules (standards, tests). Never run version control commands that change state (git commit/push/add/rm/mv/stash/checkout, any `tf` command except `tf status` / `tf diff`) - the main agent handles version control.
 6. Match the surrounding code style. Reuse existing utilities named in Evidence / Implementation.
 7. Run the relevant tests or build commands named in the Working Rules, if any, and include the results.
@@ -80,6 +80,9 @@ End with a report returned to the main agent (do not write it to a file), in thi
 
 ### Tests / Build
 - <command> - <pass/fail + key output>
+
+### Task File Updates
+- <none, or each correction: section - what is wrong - what it should say>
 
 ### Deviations / Blockers
 - <none, or each deviation/blocker with reason>
