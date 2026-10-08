@@ -2,8 +2,10 @@
 // Foreman PreToolUse hook: decides on changes to the project's workbench/ folder.
 // - Main agent: Edit / Write / MultiEdit / NotebookEdit inside workbench/ are allowed
 //   without a prompt, and so are foreman's own fixed shell forms there (setup folders,
-//   snapshots in workbench/.baseline/, the date command). A command's allowed-tools
-//   do not cover these in follow-up turns or after an Agent call.
+//   snapshots in workbench/.baseline/, the date command), and the read-only version
+//   control commands foreman's commands pre-approve (git status / diff / ls-files / log /
+//   stash create, tf status / diff / history) as single commands. A command's
+//   allowed-tools do not cover these in follow-up turns or after an Agent call.
 // - Subagents: file edits inside workbench/ are denied (only the main agent writes it).
 // - foreman-worker: shell commands that write files (redirects, tee, sed -i, Set-Content,
 //   script one-liners that write files, ...) are denied; it changes files only with
@@ -158,6 +160,40 @@ function shellWrite(tool, command) {
     || /(^|[\s;|&(])perl(\s[^;&|]*)?\s-[a-zA-Z]*i/.test(bare);
 }
 
+// The read-only version control commands of foreman's allowed-tools, as one command:
+// no operators, redirects, variables, subexpressions, or file-writing options.
+const READ_ONLY_VCS = /^(git\s+(status|diff|ls-files|log|stash\s+create)|tf(\.exe)?\s+(status|diff|history))(\s+[^;&|<>`$(){}\r\n]*)?$/i;
+function readOnlyVcs(command) {
+  const cmd = command.trim();
+  return READ_ONLY_VCS.test(cmd) && !/(^|\s)--output\b/.test(cmd);
+}
+
+// True when the user's settings deny or ask for this shell command (a hook allow
+// would override those rules).
+function settingsRestrictShell(root, tool, command) {
+  const files = [
+    path.join(os.homedir(), '.claude', 'settings.json'),
+    path.join(root, '.claude', 'settings.json'),
+    path.join(root, '.claude', 'settings.local.json'),
+  ];
+  const cmd = command.trim();
+  for (const file of files) {
+    let perms = {};
+    try {
+      perms = JSON.parse(fs.readFileSync(file, 'utf8')).permissions || {};
+    } catch {
+      continue;
+    }
+    for (const rule of [...(perms.deny || []), ...(perms.ask || [])]) {
+      const m = /^(Bash|PowerShell)(?:\((.*)\))?$/.exec(String(rule).trim());
+      if (!m || m[1] !== tool) continue;
+      const prefix = (m[2] || '').replace(/:?\*$/, '').trim();
+      if (!prefix || cmd.toLowerCase().startsWith(prefix.toLowerCase())) return true;
+    }
+  }
+  return false;
+}
+
 function decide(input) {
   const tool = input.tool_name;
   if (!FILE_TOOLS.has(tool) && tool !== 'Bash' && tool !== 'PowerShell') return null;
@@ -190,6 +226,10 @@ function decide(input) {
       return { permissionDecision: 'deny', permissionDecisionReason: 'foreman: the worker changes files only with Edit / Write, never through the shell. Make the change with Edit / Write, or report it under Deviations / Blockers.' };
     }
     return null;
+  }
+  if (readOnlyVcs(ti.command)) {
+    if (!fs.existsSync(path.join(wbPath, 'INDEX.md')) || settingsRestrictShell(root, tool, ti.command)) return null;
+    return { permissionDecision: 'allow', permissionDecisionReason: 'foreman: read-only version control command' };
   }
   if (foremanShell(tool, ti.command, ctx) && !settingsDenyWorkbench(root)) {
     return { permissionDecision: 'allow', permissionDecisionReason: 'foreman: workbench/ command' };

@@ -169,6 +169,60 @@ test('shell writes: only the worker is denied, not the main agent or other subag
   assert.strictEqual(run(dir, 'Bash', { command: 'echo x > src/app.js' }, { agent_id: 'a4', agent_type: 'foreman-worker' }), 'deny', 'without plugin prefix');
 });
 
+// After the main agent's first Agent call, allowed-tools no longer cover these (#63).
+test('main agent: single read-only version control commands are allowed', () => {
+  const dir = project();
+  for (const [tool, command] of [
+    ['Bash', 'git status --porcelain'],
+    ['Bash', 'git diff 261e993d -- src/app.js'],
+    ['Bash', 'git diff HEAD --stat -- "src/my file.js"'],
+    ['Bash', 'git log -1 --format=%H'],
+    ['Bash', 'git ls-files workbench'],
+    ['Bash', 'git stash create'],
+    ['Bash', 'tf status'],
+    ['PowerShell', 'git diff 261e993d --stat'],
+    ['PowerShell', 'tf diff /format:unified src/app.js'],
+    ['PowerShell', 'tf.exe history /noprompt src'],
+  ]) assert.strictEqual(run(dir, tool, { command }), 'allow', command);
+});
+
+test('read-only version control: anything else gets no decision', () => {
+  const dir = project();
+  for (const command of [
+    'git status; rm -rf src',
+    'git diff && npm test',
+    'git diff | tee out.txt',
+    'git diff > out.patch',
+    'git diff --output=out.patch',
+    'git log $(whoami)',
+    'git diff `whoami`',
+    'git commit -m x',
+    'git checkout -- src/app.js',
+    'git stash',
+    'git stash pop',
+    'git -c core.pager=x diff',
+    'cd src && git status',
+  ]) assert.strictEqual(run(dir, 'Bash', { command }), null, command);
+  assert.strictEqual(run(dir, 'PowerShell', { command: 'git diff; Remove-Item src -Recurse' }), null);
+  assert.strictEqual(run(dir, 'Bash', { command: 'git status' }, worker), null, 'subagent');
+  assert.strictEqual(run(dir, 'Bash', { command: 'git status' }, { permission_mode: 'plan' }), null, 'plan mode');
+  assert.strictEqual(run(project({ workbench: false }), 'Bash', { command: 'git status' }), null, 'not a foreman project');
+  assert.strictEqual(run(project({ index: false }), 'Bash', { command: 'git status' }), null, 'workbench/ without INDEX.md');
+});
+
+test('read-only version control: deny and ask rules in settings are respected', () => {
+  let dir = project({ deny: ['Bash(git log:*)'] });
+  assert.strictEqual(run(dir, 'Bash', { command: 'git log -1' }), null);
+  assert.strictEqual(run(dir, 'Bash', { command: 'git status' }), 'allow', 'other commands still allowed');
+  dir = project({ deny: ['Bash'] });
+  assert.strictEqual(run(dir, 'Bash', { command: 'git status' }), null);
+  assert.strictEqual(run(dir, 'PowerShell', { command: 'git status' }), 'allow', 'other tool');
+  dir = project();
+  fs.mkdirSync(path.join(dir, '.claude'));
+  fs.writeFileSync(path.join(dir, '.claude', 'settings.json'), JSON.stringify({ permissions: { ask: ['PowerShell(git diff:*)'] } }));
+  assert.strictEqual(run(dir, 'PowerShell', { command: 'git diff' }), null);
+});
+
 test('other tools and broken input get no decision', () => {
   const dir = project();
   assert.strictEqual(run(dir, 'Read', { file_path: wbFile(dir) }), null);
