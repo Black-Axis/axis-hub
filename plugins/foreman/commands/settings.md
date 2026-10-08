@@ -33,6 +33,7 @@ The **default** of a setting is the user's default above; if it is empty, still 
 | Working rules | Auto-close | `Ask`, `Yes`, `No` | `Ask` | Same |
 | Working rules | Tests | command(s), or "none available" | proposed from the project (step 2 of `${CLAUDE_PLUGIN_ROOT}/reference/setup.md`) | Same |
 | Working rules | Baseline tests | `yes`, `no` | `yes` | Same |
+| Working rules | Full tests | `close`, `each task` | `close` | Same |
 | Working rules | Standards | text | proposed from the project | Same |
 | Working rules | Ask the user when | text | proposed from the project | Same |
 
@@ -56,7 +57,7 @@ Show one table with every setting: `Setting | Current | Default | Values`, group
 ## 4. Choose
 
 1. Ask with one `AskUserQuestion` (multi-select): which groups to change - `Project`, `Behavior`, `Working rules`. If the user picks none, stop.
-2. For each chosen group, one `AskUserQuestion` call with one question per setting of that group (at most 4 per call; Working rules needs two calls: Commit policy, Auto-close, Baseline tests, Tests - then Standards, Ask the user when). For each question:
+2. For each chosen group, one `AskUserQuestion` call with one question per setting of that group (at most 4 per call; Working rules needs two calls: Commit policy, Auto-close, Baseline tests, Full tests - then Tests, Standards, Ask the user when). For each question:
    - Options are the valid values. The current value comes first, labeled `(current)`; label the default `(default)` (one option can carry both). Add a short description of what each option does.
    - Fix rounds: options `4`, `2`, `6`, and the current value if different; other numbers via "Other".
    - Text settings (Tests, Standards, Ask the user when, Commit policy "other"): offer the current value, a value proposed from the project, and "Other" to type.

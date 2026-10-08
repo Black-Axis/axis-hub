@@ -57,6 +57,11 @@ function check(wb, only) {
       if (!value) { if (required) add('INDEX.md', `missing setting "${name}"`); continue; }
       if (!valid.test(value)) add('INDEX.md', `invalid ${name} value "${value}"`);
     }
+    // Working Rules Defaults (optional section; lines optional).
+    const base = field(indexText, 'Baseline tests');
+    if (base && !/^(yes|no)$/.test(base)) add('INDEX.md', `invalid Baseline tests default "${base}"`);
+    const full = field(indexText, 'Full tests');
+    if (full && !/^(close|each task)$/.test(full)) add('INDEX.md', `invalid Full tests default "${full}"`);
   }
 
   // Index rows: NN -> { row cells }.
@@ -234,6 +239,8 @@ function checkFeature(wb, nn, slug, f, indexRow, head, add, notes) {
     if (auto && !/^(Ask|Yes|No)$/.test(auto)) add(contractRel, `invalid Auto-close "${auto}"`);
     const base = field(contract, 'Baseline tests').split(/\s/)[0];
     if (base && !/^(yes|no)$/.test(base)) add(contractRel, `invalid Baseline tests "${base}"`);
+    const full = field(contract, 'Full tests').replace(/\s*\(.*$/, '');
+    if (full && !/^(close|each task)$/.test(full)) add(contractRel, `invalid Full tests "${full}"`);
     if (status !== 'Approved') {
       for (const c of tableRows(contract, 'Change Requests')) {
         if (/\d{4}-\d{2}-\d{2}/.test(c[c.length - 1] || '') && status === 'Draft') add(contractRel, `change request ${c[0]} approved while the contract is ${status}`);

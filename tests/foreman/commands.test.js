@@ -272,3 +272,29 @@ test('run all: one confirmation, chain order, full flow per task, stop rules (#2
   assert.match(fs.readFileSync(path.join(plugin, 'README.md'), 'utf8'), /`\/foreman:run P-01 all`/);
   assert.match(fs.readFileSync(path.join(plugin, 'skills', 'foreman-guide', 'SKILL.md'), 'utf8'), /`\/foreman:run P-NN all`/);
 });
+
+// #35: targeted task tests, Full tests rule, baseline reuse (git only).
+test('test runs: task Tests row, Full tests rule, baseline reuse', () => {
+  const rules = fs.readFileSync(path.join(plugin, 'reference', 'rules.md'), 'utf8');
+  const sec = rules.slice(rules.indexOf('## Test runs'), rules.indexOf('## Scope discipline'));
+  assert.match(sec, /header row `Tests`/);
+  assert.match(sec, /\*\*Full tests\*\* \(contract Working Rule, missing = `close`\)/);
+  assert.match(sec, /`\/foreman:close` always runs the contract's Tests in full/);
+  assert.match(sec, /\*\*Baseline reuse\*\* \(git only; tfvc and none always run the baseline\)/);
+  assert.match(sec, /`git diff --stat <hash> -- \. ":!workbench"`/);
+  assert.match(sec, /no untracked file/);
+  const run = fs.readFileSync(path.join(commandsDir, 'run.md'), 'utf8');
+  assert.equal((run.match(/"Test runs" in rules\.md/g) || []).length >= 3, true, 'run.md points to Test runs for baseline, verify, fix rounds');
+  assert.match(fs.readFileSync(path.join(commandsDir, 'close.md'), 'utf8'), /never a task's `Tests` row/);
+  assert.match(fs.readFileSync(path.join(plugin, 'templates', 'task.md'), 'utf8'), /^\| Tests \| /m);
+  for (const t of ['contract.md', 'INDEX.md']) {
+    assert.match(fs.readFileSync(path.join(plugin, 'templates', t), 'utf8'), /^- Full tests: \{\{close \| each task\}\}/m, t);
+  }
+  assert.match(fs.readFileSync(path.join(commandsDir, 'settings.md'), 'utf8'), /\| Working rules \| Full tests \| `close`, `each task` \| `close` \|/);
+  assert.match(fs.readFileSync(path.join(plugin, 'reference', 'setup.md'), 'utf8'), /- Full tests: `close`/);
+  // The guard lets the main agent run the reuse check without a prompt.
+  const guard = fs.readFileSync(path.join(plugin, 'hooks', 'workbench-guard.js'), 'utf8');
+  const re = new RegExp(guard.match(/const READ_ONLY_VCS = \/(.*)\/i;/)[1], 'i');
+  assert.ok(re.test('git diff --stat abc123 -- . ":!workbench"'));
+  assert.ok(re.test('git status --porcelain --untracked-files=all -- . ":!workbench"'));
+});

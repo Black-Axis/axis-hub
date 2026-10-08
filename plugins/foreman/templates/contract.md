@@ -26,6 +26,7 @@
 - Auto-close: {{Ask | Yes | No}} (what happens when the last task is Done: ask to run /foreman:close, run it automatically, or never)
 - Tests: {{required commands, e.g. `npm test`, or "none available"}}
 - Baseline tests: {{yes | no}} (yes = run the tests before each task, so failures that already exist are not blamed on the worker)
+- Full tests: {{close | each task}} (close = a task with its own Tests runs only those during /foreman:run, the full Tests run at /foreman:close; each task = also the full Tests once after each task)
 - Standards: {{coding standards / conventions to follow}}
 - Ask the user when: {{situations where the main agent must stop and ask}}
 

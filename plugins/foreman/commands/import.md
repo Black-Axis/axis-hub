@@ -49,7 +49,7 @@ Per feature, from the templates:
 - **Contract**:
   - Unfinished feature: Status `Draft`. Scope, Out of Scope, Acceptance Criteria from the sources; Working Rules as in `/foreman:new` step 6, including the INDEX `Working Rules Defaults` if present (ask the user once for all imported features, not per feature).
   - Fully finished feature: Status `Approved`, Approved = today, with a note line `Imported - completed before foreman`.
-- **Tasks**: all mandatory sections; header Source = the old source file path. Fill from sources; fill Evidence and Files Expected to Change from the codebase where you can verify them; otherwise `Missing - from import`. Done tasks: summarize what was done in Required Outcome.
+- **Tasks**: all mandatory sections; header Source = the old source file path; header `Tests` = the targeted command if the source names one, else `—`. Fill from sources; fill Evidence and Files Expected to Change from the codebase where you can verify them; otherwise `Missing - from import`. Done tasks: summarize what was done in Required Outcome.
 - **Tracking**: one row per task with its mapped status and note `imported`. History: one row per task and one for the plan, `— -> <status> | Main agent | Imported from <source path>`.
 - **Doc**: Implemented Tasks from Done tasks (what, files, decisions if known). For a fully finished feature, also Summary, Architecture / Key Files, How to Extend; Acceptance: `Not verified - imported`.
 - **INDEX**: one row per feature; then `wb.js refresh P-NN` for each imported feature.
