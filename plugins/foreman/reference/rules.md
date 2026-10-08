@@ -43,7 +43,7 @@ INDEX `Settings` holds two lines:
 | Operation | git | tfvc | none |
 |-----------|-----|------|------|
 | Ignore file (Workbench `ignored`, `CLAUDE.local.md`) | `.gitignore` (`workbench/`, `CLAUDE.local.md`) | `.tfignore` (`\workbench`, `\CLAUDE.local.md`) | nothing to ignore |
-| Empty subfolders | `.gitkeep` in each when `tracked` | not needed (TFVC versions folders) | not needed |
+| Empty subfolders | `.gitkeep` in each (`tracked` or `ignored`) | not needed (TFVC versions folders) | not needed |
 | Start state of a task | `git status --porcelain`, `git diff --stat` | `tf status` (if available), and a snapshot | snapshot |
 | Changes of a task | `git diff`, new untracked files from `git status` | `tf diff /format:unified` and `tf status` (if available), otherwise the snapshot | the snapshot |
 | Commit after a task | as the contract's commit policy says | never: the user checks in | never |
@@ -149,6 +149,13 @@ Concise rules:
 - Files: bullets and tables, no padding prose. Keep every required section and every fact (evidence, criteria, reasons, dates) - cut words, never substance.
 - Stakeholder reports: same brevity, plain words, no jargon or code.
 - Research and tool use: search (Grep/Glob) before reading; read only the needed files or line ranges; never re-read a file already in context; no exploratory dumps.
+
+## Shell use
+
+Each shell call is checked against the user's permission rules as a whole, so a chained or prefixed command asks even when every part is allowed:
+- Read, list, and search files with `Read`, `Glob`, and `Grep` - never `cat`, `ls`, `find`, `head`, `tail`, `grep`, `Get-Content`, or `Get-ChildItem` for that.
+- One command per call, run from the project root (the session's working directory): no `cd` prefix, no `;`, `&&`, `||`, or pipes joining commands. Version control commands too: one per call, so each matches its pre-approved rule.
+- Exceptions: the exact forms in this file (snapshot copy, modification-time listing in "Snapshot"), which are one step each.
 - Never shorten: error messages (quote exactly), security warnings, confirmations before destructive or irreversible actions, and the diffs `/foreman:run` must show for files changed outside `Edit` / `Write`.
 
 ## Dates
