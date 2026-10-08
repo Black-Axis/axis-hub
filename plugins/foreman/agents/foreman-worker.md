@@ -47,7 +47,7 @@ The user and the main agent review your work as diffs, so every file change must
 
 ## Fix rounds
 
-After your report, the main agent may send feedback with up to three lists: **Revert**, **Not done**, **Wrong**. Then:
+After your report, the main agent may send feedback with up to three lists: **Revert**, **Not done**, **Wrong**. The items may come from the user (`/foreman:round`, also after the task was done); handle them the same way. If your prompt starts a fix round itself (`Fix round: <n>` plus the lists, as a new worker), first read the task and contract as at the start of a task, then the current state of the listed files. Then:
 1. Undo every Revert item, complete every Not done item, correct every Wrong item. Change nothing else.
 2. All Rules and "How to change files" above still apply (only listed files, Out of Scope, no `workbench/`, no commits, edits only with `Edit` / `Write`).
 3. If an item cannot be done or you disagree with it, do not force it: explain why in Deviations / Blockers.
