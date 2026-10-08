@@ -63,7 +63,7 @@ Fixture `notes-api`: a small Node notes API (`src/`, `spec/`) with a `workbench/
 | `02-fix-rounds-hold` | fix rounds up to the INDEX limit, Hold, resume, round on a Done task, cancel, plan hold |
 | `03-run-all-test-runs` | `run P-02 all` in chain order; targeted `Tests` rows; recorded state; when a baseline can be reused |
 | `04-doctor` | seeded inconsistencies found by `wb.js check`, clean after the fixes |
-| `05-hooks` | `workbench-guard` decisions for the main agent, worker, and reporter; session start summary |
+| `05-hooks` | `workbench-guard` decisions for the main agent, worker, and reporter; every git / tf command in the vcs files gets the right decision; session start summary |
 | `06-setup-new` | init on a fresh project; new, interview, import from the plugin templates; settings |
 | `07-change` | small change inline; big change blocks runs until approved again; new task in the chain |
 | `08-report-catalog-guide` | report sections and save rules, catalog frontmatter, guide gating |

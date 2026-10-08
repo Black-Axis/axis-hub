@@ -130,10 +130,10 @@ test('catalog: frontmatter Grep, no full-file reads', () => {
 
 // A task's git changes are diffed against its start hash, not HEAD (#38).
 test('git: start hash isolates the task\'s changes', () => {
-  const rules = fs.readFileSync(path.join(plugin, 'reference', 'rules.md'), 'utf8');
+  const vcs = fs.readFileSync(path.join(plugin, 'reference', 'vcs-git.md'), 'utf8');
   const run = fs.readFileSync(path.join(commandsDir, 'run.md'), 'utf8');
-  assert.match(rules, /\*\*Start hash\*\* \(git\)/);
-  assert.match(rules, /run `git stash create`/);
+  assert.match(vcs, /\*\*Start hash\*\* - isolates/);
+  assert.match(vcs, /run `git stash create`/);
   assert.match(run, /^allowed-tools: .*Bash\(git stash create:\*\), PowerShell\(git stash create:\*\)/m);
   assert.match(run, /`git diff <start hash>`/);
   assert.match(fs.readFileSync(path.join(commandsDir, 'close.md'), 'utf8'), /`start state: <hash>`/);
@@ -167,13 +167,12 @@ test('guide skill is gated on workbench/INDEX.md; ask runs commands only via Ski
 
 // Auto-commit stages only the task's files, by path, after the user's yes (#39).
 test('git commit: only the task\'s files, shown first, never add -A / . / commit -a', () => {
-  const rules = fs.readFileSync(path.join(plugin, 'reference', 'rules.md'), 'utf8');
-  assert.match(rules, /\*\*Git commit\*\*/);
-  assert.match(rules, /`git commit -m "<message>" -- <paths>`/);
-  for (const file of ['run.md', 'close.md']) {
-    assert.match(fs.readFileSync(path.join(commandsDir, file), 'utf8'), /"Git commit" in rules\.md/, file);
-  }
-  const files = [path.join(plugin, 'reference', 'rules.md'), path.join(plugin, 'agents', 'foreman-worker.md'),
+  const vcs = fs.readFileSync(path.join(plugin, 'reference', 'vcs-git.md'), 'utf8');
+  assert.match(vcs, /^## Commit$/m);
+  assert.match(vcs, /`git commit -m "<message>" -- <paths>`/);
+  assert.match(fs.readFileSync(path.join(commandsDir, 'run.md'), 'utf8'), /follow "Commit": only the task's files/);
+  assert.match(fs.readFileSync(path.join(commandsDir, 'close.md'), 'utf8'), /as in "Commit" in the vcs file/);
+  const files = [path.join(plugin, 'reference', 'rules.md'), path.join(plugin, 'reference', 'vcs-git.md'), path.join(plugin, 'agents', 'foreman-worker.md'),
     ...fs.readdirSync(commandsDir).map((f) => path.join(commandsDir, f))];
   for (const file of files) {
     for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
@@ -205,7 +204,7 @@ test('templates are read before the question that precedes writing them', () => 
   const cases = [
     ['commands/new.md', 'Before asking, read the templates', 'ask for a resolution of each with `AskUserQuestion`'],
     ['commands/import.md', 'Before asking, read the templates', 'Ask the user with `AskUserQuestion` to confirm or correct'],
-    ['commands/interview.md', 'read `${CLAUDE_PLUGIN_ROOT}/commands/new.md` and the templates', '## 3. Interview rounds'],
+    ['commands/interview.md', 'read `${CLAUDE_PLUGIN_ROOT}/commands/new.md`, the templates', '## 3. Interview rounds'],
     ['reference/setup.md', 'Before asking anything, read `${CLAUDE_PLUGIN_ROOT}/templates/INDEX.md`', 'Ask the settings together'],
     ['commands/round.md', '`${CLAUDE_PLUGIN_ROOT}/commands/run.md` (this command reuses', 'ask what is wrong with `AskUserQuestion`'],
     ['commands/run.md', 'read `${CLAUDE_PLUGIN_ROOT}/commands/close.md` first', '"All tasks Done. Run /foreman:close P-NN now?"'],
@@ -280,9 +279,13 @@ test('test runs: task Tests row, Full tests rule, baseline reuse', () => {
   assert.match(sec, /header row `Tests`/);
   assert.match(sec, /\*\*Full tests\*\* \(contract Working Rule, missing = `close`\)/);
   assert.match(sec, /`\/foreman:close` always runs the contract's Tests in full/);
-  assert.match(sec, /\*\*Baseline reuse\*\* \(git only; tfvc and none always run the baseline\)/);
-  assert.match(sec, /`git diff --stat <hash> -- \. ":!workbench"`/);
-  assert.match(sec, /no untracked file/);
+  assert.match(sec, /\*\*Baseline reuse\*\*: .*"Baseline reuse" in the vcs file \(git only; tfvc and none always run the baseline\)/);
+  const git = fs.readFileSync(path.join(plugin, 'reference', 'vcs-git.md'), 'utf8');
+  assert.match(git, /`git diff --stat <hash> -- \. ":!workbench"`/);
+  assert.match(git, /no untracked file/);
+  for (const v of ['tfvc', 'none']) {
+    assert.match(fs.readFileSync(path.join(plugin, 'reference', `vcs-${v}.md`), 'utf8'), /## Baseline reuse\s+Never: always run the baseline tests\./, v);
+  }
   const run = fs.readFileSync(path.join(commandsDir, 'run.md'), 'utf8');
   assert.equal((run.match(/"Test runs" in rules\.md/g) || []).length >= 3, true, 'run.md points to Test runs for baseline, verify, fix rounds');
   assert.match(fs.readFileSync(path.join(commandsDir, 'close.md'), 'utf8'), /never a task's `Tests` row/);
@@ -297,4 +300,38 @@ test('test runs: task Tests row, Full tests rule, baseline reuse', () => {
   const re = new RegExp(guard.match(/const READ_ONLY_VCS = \/(.*)\/i;/)[1], 'i');
   assert.ok(re.test('git diff --stat abc123 -- . ":!workbench"'));
   assert.ok(re.test('git status --porcelain --untracked-files=all -- . ":!workbench"'));
+});
+
+// #26: per-VCS rules live in reference/vcs-<value>.md, so a git project's run loads no
+// TFVC or no-VCS text.
+test('version control split: vcs files share sections, rules.md and run.md hold no per-VCS detail', () => {
+  const ref = path.join(plugin, 'reference');
+  const read = (file) => fs.readFileSync(path.join(ref, file), 'utf8');
+  const heads = (v) => read(`vcs-${v}.md`).match(/^## .+$/gm).filter((h) => h !== '## `tf` availability' && h !== '## Read-only files');
+  assert.deepStrictEqual(heads('tfvc'), heads('git'));
+  assert.deepStrictEqual(heads('none'), heads('git'));
+  const rules = read('rules.md');
+  const run = fs.readFileSync(path.join(commandsDir, 'run.md'), 'utf8');
+  // Detection in rules.md still names the TFVC markers ($tf, .tfignore).
+  const tfvcOnly = /\\workbench|tf checkout|tf delete|tf add|\/stopafter|Visual Studio/;
+  for (const [name, text] of [['rules.md', rules], ['run.md', run], ['vcs-git.md', read('vcs-git.md')]]) {
+    assert.doesNotMatch(text, tfvcOnly, name);
+  }
+  assert.doesNotMatch(rules, /git commit -m|untracked-files=all/, 'rules.md');
+  assert.match(rules, /`\$\{CLAUDE_PLUGIN_ROOT\}\/reference\/vcs-<value>\.md`/);
+  assert.match(run, /then read `\$\{CLAUDE_PLUGIN_ROOT\}\/reference\/vcs-<value>\.md`/);
+  for (const file of ['close.md', 'round.md', 'settings.md', 'new.md', 'import.md', 'interview.md', 'change.md', 'doctor.md']) {
+    assert.match(fs.readFileSync(path.join(commandsDir, file), 'utf8'), /the vcs file/, file);
+  }
+  assert.match(read('setup.md'), /read the vcs file for the chosen value/);
+});
+
+// #26: test output in context and Activity is limited to failures; run reports suggest /clear.
+test('run context: test output limited to failures, /clear suggested after every run', () => {
+  const rules = fs.readFileSync(path.join(plugin, 'reference', 'rules.md'), 'utf8');
+  assert.match(rules, /\*\*Output\*\*: keep only what verification needs/);
+  assert.match(rules, /A failing run: the failing test names and their exact errors, nothing else/);
+  const run = fs.readFileSync(path.join(commandsDir, 'run.md'), 'utf8');
+  assert.match(run.slice(run.indexOf('## 8. Report')), /End with one line: `\/clear` before the next `\/foreman:run`/);
+  assert.match(run.slice(run.indexOf('## Run all'), run.indexOf('## 1. Resolve')), /End with the `\/clear` line of section 8/);
 });

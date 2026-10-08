@@ -17,6 +17,10 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 - `foreman-reporter` subagent: `/foreman:report` now delegates the report to it (#22). It reads only the sections the report needs (never task files) and returns the finished report, which the main agent saves without a permission prompt; the feature files stay out of the main session's context.
 - foreman logo: shown at the top of the README and set as the `icon` in `plugin.json` (#48).
 
+### Changed
+
+- Smaller main agent context in `/foreman:run` (#26). The per-version-control rules moved out of `reference/rules.md` into `reference/vcs-git.md`, `vcs-tfvc.md`, and `vcs-none.md`; each command reads only the file for the project's version control, so a git project loads no TFVC or no-VCS text (same rules, new place; commands that need none of them, like `status` or `approve`, load 16% less). `run.md` is shorter (19.1 KB to 15.2 KB) with the same steps. Test output is kept to the failing tests and their exact errors, in replies and in the Activity log; a passing run is one line, and new task `Tests` rows prefer a quiet runner output (e.g. `node --test --test-reporter=dot`). Every run report ends with a `/clear` suggestion before the next run (`workbench/` holds all state).
+
 ### Fixed
 
 - Without Node.js, every session start showed a SessionStart hook error (#25). Both hooks now run as `node "<script>"; exit 0`, which exits cleanly in Git Bash and in PowerShell (Windows without Git Bash) when `node` is missing; the summary and prompt-free `workbench/` changes are then skipped, with no error. README corrected.

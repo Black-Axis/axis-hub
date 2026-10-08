@@ -180,7 +180,7 @@ A release is a git tag `vX.Y.Z` that matches `metadata.version` in `.claude-plug
 
 Read the "foreman plugin architecture" section of `CLAUDE.md` before changing `plugins/foreman`. In short:
 
-- `reference/rules.md` holds all cross-cutting rules (layout, naming, statuses, permissions, activity log, output style). Change shared behavior there, not in individual commands.
+- `reference/rules.md` holds all cross-cutting rules (layout, naming, statuses, permissions, activity log, output style). Change shared behavior there, not in individual commands. Per-version-control rules live in `reference/vcs-git.md`, `vcs-tfvc.md`, and `vcs-none.md` (same section names in each); a command reads only the file for the project's value.
 - `templates/*.md` define every generated `workbench/` file. If you change a template's headings or fields, update every command that reads or writes them, `commands/doctor.md`, and `hooks/session-start.js` (it parses the `## Tasks` and `## Task Breakdown` tables and the `- Status:` / `- Plan Status:` fields).
 - The worker (`agents/foreman-worker.md`) gets a path-only prompt. Keep its instructions in its agent file.
 - New commands must start by reading `reference/rules.md`, and must be added to the command order in `commands/catalog.md` and the command table in `plugins/foreman/README.md`.
