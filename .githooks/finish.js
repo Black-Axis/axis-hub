@@ -13,9 +13,9 @@
 const { execFileSync } = require('child_process');
 const { PROTECTED } = require('./guard.js');
 
-function run(cmd, args, cwd) {
+function run(cmd, args, cwd, timeout) {
   try {
-    return { ok: true, out: execFileSync(cmd, args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim() };
+    return { ok: true, out: execFileSync(cmd, args, { cwd, timeout, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim() };
   } catch (e) {
     return { ok: false, out: `${e.stderr || e.message}`.trim() };
   }
@@ -49,8 +49,19 @@ function isMerged(cwd, branch, repo) {
   return !git(cwd, 'rev-parse', '--verify', '-q', `refs/remotes/${git(cwd, 'config', `branch.${branch}.remote`).out}/${branch}`).ok;
 }
 
+// True when there may be something to finish: on a branch other than main, or
+// other local branches exist. On main with no other branch, only a pull of main
+// is left, so the session start hook skips the fetch (`git finish` still does it).
+function hasWork(cwd) {
+  const current = git(cwd, 'symbolic-ref', '--short', '-q', 'HEAD').out || null;
+  if (current !== PROTECTED) return true;
+  return git(cwd, 'for-each-ref', '--format=%(refname:short)', 'refs/heads').out
+    .split(/\r?\n/).some((b) => b && b !== PROTECTED);
+}
+
 // Returns { ok, changed, lines } describing what was done; `lines` are user-facing messages.
-function finish(cwd) {
+// `fetchTimeout` (ms) stops a slow fetch (offline, slow network).
+function finish(cwd, { fetchTimeout } = {}) {
   const lines = [];
   const top = git(cwd, 'rev-parse', '--show-toplevel');
   if (!top.ok) return { ok: false, changed: false, lines: ['Not a git repository.'] };
@@ -62,7 +73,7 @@ function finish(cwd) {
 
   const remote = mainRemote(cwd);
   const repo = githubRepo(git(cwd, 'remote', 'get-url', remote).out);
-  const fetched = git(cwd, 'fetch', '--prune', remote);
+  const fetched = run('git', ['fetch', '--prune', remote], cwd, fetchTimeout);
   if (!fetched.ok) return { ok: false, changed: false, lines: [`Could not fetch ${remote}: ${fetched.out}`] };
 
   const mainRef = `refs/remotes/${remote}/${PROTECTED}`;
@@ -110,4 +121,4 @@ if (require.main === module) {
   process.exitCode = ok ? 0 : 1;
 }
 
-module.exports = { finish, githubRepo };
+module.exports = { finish, hasWork, githubRepo };

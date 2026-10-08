@@ -22,7 +22,7 @@ Marketplace-level test inside Claude Code: `/plugin marketplace add <repo path>`
 
 ## Branches
 
-Never commit on `main` or push to it; `main` changes only through pull requests (GitHub ruleset in `.github/rulesets/main.json`, requires the `validate` check). Before changing anything, create a branch `<type>/<short-name>` (`feat`, `fix`, `docs`, `test`, `ci`, `chore`, `refactor`; kebab-case, e.g. `feat/foreman-bug-command`). The rules live in `.githooks/guard.js`, used by the git hooks (`git config core.hooksPath .githooks`) and by the PreToolUse hook `.claude/hooks/guard-git.js`, which denies Claude's git commands that break them. GitHub deletes merged branches automatically; locally, `.githooks/finish.js` (`git finish`, and the SessionStart hook `.claude/hooks/finish-on-start.js`) switches to `main`, pulls, and deletes merged branches (tip contained in `main` and PR `MERGED` via `gh`, or upstream deleted). It must never delete unmerged work or act with uncommitted changes; `tests/git-finish.test.js` covers this.
+Never commit on `main` or push to it; `main` changes only through pull requests (GitHub ruleset in `.github/rulesets/main.json`, requires the `validate` check). Before changing anything, create a branch `<type>/<short-name>` (`feat`, `fix`, `docs`, `test`, `ci`, `chore`, `refactor`; kebab-case, e.g. `feat/foreman-bug-command`). The rules live in `.githooks/guard.js`, used by the git hooks (`git config core.hooksPath .githooks`) and by the PreToolUse hook `.claude/hooks/guard-git.js`, which denies Claude's git commands that break them (`git -C <path>` is checked against that repository) and any pull request merge (`gh pr merge`, `gh api` PUT `pulls/<n>/merge`, GraphQL `mergePullRequest` / `enablePullRequestAutoMerge`): the user merges. GitHub deletes merged branches automatically; locally, `.githooks/finish.js` (`git finish`, and the SessionStart hook `.claude/hooks/finish-on-start.js`) switches to `main`, pulls, and deletes merged branches (tip contained in `main` and PR `MERGED` via `gh`, or upstream deleted). The SessionStart hook skips it on `main` with no other local branch (no fetch) and stops the fetch after 10 s. It must never delete unmerged work or act with uncommitted changes; `tests/git-finish.test.js` covers this.
 
 ## GitHub issues
 
@@ -38,6 +38,8 @@ Write the body to a scratchpad file, then:
 ```
 gh issue create --title "<title>" --body-file <file> --label <label> --type <Bug|Feature|Task> --assignee krypton225
 ```
+
+The issue forms in `.github/ISSUE_TEMPLATE/` set labels, Type, and assignee for issues opened on the web; Priority and Effort are set afterwards.
 
 Fields are set through GraphQL. Look up the issue node ID (`gh issue view <n> --json id`) and the field and option IDs (`gh api graphql -f query='{ organization(login:"Black-Axis"){ issueFields(first:20){ nodes{ __typename ... on IssueFieldSingleSelect { id name options{ id name } } ... on IssueFieldDate { id name } } } } }'`), then:
 

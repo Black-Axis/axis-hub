@@ -83,7 +83,7 @@ After edits: `/plugin marketplace update axis-hub`, then restart the session. Re
    ```
    git finish
    ```
-   It switches to `main`, pulls it, and deletes every local branch whose pull request was merged. A branch is deleted only if all its commits are in `main` and GitHub reports its pull request as merged (with the `gh` CLI) or its GitHub copy was deleted. It changes nothing while you have uncommitted changes or while your current branch is not merged yet. In Claude Code, the same cleanup runs automatically when a session starts. Then go back to step 1 for the next change.
+   It switches to `main`, pulls it, and deletes every local branch whose pull request was merged. A branch is deleted only if all its commits are in `main` and GitHub reports its pull request as merged (with the `gh` CLI) or its GitHub copy was deleted. It changes nothing while you have uncommitted changes or while your current branch is not merged yet. In Claude Code, the same cleanup runs automatically when a session starts, unless you are on `main` with no other local branch (then nothing needs cleaning up, so it skips the fetch; run `git finish` to pull `main`). The fetch stops after 10 seconds, so a slow or missing network does not hold up the start. Then go back to step 1 for the next change.
 
 These rules are enforced in three places:
 
@@ -91,7 +91,7 @@ These rules are enforced in three places:
 |-------|-----------------|
 | GitHub ruleset on `main` ([`.github/rulesets/main.json`](.github/rulesets/main.json)) | Direct pushes, force pushes, and deleting `main`; merging a pull request before **validate** passes |
 | Git hooks in `.githooks/` (after `git config core.hooksPath .githooks`) | Commits on `main`, pushes to `main` on GitHub, and branch names not following `<type>/<short-name>` |
-| Claude Code hook (`.claude/settings.json`) | The same, for git commands Claude runs in this repository |
+| Claude Code hook (`.claude/settings.json`) | The same, for git commands Claude runs in this repository (also with `git -C <path>`, checked against that repository), plus merging pull requests (`gh pr merge`, merge calls through `gh api`): you review and merge every pull request |
 
 ## Validation and tests
 

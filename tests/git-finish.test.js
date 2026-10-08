@@ -9,7 +9,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
-const { finish, githubRepo } = require('../.githooks/finish.js');
+const { finish, hasWork, githubRepo } = require('../.githooks/finish.js');
 
 const env = {
   ...process.env,
@@ -107,4 +107,31 @@ test('on main: pulls and deletes other merged branches, keeps unmerged ones', ()
   assert.strictEqual(git('branch', '--list', 'fix/done'), '');
   assert.notStrictEqual(git('branch', '--list', 'fix/open'), '');
   assert.strictEqual(git('rev-parse', 'main'), git('rev-parse', 'origin/main'));
+});
+
+test('hasWork: false only on main with no other local branch', () => {
+  const { dir, git } = setup();
+  assert.strictEqual(hasWork(dir), false);
+  git('branch', 'fix/other');
+  assert.strictEqual(hasWork(dir), true);
+  git('branch', '-D', 'fix/other');
+  git('switch', '-q', '-c', 'feat/x');
+  assert.strictEqual(hasWork(dir), true);
+});
+
+test('session start hook: no fetch on clean main, finishes on a merged branch', () => {
+  const { dir, git } = setup();
+  const hook = path.resolve(__dirname, '..', '.claude', 'hooks', 'finish-on-start.js');
+  const runHook = () => execFileSync('node', [hook], { input: '{}', env: { ...env, CLAUDE_PROJECT_DIR: dir }, encoding: 'utf8' });
+  // The remote's main is one commit ahead; a fetch would pull it and report it.
+  git('commit', '-q', '--allow-empty', '-m', 'ahead');
+  git('push', '-q');
+  git('reset', '-q', '--hard', 'HEAD~1');
+  git('update-ref', 'refs/remotes/origin/main', 'HEAD');
+  assert.strictEqual(runHook(), '');
+  assert.notStrictEqual(git('rev-parse', 'main'), git('ls-remote', 'origin', 'main').split(/\s/)[0]);
+  git('pull', '-q', '--ff-only');
+  work(git, 'feat/x');
+  mergeOnRemote(git, 'feat/x');
+  assert.match(runHook(), /Deleted merged branch feat\/x/);
 });
