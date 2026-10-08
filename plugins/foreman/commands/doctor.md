@@ -16,7 +16,7 @@ With `P-NN`, check only that feature; otherwise check all of `workbench/`. If `w
 
 ## 1. Check
 
-First run `wb.js check [P-NN]` (one call). It does every mechanical check below and prints one `finding:` line per problem and `note:` lines for report-only items (exit code 2 when there are findings; the tool result shows it, so run the command alone, without `echo` or anything after it). Take its findings as they are; do yourself only the checks it cannot do, marked **(you)** below: Version control detection, the ignore file, and the CLAUDE.md block. Without Node, do every check below yourself.
+First run `wb.js check [P-NN]` (one call). It does every mechanical check below and prints one `finding:` line per problem and `note:` lines for report-only items (exit code 2 when there are findings; the tool result shows it, so run the command alone, without `echo` or anything after it). Take its findings as they are; do yourself only the checks it cannot do, marked **(you)** below: Version control detection, the ignore file, and the CLAUDE.md block. With Node, read nothing else to check: not the feature files (plans, contracts, tracking, tasks, docs, interviews), only `workbench/INDEX.md` Settings, the ignore file, the CLAUDE files, and the block template. Without Node, do every check below yourself.
 
 List the folders explicitly with `Glob`, never the shell ("Shell use" in rules.md) (`workbench/plans/`, `contracts/`, `tracking/`, `subtasks/`, `docs/`, `interviews/`, `reports/`) and check:
 
@@ -42,4 +42,4 @@ If nothing is wrong, say so and stop.
 
 ## 3. Fix after confirmation
 
-Ask the user which fixes to apply with `AskUserQuestion`: all, none, or a list of numbers (typed with "Other"); judgement calls as separate questions. Apply only those. Never delete files, with one exception: leftover `workbench/.baseline/` folders of tasks that are not `In Progress` (finding 8) are deleted on confirmation, as in "Snapshot" in rules.md. For an orphan file, ask whether to link it or leave it. Record each status correction as a TRK History row with reason "doctor: <what was fixed>". Report what was fixed and what remains.
+Ask the user which fixes to apply with `AskUserQuestion`: all, none, or a list of numbers (typed with "Other"); judgement calls as separate questions. Apply only those. Read only the files you fix, and in them only the lines the fix needs. Never delete files, with one exception: leftover `workbench/.baseline/` folders of tasks that are not `In Progress` (finding 8) are deleted on confirmation, as in "Snapshot" in rules.md. For an orphan file, ask whether to link it or leave it. Record each status correction as a TRK History row with reason "doctor: <what was fixed>". Report what was fixed and what remains.
