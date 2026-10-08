@@ -203,3 +203,15 @@ test('chain: Not Started tasks in dependency order, then blocked ones (#28)', ()
   assert.match(wb(dir, 'chain', 'P-01').out, /^ERROR: P-01 contract is "Draft", not Approved/);
   assert.strictEqual(wb(dir, 'chain', 'P-01').code, 1);
 });
+
+test('check: Full tests values in contract and INDEX defaults (#35)', () => {
+  const dir = project();
+  edit(dir, path.join('workbench', 'contracts', 'CONT-01-health-endpoint.md'), /- Full tests: close/, '- Full tests: sometimes');
+  edit(dir, path.join('workbench', 'INDEX.md'), /- Full tests: close/, '- Full tests: always');
+  const out = wb(dir, 'check').out;
+  assert.match(out, /CONT-01-health-endpoint\.md: invalid Full tests "sometimes"/);
+  assert.match(out, /INDEX\.md: invalid Full tests default "always"/);
+  const ok = project();
+  edit(ok, path.join('workbench', 'contracts', 'CONT-01-health-endpoint.md'), /- Full tests: close/, '- Full tests: each task (also after each task)');
+  assert.strictEqual(wb(ok, 'check').code, 0);
+});

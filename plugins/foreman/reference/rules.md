@@ -213,6 +213,20 @@ A task must fit one worker run and be verifiable on its own:
 - About 5 files or fewer in `Files Expected to Change` (tests included). Split a bigger task by outcome (e.g. data, logic, UI, tests), with `Depends On` between the parts.
 - No task that only prepares work for another one without a checkable result of its own.
 
+## Test runs
+
+Which tests `/foreman:run` and `/foreman:close` run, so a slow suite does not run up to six times per task.
+
+- **Task tests**: the optional task header row `Tests` holds the targeted command(s) for that task (one test file, one package), e.g. `node --test test/words.test.js`. `new`, `interview`, and `change` fill it when the project has an obvious targeted command for the task's files; otherwise, and in older tasks without the row, it is `—` and the contract's Tests apply. A task's tests are its `Tests` row when set, else the contract's Tests.
+- **Full tests** (contract Working Rule, missing = `close`): `close` - during `/foreman:run`, a task with a `Tests` row runs only those (baseline, verification, fix rounds); the contract's Tests run in full at `/foreman:close`. `each task` - also run the contract's Tests once after the task's own tests pass, before `Done`; a new failure there fails verification like any other. `/foreman:close` always runs the contract's Tests in full, never a task's `Tests` row.
+- **Fix rounds**: after a fix round, run the tests that failed first (when the test runner can select them, e.g. one test file or a name filter); once they pass, run the task's tests in full. Verification counts only the full run.
+- **Baseline reuse** (git only; tfvc and none always run the baseline): skip the baseline run and reuse the last recorded test run when all of these hold, else run it:
+  1. The last test run in this TRK's Activity used exactly the same commands and recorded `state: <hash>, untracked: none` (see below).
+  2. `git diff --stat <hash> -- . ":!workbench"` prints nothing (no tracked change outside `workbench/` since then).
+  3. `git status --porcelain --untracked-files=all -- . ":!workbench"` lists no untracked file now (untracked content cannot be compared; the recorded run must say `untracked: none` too).
+  Then log `Main agent`, `Action`, `baseline reused from TASK-xx: <commands> -> <result>`; the failures of that run count as the baseline. Otherwise run the baseline and add `(not reused: <which check failed>)` to its Activity row, so every baseline shows the decision.
+  **Recording the state**: after each verification test run, run `git stash create` (or `git log -1 --format=%H` when it prints nothing, a clean tree) and `git status --porcelain --untracked-files=all -- . ":!workbench"`, and add `state: <hash>, untracked: none` (or `untracked: yes`) to that run's Activity row. When the main agent then commits the task ("Git commit"), record the same again after the commit (`git log -1 --format=%H` and the untracked check) in the commit's Activity row: the task's new files are tracked now, so the next task can reuse that run.
+
 ## Scope discipline
 
 Never change anything listed under a contract's or task's Out of Scope. If a need arises, stop and tell the user; suggest `/foreman:change`.

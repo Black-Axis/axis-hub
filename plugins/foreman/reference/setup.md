@@ -32,6 +32,7 @@ Project-wide defaults for every new contract's Working Rules. `/foreman:new` and
    - Auto-close: `Ask` (default) / `Yes` / `No`.
    - Tests: the commands to run after each task, or "none available".
    - Baseline tests: `yes` (default - run the tests before each task too, so failures that already exist are not counted against the worker; costs one extra test run per task) / `no`.
+   - Full tests: `close` (default - a task with its own targeted `Tests` runs only those during `/foreman:run`; the full Tests run at `/foreman:close`) / `each task` (also the full Tests once after each task; safer, slower).
    - Standards: coding standards and conventions to follow.
    - Ask the user when: situations where the main agent must stop and ask.
 

@@ -21,6 +21,7 @@
 - Auto-close: {{Ask | Yes | No}}
 - Tests: {{required commands, e.g. `npm test`, or "none available"}}
 - Baseline tests: {{yes | no}}
+- Full tests: {{close | each task}}
 - Standards: {{coding standards / conventions to follow}}
 - Ask the user when: {{situations where the main agent must stop and ask}}
 

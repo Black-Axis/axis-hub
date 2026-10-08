@@ -26,7 +26,7 @@ Read `Version control` in INDEX (missing: detect and add it, "Version control" i
 
 ## 2. Verify acceptance
 
-1. Run the full test/build commands from the contract Working Rules (and any the project obviously uses). Record the results.
+1. Run the full test/build commands from the contract Working Rules (and any the project obviously uses), never a task's `Tests` row ("Test runs" in rules.md). Record the results.
 2. Check every item in the contract's Acceptance Criteria against the actual code and test results. For each, record: criterion, `Pass` / `Fail`, evidence (file:line, test name, command output).
 3. Check that nothing listed in the contract's Out of Scope was changed by this feature's tasks: take the files each task changed from the TRK `Activity` rows, and what changed in them since the earliest task `Baseline`; git: per task, from its `start state: <hash>` Activity row (`git diff <hash>` up to the next task's start hash or the task's commit), so a change by the user or another task is not counted against this one ("Task baseline" in rules.md: `git log` / `git diff`, `tf history` / `tf status`, or modification times).
 
