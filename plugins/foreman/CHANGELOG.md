@@ -4,7 +4,7 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 
 ## [Unreleased]
 
-## [1.4.1] - 2026-10-02
+## [1.5.0] - 2026-10-02
 
 ### Added
 

@@ -6,7 +6,7 @@
 
 Plan, contract, track, delegate, and document feature work with Claude Code.
 
-Version 1.4.1 - [changelog](CHANGELOG.md). Uses [Node.js](https://nodejs.org/) on `PATH` for its two hooks (session-start summary, prompt-free `workbench/` changes); everything else works without it, with no errors.
+Version 1.5.0 - [changelog](CHANGELOG.md). Uses [Node.js](https://nodejs.org/) on `PATH` for its two hooks (session-start summary, prompt-free `workbench/` changes); everything else works without it, with no errors.
 
 The main agent acts as the foreman: it reviews requirements, writes the plan, agrees a contract with you, and tracks every task. Implementation of each task is delegated - one task at a time, chosen by you - to the `foreman-worker` subagent running on Sonnet. The main agent then verifies the result, runs tests, and updates tracking and docs.
 
