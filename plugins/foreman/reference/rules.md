@@ -120,6 +120,12 @@ The INDEX setting `- CLAUDE.md: yes | no` controls a short block that tells Clau
 - Write each status change completely - all three parts, plus the Plan Status and its History row when the derived plan status changes - at the moment it happens, as its own step. Never batch it with later changes, and never leave a part for later in the command or for the next command.
 - Plan Status in TRK is derived: `In Progress` when any task is `In Progress` or `Done` (including when all tasks are `Done`); otherwise `Not Started`. Explicit `Hold`/`Canceled` of the whole plan overrides this. A plan becomes `Done` only through `/foreman:close`, after the contract's Acceptance Criteria are verified, or through `/foreman:import` for a feature already finished before foreman.
 - You may set `Hold` or `Canceled` on your own (e.g. blocked, verification failed, task made obsolete), but always write the reason in History and tell the user.
+- History holds task and plan status changes only (target `P-NN` or `TASK-TT`). Contract status changes (approve, amend) are recorded in the contract file, INDEX, and the Activity log (`User`, `Decision`) - never in History.
+- A task's title is the same in the task file, the TRK row, and the plan's Task Breakdown: copy it exactly, add nothing (no `(FEAT-n)` suffix); a retitle changes all three.
+
+## Command boundaries
+
+Every command changes only what its own steps say. An inconsistency you notice on the way (a missing or wrong row, a status mismatch, a title that differs) is not fixed on the side: tell the user in one line and point to `/foreman:doctor`.
 
 ## Activity log
 
