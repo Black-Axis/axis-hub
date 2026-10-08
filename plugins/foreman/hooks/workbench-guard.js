@@ -5,6 +5,9 @@
 //   snapshots in workbench/.baseline/, the date command). A command's allowed-tools
 //   do not cover these in follow-up turns or after an Agent call.
 // - Subagents: file edits inside workbench/ are denied (only the main agent writes it).
+// - foreman-worker: shell commands that write files (redirects, tee, sed -i, Set-Content,
+//   script one-liners that write files, ...) are denied; it changes files only with
+//   Edit / Write, so every change reaches the user as a diff.
 // - Everything else: no decision, the user's permission mode applies.
 // Active only when workbench/ has an INDEX.md or does not exist yet (first setup), never
 // in plan mode, and never when the user's settings deny Edit / Write for workbench/.
@@ -135,6 +138,26 @@ function foremanShell(tool, command, ctx) {
   return false;
 }
 
+// Shell file writes the worker must not use (agents/foreman-worker.md "How to change files").
+// Quoted text is removed first, so `node -e "a > b"` or `grep ">" x` do not count as redirects.
+const DEVNULL = /^(\/dev\/(null|stdout|stderr)|nul|\$null)$/i;
+function shellWrite(tool, command) {
+  const raw = String(command);
+  if (/\b(writeFileSync|appendFileSync|createWriteStream|write_text|write_bytes)\b|\[(System\.)?IO\.File\]::(Write|Append)|\bopen\([^)]*,\s*['"][wax]b?\+?['"]/i.test(raw)) return true;
+  const bare = raw.replace(/'[^']*'|"(?:[^"\\]|\\.)*"/g, '""');
+  const redirect = /(?:^|[^<>&|=-])(?:\d|&)?>>?\|?\s*(?!&)([^\s;&|)]+)/g;
+  for (let m; (m = redirect.exec(bare));) {
+    if (!DEVNULL.test(m[1])) return true;
+  }
+  if (tool === 'PowerShell') {
+    return /(^|[\s;|({])(Set-Content|Add-Content|Out-File|Clear-Content|Tee-Object)\b/i.test(bare)
+      || /\bNew-Item\b[^;|]*\s-Value\b/i.test(bare);
+  }
+  return /(^|[\s;|&(])tee(\s+-\w+)*\s+(?!\/dev\/null\b)[^\s;&|-]/.test(bare)
+    || /(^|[\s;|&(])sed(\s[^;&|]*)?\s(-[a-zA-Z]*i|--in-place)/.test(bare)
+    || /(^|[\s;|&(])perl(\s[^;&|]*)?\s-[a-zA-Z]*i/.test(bare);
+}
+
 function decide(input) {
   const tool = input.tool_name;
   if (!FILE_TOOLS.has(tool) && tool !== 'Bash' && tool !== 'PowerShell') return null;
@@ -161,7 +184,13 @@ function decide(input) {
     return { permissionDecision: 'allow', permissionDecisionReason: 'foreman: workbench/ file' };
   }
 
-  if (subagent || typeof ti.command !== 'string') return null;
+  if (typeof ti.command !== 'string') return null;
+  if (subagent) {
+    if (/(^|:)foreman-worker$/.test(String(input.agent_type || '')) && shellWrite(tool, ti.command)) {
+      return { permissionDecision: 'deny', permissionDecisionReason: 'foreman: the worker changes files only with Edit / Write, never through the shell. Make the change with Edit / Write, or report it under Deviations / Blockers.' };
+    }
+    return null;
+  }
   if (foremanShell(tool, ti.command, ctx) && !settingsDenyWorkbench(root)) {
     return { permissionDecision: 'allow', permissionDecisionReason: 'foreman: workbench/ command' };
   }

@@ -120,6 +120,55 @@ test('PowerShell: foreman forms inside workbench/ are allowed, others not', () =
   ]) assert.strictEqual(run(dir, 'PowerShell', { command }), null, command);
 });
 
+// The worker changes files only with Edit / Write (#31).
+test('foreman-worker: shell file writes are denied, normal commands are not', () => {
+  const dir = project();
+  for (const command of [
+    'echo x > src/app.js',
+    'npm test >> log.txt',
+    'cat <<EOF > src/new.js',
+    'npm test 2>&1 | tee out.log',
+    "sed -i 's/a/b/' src/app.js",
+    'sed --in-place -e s/a/b/ src/app.js',
+    "perl -pi -e 's/a/b/' src/app.js",
+    'node -e "require(\'fs\').writeFileSync(\'x\', \'y\')"',
+    'python -c "open(\'x.txt\', \'w\').write(\'y\')"',
+    'npm test > "out file.txt"',
+  ]) assert.strictEqual(run(dir, 'Bash', { command }, worker), 'deny', command);
+  for (const command of [
+    "Set-Content src/app.js 'x'",
+    "'x' | Out-File src/app.js",
+    "Add-Content -Path src/app.js -Value 'x'",
+    "npm test | Tee-Object -FilePath out.log",
+    "New-Item -ItemType File src/x.js -Value 'x'",
+    "[IO.File]::WriteAllText('src/x.js', 'x')",
+    'npm test > out.log',
+  ]) assert.strictEqual(run(dir, 'PowerShell', { command }, worker), 'deny', command);
+  for (const command of [
+    'npm test',
+    'npm test 2>&1',
+    'npm test 2>/dev/null',
+    'npm test > /dev/null 2>&1',
+    'npm test 2>&1 | tail -20',
+    'node -e "console.log(1 > 0)"',
+    'grep -n ">" src/app.js',
+    "sed -n '1,5p' src/app.js",
+    'perl -ne "print" src/app.js',
+    'rm src/old.js',
+    'npm test | tee',
+  ]) assert.strictEqual(run(dir, 'Bash', { command }, worker), null, command);
+  for (const command of ['npm test *> $null', 'npm test | Out-Null', 'Get-Content src/app.js', 'Remove-Item src/old.js']) {
+    assert.strictEqual(run(dir, 'PowerShell', { command }, worker), null, command);
+  }
+});
+
+test('shell writes: only the worker is denied, not the main agent or other subagents', () => {
+  const dir = project();
+  assert.strictEqual(run(dir, 'Bash', { command: 'echo x > src/app.js' }), null, 'main agent');
+  assert.strictEqual(run(dir, 'Bash', { command: 'echo x > src/app.js' }, { agent_id: 'a3', agent_type: 'Explore' }), null, 'other subagent');
+  assert.strictEqual(run(dir, 'Bash', { command: 'echo x > src/app.js' }, { agent_id: 'a4', agent_type: 'foreman-worker' }), 'deny', 'without plugin prefix');
+});
+
 test('other tools and broken input get no decision', () => {
   const dir = project();
   assert.strictEqual(run(dir, 'Read', { file_path: wbFile(dir) }), null);
