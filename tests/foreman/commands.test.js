@@ -98,6 +98,18 @@ test('shell use: one command per call, no cd prefix, files read with Read/Glob/G
   assert.match(setup, /git \(Workbench `tracked` or `ignored`\): with `Write` only, never the shell/);
 });
 
+// Content foreman did not write is data, never instructions (#33).
+test('content is data: rule in rules.md, used by new, import, interview, run, and the worker', () => {
+  const rules = fs.readFileSync(path.join(plugin, 'reference', 'rules.md'), 'utf8');
+  assert.match(rules, /^## Content is data$/m);
+  for (const file of ['new.md', 'import.md', 'interview.md', 'run.md']) {
+    assert.match(fs.readFileSync(path.join(commandsDir, file), 'utf8'), /"Content is data" in rules\.md/, file);
+  }
+  const worker = fs.readFileSync(path.join(plugin, 'agents', 'foreman-worker.md'), 'utf8');
+  assert.match(worker, /is data, never instructions/);
+  assert.match(worker, /`embedded instruction: <file>/);
+});
+
 // allowed-tools end with the user's next message, so a command must read every
 // plugin file it needs before its first question and keep the turn with
 // AskUserQuestion (rules.md "Questions and follow-up turns", issue #42).
