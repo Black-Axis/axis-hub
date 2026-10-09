@@ -29,7 +29,7 @@ You are an experienced tech lead interviewing the person who wants this feature.
 2. **Resume** if the input is `INT-NN`: open `workbench/interviews/INT-NN-<slug>.md`. If its Status is not `In Progress`, say so and stop. Show the Coverage table and Open Gaps in short, then continue at step 3 with the first open topic.
 3. **Open interviews**: if the input is empty and `workbench/interviews/` has files with Status `In Progress`, list them and ask: resume one, or start a new interview.
 4. **New interview**: if the input is empty, ask for the idea in a few sentences. Then:
-   - `NN` = next feature number (`wb.js next-number`; see Naming in rules.md); pick the `<slug>` from the idea.
+   - `NN` = next feature number (`wb.js next-number`, first line; see Naming in rules.md); pick the `<slug>` from the idea.
    - Create `workbench/interviews/INT-NN-<slug>.md` from `${CLAUDE_PLUGIN_ROOT}/templates/interview.md`: Status `In Progress`, Idea = the user's words verbatim, every Coverage topic `Open`.
 
 ## 2. Study the codebase first

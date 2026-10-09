@@ -7,17 +7,22 @@
 //   node wb.js ready [P-NN]        tasks that can run now
 //   node wb.js chain P-NN          Not Started tasks in run order (/foreman:run P-NN all), then blocked ones
 //   node wb.js overview            one line per feature and open interview
-//   node wb.js next-number         next free feature number NN
+//   node wb.js next-number         next free feature number NN (git: also numbers on other branches)
+//   node wb.js running [P-NN]      In Progress tasks and the session running each
+//   node wb.js renumber P-NN <slug> [NN]  move one feature to a new number (after a collision)
 //   node wb.js check [P-NN]        mechanical consistency checks (/foreman:doctor); exit 2 with findings
 // Exit 0 on success; 1 with "ERROR: <reason>" (nothing written) on bad input or state.
 
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const { readText, listDir, cells, tableAt, tableRows, field, taskIds, findFile } = require('./lib');
 const { check } = require('./check');
 
 const STATUSES = ['Not Started', 'In Progress', 'Hold', 'Done', 'Canceled'];
 const BY = ['User', 'Main agent'];
+const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const PREFIXES = ['P', 'CONT', 'TRK', 'DOC', 'INT', 'REP'];
 
 class WbError extends Error {}
 const fail = (msg) => { throw new WbError(msg); };
@@ -26,6 +31,12 @@ function today() {
   const d = new Date();
   const p = (n) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+function now() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return `${today()} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
 function canonStatus(text) {
@@ -158,6 +169,57 @@ function chain(f) {
   return { order, blocked };
 }
 
+// Session markers: workbench/.baseline/P-NN/TASK-TT.session, written when a task goes
+// In Progress and removed when it leaves, so another Claude Code session can see that
+// the task runs elsewhere. Local only: .baseline/ is never in version control. The
+// session id and process id come from the environment Claude Code gives shell commands.
+function currentSession() {
+  return { id: process.env.CLAUDE_CODE_SESSION_ID || '', pid: Number(process.env.CLAUDE_PID) || 0 };
+}
+
+const markerFile = (wb, nn, task) => path.join(wb, '.baseline', `P-${nn}`, `${task}.session`);
+
+function writeMarker(wb, nn, task) {
+  const s = currentSession();
+  const file = markerFile(wb, nn, task);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, `- Session: ${s.id || '—'}\n- Process: ${s.pid || '—'}\n- Started: ${now()}\n`);
+}
+
+// Removes a marker, and its P-NN folder when that is left empty.
+function removeMarker(wb, nn, task) {
+  const file = markerFile(wb, nn, task);
+  const had = fs.existsSync(file);
+  if (had) fs.rmSync(file, { force: true });
+  try { fs.rmdirSync(path.dirname(file)); } catch { /* missing or not empty */ }
+  return had;
+}
+
+function alive(pid) {
+  if (!pid) return false;
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (e) {
+    return e.code === 'EPERM';
+  }
+}
+
+// Who runs an In Progress task: { mine, text }. mine = started by this session.
+function owner(wb, nn, task) {
+  const text = readText(markerFile(wb, nn, task));
+  if (text === null) return { mine: false, text: 'no session marker - started on another machine, by hand, or by an older foreman' };
+  const cur = currentSession();
+  const id = field(text, 'Session').replace(/^—$/, '');
+  const pid = Number(field(text, 'Process')) || 0;
+  const since = `since ${field(text, 'Started') || '?'}`;
+  if (id && id === cur.id) return { mine: true, text: `this session, ${since}` };
+  if (pid && pid === cur.pid) return { mine: false, text: `an earlier session of this Claude Code process, not running now, ${since}` };
+  if (!pid) return { mine: false, text: `another session, running or ended (no process id recorded), ${since}` };
+  if (alive(pid)) return { mine: false, text: `another Claude Code session (process ${pid}) is running, ${since}` };
+  return { mine: false, text: `interrupted - its Claude Code session has ended, ${since}` };
+}
+
 function appendHistory(doc, cs) {
   const t = tableAt(doc.lines, 'History');
   if (!t || t.header === -1) fail(`${path.basename(doc.file)} has no History table`);
@@ -224,7 +286,8 @@ function parseOpts(args) {
   const opts = {};
   for (let i = 0; i < args.length; i++) {
     const m = /^--(by|reason|note)$/.exec(args[i]);
-    if (m) {
+    if (args[i] === '--confirmed') opts.confirmed = true;
+    else if (m) {
       if (i + 1 >= args.length) fail(`--${m[1]} needs a value`);
       opts[m[1]] = args[++i];
     } else pos.push(args[i]);
@@ -254,6 +317,13 @@ function cmdStatus(args) {
     while (cs.length < 5) cs.push('');
     const old = canonStatus(cs[2]) || cs[2];
     if (old === next) fail(`${task} is already ${next}`);
+    if (next === 'In Progress' && !opts.confirmed) {
+      const elsewhere = tasksOf(doc.text).filter((x) => x.id !== task && x.status === 'In Progress')
+        .map((x) => ({ id: x.id, o: owner(wb, nn, x.id) })).filter((x) => !x.o.mine);
+      if (elsewhere.length) {
+        fail(`P-${nn} has a task In Progress outside this session: ${elsewhere.map((x) => `${x.id} (${x.o.text})`).join('; ')}. Ask the user; only on yes run this again with --confirmed`);
+      }
+    }
     cs[2] = next;
     cs[3] = today();
     cs[4] = opts.note || ''; // a note belongs to one status; a new status without --note clears it
@@ -261,6 +331,9 @@ function cmdStatus(args) {
     appendHistory(doc, [today(), task, `${old} -> ${next}`, by, opts.reason]);
     out.push(`${task}: ${old} -> ${next}`);
     syncPlan(doc, out, nn);
+    doc.save();
+    if (next === 'In Progress') writeMarker(wb, nn, task);
+    else removeMarker(wb, nn, task);
   } else {
     const i = doc.lines.findIndex((l) => /^- Plan Status:/i.test(l));
     if (i === -1) fail(`TRK-${nn} has no "- Plan Status:" line`);
@@ -283,7 +356,13 @@ function cmdRefresh(args) {
   const out = [];
   syncPlan(doc, out, f.nn);
   doc.save();
-  for (const t of tasksOf(doc.text)) syncTaskFile(wb, f, t.id, t.status, out);
+  const tasks = tasksOf(doc.text);
+  for (const t of tasks) syncTaskFile(wb, f, t.id, t.status, out);
+  for (const name of listDir(path.join(wb, '.baseline', `P-${f.nn}`))) {
+    const m = /^(TASK-\d+)\.session$/.exec(name);
+    const t = m && tasks.find((x) => x.id === m[1]);
+    if (m && (!t || t.status !== 'In Progress') && removeMarker(wb, f.nn, m[1])) out.push(`${m[1]} session marker removed (not In Progress)`);
+  }
   syncIndex(wb, f, out);
   return out.length ? out : [`P-${f.nn}: up to date`];
 }
@@ -338,18 +417,149 @@ function cmdOverview() {
   return out.length ? out : ['no features yet'];
 }
 
-function cmdNextNumber() {
-  const wb = workbench();
+const FEATURE_NAME = /^(?:P|CONT|TRK|DOC|INT)-(\d+)-([a-z0-9-]+?)(?:\.md)?$/;
+
+// Highest feature number in the working tree (files and INDEX rows).
+function localMax(wb) {
   let max = 0;
-  const see = (n) => { if (Number.isFinite(n) && n > max) max = n; };
   for (const dir of ['plans', 'contracts', 'tracking', 'docs', 'interviews', 'subtasks']) {
     for (const name of listDir(path.join(wb, dir))) {
-      const m = /^(?:P|CONT|TRK|DOC|INT)-(\d+)-/.exec(name);
-      if (m) see(Number(m[1]));
+      const m = FEATURE_NAME.exec(name);
+      if (m) max = Math.max(max, Number(m[1]));
     }
   }
-  for (const c of tableRows(readText(path.join(wb, 'INDEX.md')) || '', 'Features')) see(Number(c[0]));
-  return [String(max + 1).padStart(2, '0')];
+  for (const c of tableRows(readText(path.join(wb, 'INDEX.md')) || '', 'Features')) {
+    if (/^\d+$/.test(c[0])) max = Math.max(max, Number(c[0]));
+  }
+  return max;
+}
+
+// Git only: feature numbers in workbench/ on the other local branches and the fetched
+// remote branches (read-only; no fetch). [{ n, ref, name }]; [] when git fails.
+function branchFeatures(wb) {
+  if (field(readText(path.join(wb, 'INDEX.md')) || '', 'Version control') !== 'git') return [];
+  const git = (...a) => spawnSync('git', a, { cwd: root(), encoding: 'utf8', windowsHide: true });
+  const refs = git('for-each-ref', '--format=%(refname)', 'refs/heads', 'refs/remotes');
+  if (refs.status !== 0) return [];
+  const head = (git('symbolic-ref', '-q', 'HEAD').stdout || '').trim();
+  const out = [];
+  for (const ref of refs.stdout.split(/\r?\n/).filter((r) => r && r !== head && !/\/HEAD$/.test(r))) {
+    const r = git('ls-tree', '-r', '--name-only', ref, '--', 'workbench');
+    if (r.status !== 0) continue;
+    const seen = new Set();
+    for (const file of r.stdout.split(/\r?\n/)) {
+      for (const part of file.split('/')) {
+        const m = FEATURE_NAME.exec(part);
+        if (!m || seen.has(m[1])) continue;
+        seen.add(m[1]);
+        out.push({ n: Number(m[1]), ref: ref.replace(/^refs\/(heads|remotes)\//, ''), name: `${m[1]}-${m[2]}` });
+      }
+    }
+  }
+  return out;
+}
+
+function nextNumber(wb) {
+  const local = localMax(wb);
+  const above = branchFeatures(wb).filter((b) => b.n > local);
+  const max = Math.max(local, ...above.map((b) => b.n));
+  const notes = [...new Set(above.map((b) => `${b.name} on ${b.ref}`))].sort();
+  return { nn: String(max + 1).padStart(2, '0'), notes };
+}
+
+function cmdNextNumber() {
+  const { nn, notes } = nextNumber(workbench());
+  return [nn, ...(notes.length ? [`note: numbers used on other branches: ${notes.join(', ')}`] : [])];
+}
+
+function cmdRunning(args) {
+  const wb = workbench();
+  const list = args[0] ? [feature(wb, planId(args[0]))] : features(wb);
+  const out = [];
+  for (const f of list) {
+    for (const t of tasksOf(readText(f.trk) || '').filter((x) => x.status === 'In Progress')) {
+      const o = owner(wb, f.nn, t.id);
+      out.push(`P-${f.nn} ${t.id} ${t.title} | ${o.mine ? o.text : `elsewhere: ${o.text}`}`);
+    }
+  }
+  return out.length ? out : ['none'];
+}
+
+// Moves feature NN-<slug> to a new number: renames its files and subtasks folder,
+// rewrites its IDs and links (P-, CONT-, TRK-, DOC-, INT-, REP-NN) inside them, and its
+// INDEX row (moved to its sorted place). Other features' files are not touched.
+function cmdRenumber(args) {
+  const wb = workbench();
+  const nn = planId(args[0]);
+  const slug = args[1] || '';
+  if (!SLUG.test(slug)) fail('usage: renumber P-NN <slug> [new number]');
+  const to = args[2] ? (/^\d+$/.test(args[2]) ? String(Number(args[2])).padStart(2, '0') : fail(`new number must be digits, got "${args[2]}"`)) : nextNumber(wb).nn;
+  if (to === nn) fail(`P-${nn} already has number ${to}`);
+
+  const dirs = { P: 'plans', CONT: 'contracts', TRK: 'tracking', DOC: 'docs', INT: 'interviews', REP: 'reports' };
+  const moves = Object.entries(dirs)
+    .map(([prefix, dir]) => [path.join(wb, dir, `${prefix}-${nn}-${slug}.md`), path.join(wb, dir, `${prefix}-${to}-${slug}.md`)])
+    .filter(([from]) => fs.existsSync(from));
+  const sub = [path.join(wb, 'subtasks', `P-${nn}-${slug}`), path.join(wb, 'subtasks', `P-${to}-${slug}`)];
+  const hasSub = fs.existsSync(sub[0]);
+  if (!moves.length && !hasSub) fail(`no files of feature ${nn} "${slug}"`);
+
+  const used = [...Object.entries(dirs), ['P', 'subtasks']].some(([prefix, dir]) => listDir(path.join(wb, dir)).some((n) => n.startsWith(`${prefix}-${to}-`)));
+  const indexDoc = new Doc(path.join(wb, 'INDEX.md'));
+  const t = tableAt(indexDoc.lines, 'Features');
+  const rows = t && t.header !== -1 ? t.rows : [];
+  if (used || rows.some((i) => cells(indexDoc.lines[i])[0] === to)) fail(`number ${to} is already used`);
+
+  const trk = moves.find(([from]) => path.basename(from).startsWith('TRK-'));
+  if (trk) {
+    const running = tasksOf(readText(trk[0]) || '').filter((x) => x.status === 'In Progress').map((x) => x.id);
+    if (running.length) fail(`P-${nn} has tasks In Progress (${running.join(', ')}) - finish them or put them on Hold first`);
+  }
+
+  const links = new RegExp(`\\b(${PREFIXES.join('|')})-${nn}-${slug}\\b`, 'g');
+  const ids = new RegExp(`\\b(${PREFIXES.join('|')})-${nn}\\b(?!-[a-z0-9])`, 'g');
+  const rewrite = (text) => text.replace(links, `$1-${to}-${slug}`).replace(ids, `$1-${to}`);
+  const out = [];
+
+  // Contents first, then names: an error before the renames leaves the names as they were.
+  const taskFiles = hasSub ? listDir(sub[0]).filter((n) => n.endsWith('.md')).map((n) => path.join(sub[0], n)) : [];
+  for (const file of [...moves.map(([from]) => from), ...taskFiles]) {
+    const text = readText(file);
+    if (text !== null && rewrite(text) !== text) fs.writeFileSync(file, rewrite(text));
+  }
+
+  const r = rows.find((i) => cells(indexDoc.lines[i])[0] === nn && indexDoc.lines[i].includes(`-${nn}-${slug}`));
+  if (r !== undefined) {
+    const cs = cells(indexDoc.lines[r]).map(rewrite);
+    cs[0] = to;
+    indexDoc.lines.splice(r, 1);
+    const later = rows.filter((i) => i !== r).map((i) => (i > r ? i - 1 : i))
+      .find((i) => /^\d+$/.test(cells(indexDoc.lines[i])[0]) && Number(cells(indexDoc.lines[i])[0]) > Number(to));
+    const at = later !== undefined ? later : (t.last > r ? t.last - 1 : t.last) + 1;
+    indexDoc.lines.splice(at, 0, row(cs));
+    indexDoc.changed = true;
+    out.push(`INDEX row ${nn} -> ${to}`);
+  }
+
+  for (const [from, dest] of moves) {
+    fs.renameSync(from, dest);
+    out.push(`${path.relative(wb, from).split(path.sep).join('/')} -> ${path.basename(dest)}`);
+  }
+  if (hasSub) {
+    fs.renameSync(sub[0], sub[1]);
+    out.push(`subtasks/P-${nn}-${slug}/ -> P-${to}-${slug}/`);
+  }
+  indexDoc.save();
+
+  if (trk) {
+    const doc = new Doc(trk[1]);
+    const a = tableAt(doc.lines, 'Activity');
+    if (a && a.header !== -1) {
+      doc.insertAfter(a.last, row([today(), `P-${to}`, 'Main agent', 'Action', `renumbered from P-${nn} (feature number collision)`]));
+      doc.save();
+    }
+  }
+  return out;
 }
 
 function cmdCheck(args) {
@@ -361,7 +571,7 @@ function cmdCheck(args) {
   return { out, code: findings.length ? 2 : 0 };
 }
 
-const COMMANDS = { status: cmdStatus, refresh: cmdRefresh, ready: cmdReady, chain: cmdChain, overview: cmdOverview, 'next-number': cmdNextNumber, check: cmdCheck };
+const COMMANDS = { status: cmdStatus, refresh: cmdRefresh, ready: cmdReady, chain: cmdChain, overview: cmdOverview, 'next-number': cmdNextNumber, running: cmdRunning, renumber: cmdRenumber, check: cmdCheck };
 
 function main(argv) {
   const [name, ...args] = argv;

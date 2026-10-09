@@ -43,6 +43,7 @@ Runs one task, or with `all` every remaining task of one plan in turn. You (the 
    - the plan is `Hold` or `Canceled`;
    - the task is `Done`, `Canceled`, or `Hold` (point to `/foreman:resume` for hold, `/foreman:round` to rework a `Done` or `Hold` task);
    - a `Depends On` task is not `Done`: ask whether to proceed anyway; only on explicit yes.
+   - **Running elsewhere** ("Sessions" in rules.md): `wb.js running P-NN`. Each line marked `elsewhere` (the chosen task, or another task of this plan) may be running in another session: show the lines and ask with `AskUserQuestion` - run anyway, or stop. Log the answer (`User`, `Decision`). On yes, step 3 passes `--confirmed`; never pass it without that yes. `run P-NN all` asks this once, before the confirmation of its step 2.
 4. Read `Version control` in INDEX (missing: detect and add it, "Version control" in rules.md), then read `${CLAUDE_PLUGIN_ROOT}/reference/vcs-<value>.md` (the vcs file below). For `tfvc`, check `tf` once ("`tf` availability" in the vcs file).
 
 ## 2. Pre-check the task (before delegating)
@@ -68,7 +69,7 @@ Then:
 
 ## 3. Mark In Progress
 
-First, before anything else, save `In Progress` completely ("Statuses" in rules.md), so `workbench/` shows the task as started while the worker runs or after a crash: `wb.js status P-NN TASK-TT In Progress --by <By> --reason "<reason>" --note "worker running"`. It writes the TRK row, the History row now (not later with `Done`), the Plan Status and its History row when the plan starts, the task file `Status`, and INDEX Progress `<done>/<total> Done, TASK-TT In Progress`. Without Node, write these by hand ("State script" in rules.md).
+First, before anything else, save `In Progress` completely ("Statuses" in rules.md), so `workbench/` shows the task as started while the worker runs or after a crash: `wb.js status P-NN TASK-TT In Progress --by <By> --reason "<reason>" --note "worker running"` (plus `--confirmed` after a yes in step 1.3; an `ERROR: ... outside this session` means another session started a task meanwhile: ask as in step 1.3). It writes the TRK row, the History row now (not later with `Done`), the Plan Status and its History row when the plan starts, the task file `Status`, and INDEX Progress `<done>/<total> Done, TASK-TT In Progress`. Without Node, write these by hand ("State script" in rules.md).
 
 Record the start state: "Start state" in the vcs file.
 

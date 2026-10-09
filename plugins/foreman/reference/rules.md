@@ -14,13 +14,14 @@ workbench/
 ├─ docs/DOC-NN-<slug>.md
 ├─ interviews/INT-NN-<slug>.md   # created by /foreman:interview
 ├─ .baseline/P-NN/TASK-TT/...    # temporary file snapshots during /foreman:run (tfvc without tf, none)
+├─ .baseline/P-NN/TASK-TT.session  # session marker while the task is In Progress ("Sessions")
 └─ reports/REP-NN-<slug>.md      # created on demand by /foreman:report
 ```
 
 ## Naming
 
 - One feature = one plan, one contract, one tracking file, one doc, one subtasks folder. All share the same number `NN` and the same `<slug>`.
-- `NN` is the feature number, zero-padded to 2 digits (`01`, `02`, ... `99`, then `100`). Next number = highest number in `INDEX.md` or in `workbench/interviews/` + 1 (`wb.js next-number`, "State script").
+- `NN` is the feature number, zero-padded to 2 digits (`01`, `02`, ... `99`, then `100`). Next number = highest number in `INDEX.md` or in `workbench/interviews/` + 1, with git also on the other local and fetched branches (`wb.js next-number`, "State script"; its first line is the number). A collision found after a merge is fixed by `/foreman:doctor` (renumber).
 - An interview `INT-NN-<slug>` reserves its number and slug: the plan it creates uses the same `NN` and `<slug>`. A canceled interview's number stays used.
 - `TT` is the task number inside its plan, zero-padded to 2 digits, starting at `01` for every plan.
 - `<slug>` is lowercase kebab-case, ASCII letters, digits and hyphens only, max ~40 characters (e.g. `user-login`).
@@ -104,19 +105,25 @@ The INDEX setting `- CLAUDE.md: yes | no` controls a short block that tells Clau
 
 | Call | Does |
 |------|------|
-| `status P-NN TASK-TT <status> --by <User\|Main agent> --reason "<text>" [--note "<text>"]` | Task status change: TRK row (Status, Updated, Note - cleared without `--note`), History row, derived Plan Status (with its History row), the task file `Status` row, INDEX Progress |
+| `status P-NN TASK-TT <status> --by <User\|Main agent> --reason "<text>" [--note "<text>"] [--confirmed]` | Task status change: TRK row (Status, Updated, Note - cleared without `--note`), History row, derived Plan Status (with its History row), the task file `Status` row, INDEX Progress, the session marker ("Sessions"; `--confirmed` only after the user's yes) |
 | `status P-NN <status> --by ... --reason "..."` | Plan status change (`Hold`, `Canceled`, `Done`, back to `In Progress` / `Not Started`), History row |
-| `refresh P-NN` | After adding or removing task rows, or a contract status change: derived Plan Status, every task file `Status` row (from TRK; added when missing), INDEX Progress and Contract Status |
+| `refresh P-NN` | After adding or removing task rows, or a contract status change: derived Plan Status, every task file `Status` row (from TRK; added when missing), INDEX Progress and Contract Status; removes session markers of tasks not `In Progress` |
 | `ready [P-NN]` | Tasks that can run now (`Not Started`, dependencies `Done`, plan active, contract `Approved`) |
 | `chain P-NN` | Run order for `/foreman:run P-NN all`: every `Not Started` task in dependency order (assuming each finishes `Done`), then `blocked:` lines for tasks waiting on a task outside that order; `ERROR:` if the contract is not `Approved` or the plan is `Hold` / `Canceled` / `Done` |
 | `overview` | One line per feature (plan, contract, progress, next step) and per open interview |
-| `next-number` | The next free feature number `NN` |
+| `next-number` | The next free feature number `NN` (first line); git: also skips numbers used on other local and fetched branches, named in a `note:` line |
+| `running [P-NN]` | `In Progress` tasks and who runs each: `this session`, or `elsewhere: ...` ("Sessions") |
+| `renumber P-NN <slug> [NN]` | Moves one feature to a new number (default: `next-number`) after a collision: renames its files and subtasks folder, rewrites its IDs and links, moves its INDEX row, logs Activity; `ERROR:` while one of its tasks is `In Progress`. Only `/foreman:doctor` runs it, after confirmation |
 | `check [P-NN]` | The mechanical `/foreman:doctor` checks (files, naming, numbering, tables in sync, statuses, derivation, INDEX); one `finding:` line per problem, exit code 2 when there are findings |
 
 - Output: one line per change or answer. `ERROR: <reason>` (exit code 1) means nothing was written: fix the cause (wrong ID, same status, missing table) - never edit the cells by hand to get around it.
 - At the end of every command that wrote `workbench/` files of a feature, run `check P-NN` once. If it prints findings, tell the user in one line and point to `/foreman:doctor` ("Command boundaries"); never fix them in that command.
 - Write the row text yourself only where no call covers it (new task rows, Activity rows, notes in other files).
 - If the call fails because `node` is not found, do the same updates by hand as described in "Statuses" and "Naming", and tell the user once per command: "Node.js not found - foreman updates the tracking files by hand."
+
+## Sessions
+
+Two Claude Code sessions in one project must not silently run tasks of the same plan. When a task goes `In Progress`, `wb.js status` writes a session marker `workbench/.baseline/P-NN/TASK-TT.session` (session id, Claude Code process id, start time; local, never in version control) and removes it when the task leaves `In Progress`. `wb.js running P-NN` shows who runs each `In Progress` task: this session, another running session, an ended (interrupted) session, or unknown (no marker: another machine, by hand, an older foreman). `wb.js status P-NN TASK-TT In Progress` refuses with `ERROR:` while another task of the plan is `In Progress` outside this session; `/foreman:run` asks the user first and passes `--confirmed` only on yes. Without Node, there are no markers: ask before running a task of a plan that already has a task `In Progress`.
 
 ## Command boundaries
 
