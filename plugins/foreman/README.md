@@ -200,7 +200,7 @@ workbench/
 - **Plan** - Overview, Source, Feature Review Findings, Requirements, Technical Approach, Task Breakdown, Risks, Open Questions.
 - **Contract** - Status, Scope, Out of Scope, Acceptance Criteria, Working Rules (commit policy, auto-close, tests, baseline tests, full tests, standards, when to ask), Change Requests (`FEAT-n`).
 - **Tracking** - task table (status, updated, note); status History with who made each change (`User` / `Main agent` / `Worker`); Activity log of every user decision, worker action (files changed, commands run), and main agent action (task fixes, test runs, commits).
-- **Task** - header table (Plan, Contract, Tracking, Depends On, Source, Created, Baseline, Tests), then Problem, Evidence, Required Outcome, Files Expected to Change, Out of Scope, Implementation, Report Requirements.
+- **Task** - header table (Status, Plan, Contract, Tracking, Depends On, Source, Created, Baseline, Tests; Status mirrors the tracking file and is updated with every status change), then Problem, Evidence, Required Outcome, Files Expected to Change, Out of Scope, Implementation, Report Requirements.
 - **Doc** - updated after each completed task: Summary, Implemented Tasks, Architecture / Key Files, How to Extend, Acceptance, Known Limitations.
 - **Interview** - Status, Idea, Coverage (each topic `Open` / `Covered` / `N/A`), Files Expected to Change, Rounds (question, answer, challenge), Decisions, Open Gaps.
 - **Report** - Summary, Scope, Progress, Change Requests, Acceptance, Risks and Blockers, Next Steps.

@@ -68,7 +68,7 @@ Then:
 
 ## 3. Mark In Progress
 
-First, before anything else, save `In Progress` completely ("Statuses" in rules.md), so `workbench/` shows the task as started while the worker runs or after a crash: `wb.js status P-NN TASK-TT In Progress --by <By> --reason "<reason>" --note "worker running"`. It writes the TRK row, the History row now (not later with `Done`), the Plan Status and its History row when the plan starts, and INDEX Progress `<done>/<total> Done, TASK-TT In Progress`. Without Node, write these by hand ("State script" in rules.md).
+First, before anything else, save `In Progress` completely ("Statuses" in rules.md), so `workbench/` shows the task as started while the worker runs or after a crash: `wb.js status P-NN TASK-TT In Progress --by <By> --reason "<reason>" --note "worker running"`. It writes the TRK row, the History row now (not later with `Done`), the Plan Status and its History row when the plan starts, the task file `Status`, and INDEX Progress `<done>/<total> Done, TASK-TT In Progress`. Without Node, write these by hand ("State script" in rules.md).
 
 Record the start state: "Start state" in the vcs file.
 

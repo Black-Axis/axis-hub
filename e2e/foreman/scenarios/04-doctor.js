@@ -1,17 +1,19 @@
 // /foreman:doctor: seeded inconsistencies are found by wb.js check, then fixed.
-const { feature, check, assertClean, appendRow, today } = require('../lib');
+const { feature, check, assertClean, appendRow, today, wbOk } = require('../lib');
 
 module.exports = {
   name: 'doctor finds seeded problems; clean after the fixes',
   fixture: 'notes-api',
-  covers: ['command:doctor', 'wb:check'],
+  covers: ['command:doctor', 'wb:check', 'wb:refresh'],
   run(p, assert) {
     const f2 = feature(p, '02');
     const f3 = feature(p, '03');
     const task2 = 'workbench/subtasks/P-02-search-notes/TASK-02-filter-notes.md';
+    const task3 = 'workbench/subtasks/P-02-search-notes/TASK-03-readme-search.md';
     const seeds = [
       ['TRK status differs from its last History entry', () => p.edit(f2.trk, /(\| \[TASK-01\][^\n]*\| )Done( \|)/, '$1Hold$2'), /TASK-01 is "Hold" but its last History entry says "Done"/],
       ['task file missing', () => p.remove(task2), /TASK-02 has no task file/],
+      ['task file Status differs from TRK', () => p.edit(task3, '| Status | Not Started |', '| Status | Done |'), /TASK-03-readme-search\.md: Status "Done" but TRK says "Not Started"/],
       ['invalid Full tests in a contract', () => p.edit(f3.contract, /- Full tests: close/, '- Full tests: sometimes'), /invalid Full tests "sometimes"/],
       ['invalid Fix rounds setting', () => p.edit('workbench/INDEX.md', '- Fix rounds: 2', '- Fix rounds: 12'), /invalid Fix rounds value "12"/],
       ['INDEX progress out of date', () => p.edit('workbench/INDEX.md', '| Approved | 1/3 Done |', '| Approved | 2/3 Done |'), /P-02 Progress "2\/3 Done" should be/],
@@ -37,6 +39,15 @@ module.exports = {
     p.step('fix (as doctor would after confirmation) and check again');
     p.git('checkout', '--', '.');
     p.remove('workbench/.baseline');
+    assertClean(p);
+
+    p.step('older task file without a Status row: a note; refresh adds it from TRK');
+    p.edit(task3, '| Status | Not Started |\n', '');
+    const n = check(p);
+    assert.strictEqual(n.code, 0, n.out);
+    assert.ok(n.notes.some((x) => /TASK-03-readme-search\.md: no Status header row/.test(x)), n.out);
+    assert.match(wbOk(p, 'refresh', 'P-02'), /^TASK-03 task file Status: Not Started$/m);
+    assert.match(p.read(task3), /\| Field \| Value \|\n\|-------\|-------\|\n\| Status \| Not Started \|\n\| Plan \|/);
     assertClean(p);
   },
 };

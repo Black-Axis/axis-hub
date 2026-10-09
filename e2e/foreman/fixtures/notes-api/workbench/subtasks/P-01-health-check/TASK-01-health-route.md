@@ -2,6 +2,7 @@
 
 | Field | Value |
 |-------|-------|
+| Status | Done |
 | Plan | [P-01-health-check](../../plans/P-01-health-check.md) |
 | Contract | [CONT-01-health-check](../../contracts/CONT-01-health-check.md) |
 | Tracking | [TRK-01-health-check](../../tracking/TRK-01-health-check.md) |

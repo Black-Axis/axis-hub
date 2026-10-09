@@ -90,8 +90,9 @@ The INDEX setting `- CLAUDE.md: yes | no` controls a short block that tells Clau
   1. Update the row in the TRK `Tasks` table (Status, Updated date, Note).
   2. Append a row to the TRK `History` table: date, target (`P-NN` or `TASK-TT`), `old -> new`, By (`User` if the user asked for it, otherwise `Main agent`), reason.
   3. Update the `Progress` column in `INDEX.md` as `<done>/<total excluding Canceled> Done`, followed by `, TASK-TT In Progress` for each task that is `In Progress` (e.g. `1/3 Done, TASK-02 In Progress`), so INDEX shows running work.
-- Make every status change with the state script (`wb.js status`, "State script" below): one call writes all three parts, plus the Plan Status and its History row when the derived plan status changes. By hand only when the script cannot run.
-- Write each status change completely - all three parts, plus the Plan Status and its History row when the derived plan status changes - at the moment it happens, as its own step. Never batch it with later changes, and never leave a part for later in the command or for the next command.
+  4. For a task: set the `Status` row of the task file header table to the same value (a mirror for readers; the TRK `Tasks` table is the source of truth). Add the row first in the table if an older task file has none. The worker never changes it.
+- Make every status change with the state script (`wb.js status`, "State script" below): one call writes all four parts, plus the Plan Status and its History row when the derived plan status changes. By hand only when the script cannot run.
+- Write each status change completely - all parts, plus the Plan Status and its History row when the derived plan status changes - at the moment it happens, as its own step. Never batch it with later changes, and never leave a part for later in the command or for the next command.
 - Plan Status in TRK is derived: `In Progress` when any task is `In Progress` or `Done` (including when all tasks are `Done`); otherwise `Not Started`. Explicit `Hold`/`Canceled` of the whole plan overrides this. A plan becomes `Done` only through `/foreman:close`, after the contract's Acceptance Criteria are verified, or through `/foreman:import` for a feature already finished before foreman.
 - You may set `Hold` or `Canceled` on your own (e.g. blocked, verification failed, task made obsolete), but always write the reason in History and tell the user.
 - History holds task and plan status changes only (target `P-NN` or `TASK-TT`). Contract status changes (approve, amend) are recorded in the contract file, INDEX, and the Activity log (`User`, `Decision`) - never in History.
@@ -103,9 +104,9 @@ The INDEX setting `- CLAUDE.md: yes | no` controls a short block that tells Clau
 
 | Call | Does |
 |------|------|
-| `status P-NN TASK-TT <status> --by <User\|Main agent> --reason "<text>" [--note "<text>"]` | Task status change: TRK row (Status, Updated, Note - cleared without `--note`), History row, derived Plan Status (with its History row), INDEX Progress |
+| `status P-NN TASK-TT <status> --by <User\|Main agent> --reason "<text>" [--note "<text>"]` | Task status change: TRK row (Status, Updated, Note - cleared without `--note`), History row, derived Plan Status (with its History row), the task file `Status` row, INDEX Progress |
 | `status P-NN <status> --by ... --reason "..."` | Plan status change (`Hold`, `Canceled`, `Done`, back to `In Progress` / `Not Started`), History row |
-| `refresh P-NN` | After adding or removing task rows, or a contract status change: derived Plan Status, INDEX Progress and Contract Status |
+| `refresh P-NN` | After adding or removing task rows, or a contract status change: derived Plan Status, every task file `Status` row (from TRK; added when missing), INDEX Progress and Contract Status |
 | `ready [P-NN]` | Tasks that can run now (`Not Started`, dependencies `Done`, plan active, contract `Approved`) |
 | `chain P-NN` | Run order for `/foreman:run P-NN all`: every `Not Started` task in dependency order (assuming each finishes `Done`), then `blocked:` lines for tasks waiting on a task outside that order; `ERROR:` if the contract is not `Approved` or the plan is `Hold` / `Canceled` / `Done` |
 | `overview` | One line per feature (plan, contract, progress, next step) and per open interview |

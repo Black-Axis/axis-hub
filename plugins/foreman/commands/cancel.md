@@ -16,5 +16,5 @@ State script: `node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js"` ("State script" in ru
 2. Show what will be canceled and ask the user to confirm.
 3. Task target: allowed from any status except `Done` and `Canceled`. Set it to `Canceled`. Warn the user if other tasks depend on it.
 4. Plan target (no `TASK-TT`): set the TRK Plan Status to `Canceled` and set every task that is not `Done` to `Canceled`.
-5. Record every change with `wb.js status P-NN [TASK-TT] Canceled --by <User|Main agent> --reason "<reason>" --note "<reason>"` - one call per task, then one for the plan target (TRK table, History with the reason, INDEX).
+5. Record every change with `wb.js status P-NN [TASK-TT] Canceled --by <User|Main agent> --reason "<reason>" --note "<reason>"` - one call per task, then one for the plan target (TRK table, History with the reason, task file Status, INDEX).
 6. Do not revert any code. If code from an `In Progress` task exists, tell the user so they can decide.

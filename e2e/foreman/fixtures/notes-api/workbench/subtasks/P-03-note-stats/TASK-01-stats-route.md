@@ -2,6 +2,7 @@
 
 | Field | Value |
 |-------|-------|
+| Status | Not Started |
 | Plan | [P-03-note-stats](../../plans/P-03-note-stats.md) |
 | Contract | [CONT-03-note-stats](../../contracts/CONT-03-note-stats.md) |
 | Tracking | [TRK-03-note-stats](../../tracking/TRK-03-note-stats.md) |
