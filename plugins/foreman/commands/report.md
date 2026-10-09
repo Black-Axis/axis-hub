@@ -1,5 +1,5 @@
 ---
-description: Write a stakeholder report for a feature to workbench/reports/ (composed by the foreman-reporter subagent)
+description: Write a stakeholder report for a feature
 argument-hint: <P-NN>
 allowed-tools: Read, Glob, Write(workbench/reports/**), Agent, AskUserQuestion
 ---

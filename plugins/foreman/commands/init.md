@@ -1,5 +1,5 @@
 ---
-description: Set up workbench/ in this project - ask every setting and the default working rules, then create the folders and INDEX
+description: Set up workbench/ and its settings in this project
 allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), PowerShell(git log:*), AskUserQuestion
 ---
 

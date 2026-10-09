@@ -1,5 +1,5 @@
 ---
-description: Approve a feature contract so its tasks can be run
+description: Approve a feature contract so its tasks can run
 argument-hint: <P-NN>
 allowed-tools: Read, Glob, Edit(workbench/**), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), AskUserQuestion
 ---

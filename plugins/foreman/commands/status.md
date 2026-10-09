@@ -1,5 +1,5 @@
 ---
-description: Show progress of all features, or task details of one plan
+description: Show progress of all features or one plan
 argument-hint: "[P-NN]"
 allowed-tools: Read, Glob, Grep, Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*)
 ---

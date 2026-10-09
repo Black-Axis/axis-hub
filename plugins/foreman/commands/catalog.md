@@ -1,5 +1,5 @@
 ---
-description: List all foreman commands, subagents, skills, and hooks with what each does
+description: List foreman's commands, subagents, skills, and hooks
 allowed-tools: Read, Glob, Grep
 ---
 

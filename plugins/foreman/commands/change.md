@@ -1,5 +1,5 @@
 ---
-description: Record a change request for a feature - amend the contract, plan, and tasks; small changes are approved inline, big ones need re-approval
+description: Change a feature's scope or tasks; big changes need re-approval
 argument-hint: <P-NN> <change request>
 allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), PowerShell(git log:*), Bash(tf history:*), PowerShell(tf history:*), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), AskUserQuestion
 ---

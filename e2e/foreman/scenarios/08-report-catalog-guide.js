@@ -49,6 +49,10 @@ module.exports = {
     };
     const commands = fs.readdirSync(path.join(root, 'commands')).filter((x) => x.endsWith('.md'));
     for (const c of commands) assert.ok(front(path.join(root, 'commands', c)).description, `${c}: no description`);
+    // Every session carries the command descriptions in context (#102): one short line each.
+    const descriptions = commands.map((c) => front(path.join(root, 'commands', c)).description);
+    for (const [i, d] of descriptions.entries()) assert.ok(d.length <= 70, `${commands[i]}: description has ${d.length} characters (max 70)`);
+    assert.ok(descriptions.join('').length <= 1100, 'all command descriptions together stay short');
     for (const a of fs.readdirSync(path.join(root, 'agents'))) {
       const fm = front(path.join(root, 'agents', a));
       assert.ok(fm.name && fm.description && fm.model, `${a}: name, description, model`);

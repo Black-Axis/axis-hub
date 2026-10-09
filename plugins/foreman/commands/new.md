@@ -1,5 +1,5 @@
 ---
-description: Start a new feature from working file(s) and/or text - review it, then create plan, contract, tracking, and subtasks in workbench/
+description: Start a feature from files or text - review, plan, contract, tasks
 argument-hint: "[working file path(s)] [feature description / notes]"
 allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), PowerShell(git log:*), Bash(tf history:*), PowerShell(tf history:*), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), AskUserQuestion
 ---

@@ -1,5 +1,5 @@
 ---
-description: Check workbench/ for inconsistencies and fix them after your confirmation
+description: Find and fix inconsistencies in workbench/
 argument-hint: "[P-NN]"
 allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), AskUserQuestion
 ---
