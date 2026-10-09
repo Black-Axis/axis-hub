@@ -116,5 +116,17 @@ module.exports = {
     p.step('renumber refuses a feature with a task In Progress');
     wbOk(p, 'status', 'P-06', 'TASK-01', 'In Progress', '--by', 'User', '--reason', '/foreman:run P-06 TASK-01');
     assert.match(wb(p, 'renumber', 'P-06', 'tags').out, /^ERROR: P-06 has tasks In Progress \(TASK-01\)/);
+
+    p.step('renumber matches the exact slug: "notes" never touches "notes-v2" (#83)');
+    cloneFeature(p, '07', 'notes-v2', 'Notes v2');
+    cloneFeature(p, '07', 'notes', 'Notes');
+    const v2 = p.files('workbench').filter((f) => f.includes('notes-v2')).map((f) => `${f}\n${p.read(f)}`).join('\n');
+    assert.match(wbOk(p, 'renumber', 'P-07', 'notes', '08'), /^INDEX row 07 -> 08$/m);
+    const index = p.read('workbench/INDEX.md');
+    assert.match(index, /^\| 07 \| Notes v2 \| \[P-07\]\(plans\/P-07-notes-v2\.md\)/m, 'notes-v2 row unchanged');
+    assert.match(index, /^\| 08 \| Notes \| \[P-08\]\(plans\/P-08-notes\.md\)/m, 'notes row renumbered');
+    assert.strictEqual(p.files('workbench').filter((f) => f.includes('notes-v2')).map((f) => `${f}\n${p.read(f)}`).join('\n'), v2, 'notes-v2 files unchanged');
+    assert.match(p.read('workbench/plans/P-08-notes.md'), /^# P-08: Notes$/m);
+    assertClean(p);
   },
 };
