@@ -18,6 +18,10 @@ const GIT_ENV = {
   GIT_CONFIG_NOSYSTEM: '1',
 };
 
+// The Claude Code session the plugin's scripts see (as in a Bash tool call): fixed,
+// so runs inside Claude Code and in CI behave the same. `Project.session` changes it.
+const SESSION_ENV = { CLAUDE_CODE_SESSION_ID: 'e2e-session', CLAUDE_PID: String(process.pid) };
+
 // Plugins that have e2e scenarios: e2e/<plugin>/scenarios/*.js.
 function plugins() {
   return fs.readdirSync(E2E, { withFileTypes: true })
@@ -41,6 +45,7 @@ class Project {
     this.pluginRoot = path.join(REPO, 'plugins', plugin);
     this.dir = path.join(WORK, plugin, id);
     this.steps = [];
+    this.sessionEnv = { ...SESSION_ENV };
     fs.rmSync(this.dir, { recursive: true, force: true });
     fs.mkdirSync(this.dir, { recursive: true });
     if (fixture) fs.cpSync(path.join(E2E, plugin, 'fixtures', fixture), this.dir, { recursive: true });
@@ -58,6 +63,13 @@ class Project {
 
   step(text) {
     this.steps.push(text);
+  }
+
+  // Runs fn as another Claude Code session (id, process id), then switches back.
+  session(id, pid, fn) {
+    const saved = this.sessionEnv;
+    this.sessionEnv = { CLAUDE_CODE_SESSION_ID: id, CLAUDE_PID: String(pid) };
+    try { return fn(); } finally { this.sessionEnv = saved; }
   }
 
   path(p) {
@@ -107,7 +119,7 @@ class Project {
   run(cmd, args, opts = {}) {
     const res = spawnSync(cmd, args, {
       cwd: this.dir, encoding: 'utf8', input: opts.input,
-      env: { ...process.env, ...GIT_ENV, CLAUDE_PROJECT_DIR: this.dir, CLAUDE_PLUGIN_ROOT: this.pluginRoot, ...opts.env },
+      env: { ...process.env, ...GIT_ENV, ...this.sessionEnv, CLAUDE_PROJECT_DIR: this.dir, CLAUDE_PLUGIN_ROOT: this.pluginRoot, ...opts.env },
     });
     if (res.error) throw res.error;
     return { code: res.status, out: `${res.stdout || ''}`.trim(), err: `${res.stderr || ''}`.trim() };

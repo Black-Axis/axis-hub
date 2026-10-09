@@ -23,6 +23,18 @@ function section(text, heading) {
   return out.join('\n').trim();
 }
 
+// Every .md file under workbench/ (relative, '/' separated), without .baseline/.
+function markdownFiles(wb, dir = '') {
+  const out = [];
+  for (const name of listDir(path.join(wb, dir))) {
+    const rel = dir ? `${dir}/${name}` : name;
+    if (rel === '.baseline') continue;
+    if (name.endsWith('.md')) out.push(rel);
+    else if (!name.includes('.')) out.push(...markdownFiles(wb, rel));
+  }
+  return out;
+}
+
 function progress(tasks) {
   const done = tasks.filter((t) => t.status === 'Done').length;
   const total = tasks.filter((t) => t.status !== 'Canceled').length;
@@ -34,6 +46,12 @@ function check(wb, only) {
   const notes = [];
   const add = (file, problem) => findings.push(`${file}: ${problem}`);
   const indexText = readText(path.join(wb, 'INDEX.md')) || '';
+
+  // Unresolved merge conflicts (parallel branches editing INDEX or the same TRK file).
+  for (const rel of markdownFiles(wb)) {
+    if (only && rel !== 'INDEX.md' && !rel.includes(`-${only}-`)) continue;
+    if (/^(<{7}|>{7})( |$)/m.test(readText(path.join(wb, rel)) || '')) add(rel, 'unresolved merge conflict (<<<<<<< / >>>>>>> lines) - resolve it, then run /foreman:doctor');
+  }
 
   // INDEX settings.
   const settings = [
@@ -75,7 +93,7 @@ function check(wb, only) {
     for (const i of t.rows) {
       const cs = cells(lines[i]);
       const nn = (cs[0] || '').trim();
-      if (idx[nn]) add('INDEX.md', `duplicate feature number ${nn}`);
+      if (idx[nn]) add('INDEX.md', `duplicate feature number ${nn} (fix: wb.js renumber P-${nn} <slug> for one of the features)`);
       idx[nn] = cs;
     }
   } else if (!only) add('INDEX.md', 'no Features table');
@@ -93,7 +111,7 @@ function check(wb, only) {
       const [, nn, slug] = m;
       if (only && nn !== only) continue;
       files[nn] = files[nn] || {};
-      if (files[nn][prefix] && files[nn][prefix] !== slug) add(`${dir}/${name}`, `second ${prefix} file for number ${nn}`);
+      if (files[nn][prefix] && files[nn][prefix] !== slug) add(`${dir}/${name}`, `second ${prefix} file for number ${nn} (fix: wb.js renumber P-${nn} ${slug})`);
       files[nn][prefix] = slug;
     }
   }
@@ -134,7 +152,7 @@ function check(wb, only) {
       else if (!/^interview$/i.test(field(readText(path.join(wb, 'plans', `${plan}.md`)) || '', 'Type'))) add(`plans/${plan}.md`, 'Source Type should be "interview"');
     }
     const other = files[m[1]] && (files[m[1]].P || files[m[1]].TRK);
-    if (other && other !== m[2]) add(`interviews/${name}`, `number ${m[1]} is used by feature "${other}"`);
+    if (other && other !== m[2]) add(`interviews/${name}`, `number ${m[1]} is used by feature "${other}" (fix: wb.js renumber P-${m[1]} ${m[2]})`);
     if (status === 'In Progress') notes.push(`interviews/${name}: interview in progress - /foreman:interview INT-${m[1]}`);
   }
   return { findings, notes };
@@ -267,8 +285,11 @@ function checkFeature(wb, nn, slug, f, indexRow, head, add, notes) {
 
   // Leftover snapshots.
   for (const name of listDir(path.join(wb, '.baseline', `P-${nn}`))) {
-    const row = tasks.find((x) => x.id === name);
-    if (!row || row.status !== 'In Progress') add(`.baseline/P-${nn}/${name}/`, 'leftover snapshot of a task that is not In Progress');
+    const marker = /^(TASK-\d+)\.session$/.exec(name);
+    const row = tasks.find((x) => x.id === (marker ? marker[1] : name));
+    if (row && row.status === 'In Progress') continue;
+    if (marker) add(`.baseline/P-${nn}/${name}`, `leftover session marker of a task that is not In Progress (fix: wb.js refresh P-${nn})`);
+    else add(`.baseline/P-${nn}/${name}/`, 'leftover snapshot of a task that is not In Progress');
   }
 }
 

@@ -24,7 +24,7 @@ node --test                           # e2e/e2e.test.js runs every scenario too 
 ## Layout
 
 - `run.js` - runner; `e2e.test.js` - same scenarios under `node --test` plus the coverage test.
-- `lib/harness.js` - `Project(plugin, id, fixture)`: `step`, `path`, `read`, `write`, `edit(file, from, to)` (throws when `from` does not match), `remove`, `exists`, `files(dir)`, `run(cmd, args)`, `git(...)` (throws on error), `commit(msg)`, `script(rel, ...args)`, `hook(script, input)` (`{ code, out, json }`), `test(...patterns)` (`node --test`). Env: `CLAUDE_PROJECT_DIR`, `CLAUDE_PLUGIN_ROOT`, fixed git identity.
+- `lib/harness.js` - `Project(plugin, id, fixture)`: `step`, `path`, `read`, `write`, `edit(file, from, to)` (throws when `from` does not match), `remove`, `exists`, `files(dir)`, `run(cmd, args)`, `git(...)` (throws on error), `commit(msg)`, `script(rel, ...args)`, `hook(script, input)` (`{ code, out, json }`), `test(...patterns)` (`node --test`). Env: `CLAUDE_PROJECT_DIR`, `CLAUDE_PLUGIN_ROOT`, fixed git identity, fixed session (`CLAUDE_CODE_SESSION_ID=e2e-session`, `CLAUDE_PID` = the runner); `session(id, pid, fn)` runs `fn` as another Claude Code session.
 - `<plugin>/scenarios/NN-<name>.js` - `{ name, fixture, covers, run(p, assert) }`; call `p.step(text)` before each part (the failure report names the last step).
 - `foreman/lib.js` - `wb`, `wbOk` (asserts exit 0), `check` (findings / notes), `assertClean`, `trk` (parsed TRK), `task`, `indexRow`, `appendRow`, `activity`, `guard(p, tool, input, 'main' | 'worker' | 'reporter', extra)` (returns `allow` / `deny` / `null`), `fromTemplate(p, template, values)`, `feature(p, NN)`.
 

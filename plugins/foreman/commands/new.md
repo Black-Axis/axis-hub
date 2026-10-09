@@ -23,7 +23,7 @@ If `workbench/INDEX.md` does not exist in the project root, follow `${CLAUDE_PLU
 
 ## 2. Determine the feature number
 
-Read `workbench/INDEX.md` and list `workbench/interviews/`. `NN` = `wb.js next-number` (highest feature or interview number + 1, or `01`).
+Read `workbench/INDEX.md` and list `workbench/interviews/`. `NN` = `wb.js next-number` (first line: highest feature or interview number + 1, or `01`; with git also numbers on other branches - mention its `note:` line to the user).
 
 ## 3. Get the requirements
 
