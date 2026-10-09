@@ -15,7 +15,8 @@ workbench/
 ├─ interviews/INT-NN-<slug>.md   # created by /foreman:interview
 ├─ .baseline/P-NN/TASK-TT/...    # temporary file snapshots during /foreman:run (tfvc without tf, none)
 ├─ .baseline/P-NN/TASK-TT.session  # session marker while the task is In Progress ("Sessions")
-└─ reports/REP-NN-<slug>.md      # created on demand by /foreman:report
+├─ reports/REP-NN-<slug>.md      # created on demand by /foreman:report
+└─ maps/MAP.md, MAP-NN.md        # created on demand by /foreman:map (wb.js map); generated, never edited
 ```
 
 ## Naming
@@ -116,6 +117,7 @@ The INDEX setting `- CLAUDE.md: yes | no` controls a short block that tells Clau
 | `running [P-NN]` | `In Progress` tasks and who runs each: `this session`, or `elsewhere: ...` ("Sessions") |
 | `renumber P-NN <slug> [NN]` | Moves one feature to a new number (default: `next-number`) after a collision: renames its files and subtasks folder, rewrites its IDs and links, moves its INDEX row, logs Activity; `ERROR:` while one of its tasks is `In Progress`. Only `/foreman:doctor` runs it, after confirmation |
 | `check [P-NN]` | The mechanical `/foreman:doctor` checks (files, naming, numbering, tables in sync, statuses, derivation, INDEX); one `finding:` line per problem, exit code 2 when there are findings |
+| `map [P-NN]` | Writes the Mermaid feature map (`/foreman:map`) to `workbench/maps/MAP.md`, or `MAP-NN.md` for one feature: every file of each feature that exists (interview, plan, contract, tracking, tasks with dependencies and status colors, doc, reports) and links to them; prints the path and a summary |
 
 - Output: one line per change or answer. `ERROR: <reason>` (exit code 1) means nothing was written: fix the cause (wrong ID, same status, missing table) - never edit the cells by hand to get around it.
 - At the end of every command that wrote `workbench/` files of a feature, run `check P-NN` once. If it prints findings, tell the user in one line and point to `/foreman:doctor` ("Command boundaries"); never fix them in that command.

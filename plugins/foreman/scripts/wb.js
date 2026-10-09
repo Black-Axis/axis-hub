@@ -12,6 +12,7 @@
 //   node wb.js running [P-NN]      In Progress tasks and the session running each
 //   node wb.js renumber P-NN <slug> [NN]  move one feature to a new number (after a collision)
 //   node wb.js check [P-NN]        mechanical consistency checks (/foreman:doctor); exit 2 with findings
+//   node wb.js map [P-NN]          Mermaid feature map to workbench/maps/MAP.md or MAP-NN.md (/foreman:map)
 // Exit 0 on success; 1 with "ERROR: <reason>" (nothing written) on bad input or state.
 
 const fs = require('fs');
@@ -19,6 +20,7 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 const { readText, listDir, cells, tableAt, tableRows, field, taskIds, findFile } = require('./lib');
 const { check } = require('./check');
+const { writeMap } = require('./map');
 
 const STATUSES = ['Not Started', 'In Progress', 'Hold', 'Done', 'Canceled'];
 const BY = ['User', 'Main agent'];
@@ -617,6 +619,14 @@ function cmdRenumber(args) {
   return out;
 }
 
+function cmdMap(args) {
+  const wb = workbench();
+  const only = args[0] ? planId(args[0]) : null;
+  const r = writeMap(wb, only, now());
+  if (r.error) fail(r.error);
+  return r.lines;
+}
+
 function cmdCheck(args) {
   const wb = workbench();
   const only = args[0] ? planId(args[0]) : null;
@@ -626,7 +636,7 @@ function cmdCheck(args) {
   return { out, code: findings.length ? 2 : 0 };
 }
 
-const COMMANDS = { status: cmdStatus, continue: cmdContinue, refresh: cmdRefresh, ready: cmdReady, chain: cmdChain, overview: cmdOverview, 'next-number': cmdNextNumber, running: cmdRunning, renumber: cmdRenumber, check: cmdCheck };
+const COMMANDS = { status: cmdStatus, continue: cmdContinue, refresh: cmdRefresh, ready: cmdReady, chain: cmdChain, overview: cmdOverview, 'next-number': cmdNextNumber, running: cmdRunning, renumber: cmdRenumber, check: cmdCheck, map: cmdMap };
 
 function main(argv) {
   const [name, ...args] = argv;

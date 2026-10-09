@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Black-Axis Claude Code plugins for building features, fixing bugs, and managing work.",
-    "version": "1.5.0"
+    "version": "1.6.0"
   },
   "plugins": [
     {
       "name": "foreman",
       "source": "./plugins/foreman",
       "description": "Plan, contract, track, delegate, and document feature work in a workbench/ folder.",
-      "version": "1.5.0",
+      "version": "1.6.0",
       "author": {
         "name": "Black-Axis",
         "email": "black_axis@outlook.com"

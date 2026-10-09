@@ -235,3 +235,21 @@ test('task file Status: mirrored, added by refresh, checked', () => {
   wb(dir, 'refresh', 'P-01');
   assert.strictEqual(wb(dir, 'check', 'P-01').code, 0);
 });
+
+test('map: writes the feature map with the existing files (#100)', () => {
+  const dir = project();
+  assert.deepStrictEqual(wb(dir, 'map'), { code: 0, out: 'workbench/maps/MAP.md\n1 plan(s), 2 task(s)' });
+  const text = read(dir, path.join('workbench', 'maps', 'MAP.md'));
+  assert.match(text, /^```mermaid\nflowchart LR\n {2}subgraph F01\["P-01 .* - In Progress"\]$/m);
+  for (const node of ['f01_P', 'f01_CONT', 'f01_TRK', 'f01_TASK01', 'f01_TASK02', 'f01_DOC']) assert.match(text, new RegExp(`^ {4}${node}\\["`, 'm'), node);
+  assert.doesNotMatch(text, /f01_(INT|REP)\[/, 'no interview or report in the example');
+  assert.match(text, /^- \*\*P-01 .*\*\* \(plan In Progress, contract Approved, 1\/2 tasks Done\): \[plan\]\(\.\.\/plans\/P-01-health-endpoint\.md\)/m);
+  assert.strictEqual(wb(dir, 'map', 'P-01').out.split('\n')[0], 'workbench/maps/MAP-01.md');
+  assert.match(wb(dir, 'map', 'P-07').out, /^ERROR: no files of feature 07/);
+  assert.strictEqual(wb(dir, 'check').code, 0, 'maps/ is no finding');
+  const empty = project();
+  fs.rmSync(path.join(empty, 'workbench'), { recursive: true });
+  fs.mkdirSync(path.join(empty, 'workbench'));
+  fs.writeFileSync(path.join(empty, 'workbench', 'INDEX.md'), '# Workbench Index\n');
+  assert.match(wb(empty, 'map').out, /^ERROR: no features or interviews yet/);
+});

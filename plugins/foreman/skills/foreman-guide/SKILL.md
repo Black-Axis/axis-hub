@@ -29,6 +29,7 @@ Skip it also when the user is already running a `/foreman:*` command, explicitly
    - Finish a feature: `/foreman:close`
    - Something looks broken in `workbench/`: `/foreman:doctor`
    - Report for a manager or team: `/foreman:report`
+   - A picture of all features and their files (diagram): `/foreman:map`
    - View or change project settings (version control, workbench tracked or ignored, output style, fix rounds, CLAUDE.md block, working rules defaults): `/foreman:settings`
    - What does foreman provide: `/foreman:catalog`
    - Not sure: `/foreman:ask`

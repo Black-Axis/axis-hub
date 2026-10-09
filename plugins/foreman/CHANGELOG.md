@@ -4,6 +4,12 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-10-09
+
+### Added
+
+- `/foreman:map [P-NN]` (#100): draws a Mermaid diagram of all features (or one) to `workbench/maps/MAP.md` (`MAP-NN.md` for one feature), overwritten each run. Each feature is a box with the files that exist - interview (with its status), plan, contract (status), tracking (progress), every task colored by status with dotted arrows for its dependencies, doc, and report - and a linked file list below the diagram. An interview without a plan gets its own box. Built by the new state script call `wb.js map [P-NN]`, so no feature file enters the main agent's context; without Node.js the command says the map needs it.
+
 ## [1.5.0] - 2026-10-09
 
 ### Added
