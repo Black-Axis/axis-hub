@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Branch rules shared by the git hooks in this folder and the Claude Code hook
 // in .claude/hooks/guard-git.js:
-//   - never commit on main, never push to main on GitHub (use a pull request);
+//   - never commit on main, never push to main of Black-Axis/axis-hub on GitHub (use a pull request);
 //   - branch names are <type>/<short-name>, e.g. feat/foreman-bug-command.
 // Usage from git hooks: node .githooks/guard.js pre-commit
 //                       node .githooks/guard.js pre-push <remote> <url>  (refs on stdin)
@@ -27,14 +27,16 @@ function checkCommit(branch) {
   return checkBranchName(branch);
 }
 
-function isGitHubUrl(url) {
-  return /github\.com[:/]/i.test(url || '');
+// True for a URL of the axis-hub repository on GitHub (HTTPS or SSH). The rules
+// apply only to it: other repositories have their own rules.
+function isAxisHubUrl(url) {
+  return /github\.com[:/]+Black-Axis\/axis-hub(\.git)?\/?$/i.test((url || '').trim());
 }
 
 // Errors for a push. `updates` are { localRef, localSha, remoteRef } from pre-push stdin.
-// main is protected on GitHub remotes only; other remotes are not checked.
+// Checked only for the axis-hub repository on GitHub; other remotes are not checked.
 function checkPush(url, updates) {
-  if (!isGitHubUrl(url)) return [];
+  if (!isAxisHubUrl(url)) return [];
   const errors = [];
   for (const u of updates) {
     const deleting = /^0+$/.test(u.localSha || '');
@@ -80,4 +82,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { PROTECTED, TYPES, BRANCH_PATTERN, checkBranchName, checkCommit, checkPush, isGitHubUrl, currentBranch };
+module.exports = { PROTECTED, TYPES, BRANCH_PATTERN, checkBranchName, checkCommit, checkPush, isAxisHubUrl, currentBranch };

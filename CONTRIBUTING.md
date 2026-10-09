@@ -91,8 +91,8 @@ These rules are enforced in three places:
 | Where | What it refuses |
 |-------|-----------------|
 | GitHub ruleset on `main` ([`.github/rulesets/main.json`](.github/rulesets/main.json)) | Direct pushes, force pushes, and deleting `main`; merging a pull request before **validate** passes |
-| Git hooks in `.githooks/` (after `git config core.hooksPath .githooks`) | Commits on `main`, pushes to `main` on GitHub, and branch names not following `<type>/<short-name>` |
-| Claude Code hook (`.claude/settings.json`) | The same, for git commands Claude runs in this repository (also with `git -C <path>`, checked against that repository), plus merging pull requests (`gh pr merge`, merge calls through `gh api`): you review and merge every pull request |
+| Git hooks in `.githooks/` (after `git config core.hooksPath .githooks`) | Commits on `main`, pushes to `main` of `Black-Axis/axis-hub` on GitHub, and branch names not following `<type>/<short-name>` |
+| Claude Code hook (`.claude/settings.json`) | The same, for git commands Claude runs in this repository (also with `git -C <path>`, checked against that repository; repositories without a remote pointing to `Black-Axis/axis-hub` are not checked), plus merging pull requests in any repository (`gh pr merge`, merge calls through `gh api`): you review and merge every pull request |
 
 ## Validation and tests
 
