@@ -24,6 +24,10 @@ Details: [foreman changelog](plugins/foreman/CHANGELOG.md).
 
 ### Marketplace
 
+#### Added
+
+- Context budget test: what each foreman command loads, with a limit per command (#104)
+
 #### Changed
 
 - Release notes grouped by plugin and type, one change per bullet; the v1.5.0 notes regenerated (#98)
