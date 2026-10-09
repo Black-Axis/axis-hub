@@ -5,7 +5,7 @@ allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(g
 
 # /foreman:init
 
-First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it throughout.
+First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` with its topic files `${CLAUDE_PLUGIN_ROOT}/reference/version-control.md` and `${CLAUDE_PLUGIN_ROOT}/reference/project-block.md` ("Topic files" in rules.md) and follow them throughout.
 
 The user's defaults (set when the plugin was enabled; change with `/config`):
 - Default output: `${user_config.default_output}`

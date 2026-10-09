@@ -8,7 +8,7 @@ allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(n
 
 Input: $ARGUMENTS
 
-First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it.
+First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` with its topic files `${CLAUDE_PLUGIN_ROOT}/reference/version-control.md`, `${CLAUDE_PLUGIN_ROOT}/reference/project-block.md`, and `${CLAUDE_PLUGIN_ROOT}/reference/detection.md` ("Topic files" in rules.md) and follow them.
 
 State script: `node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js"` ("State script" in rules.md).
 
@@ -31,7 +31,7 @@ List the folders explicitly with `Glob`, never the shell ("Shell use" in rules.m
 9. **Task files** - all mandatory sections exist and are not empty or still `{{...}}` placeholders. A missing `Baseline` header row (tasks from before 1.3.0) is fine: report only. A missing `Tests` or `Worker model` header row (tasks from before 1.5.0) is fine, not reported; a `Worker model` row is `—`, `sonnet`, `opus`, or `haiku`. The `Status` header row matches the task's TRK status (TRK is the source of truth; fix: `wb.js refresh P-NN`, which rewrites every task file `Status` of the plan from TRK). A missing `Status` row (tasks from before 1.5.0) is a note: propose adding it with the same `wb.js refresh P-NN`, applied only on confirmation like any fix.
 10. **Tracking format** - every TRK file has the `History` table with a `By` column and an `Activity` table (older files: propose adding them, empty; never back-fill guessed rows).
 11. **Imported gaps** - list every `Missing - from import` field (report only; the user fills them).
-12. **(you)** **CLAUDE.md block** ("Project instructions block" in rules.md) - `yes`: the block is in the right target file for the Workbench setting, only there, and matches `${CLAUDE_PLUGIN_ROOT}/templates/claude-md.md` exactly (an outdated block is refreshed from the template); `no`: no CLAUDE file has a foreman block.
+12. **(you)** **CLAUDE.md block** ("Project instructions block" in project-block.md) - `yes`: the block is in the right target file for the Workbench setting, only there, and matches `${CLAUDE_PLUGIN_ROOT}/templates/claude-md.md` exactly (an outdated block is refreshed from the template); `no`: no CLAUDE file has a foreman block.
 13. **Interviews** - names follow `INT-NN-<slug>.md`; Status is `In Progress`, `Done`, or `Canceled`; a `Done` interview links an existing plan with the same number and slug, and that plan's Source Type is `interview`; no interview number is used by a different feature. List `In Progress` interviews (report only; `/foreman:interview INT-NN` continues them).
 
 ## 2. Report
@@ -42,6 +42,6 @@ If nothing is wrong, say so and stop.
 
 ## 3. Fix after confirmation
 
-Ask the user which fixes to apply with `AskUserQuestion`: all, none, or a list of numbers (typed with "Other"); judgement calls as separate questions. Apply only those. Read only the files you fix, and in them only the lines the fix needs. Never delete files, with one exception: leftover snapshot folders and session markers in `workbench/.baseline/` of tasks that are not `In Progress` (finding 8) are removed on confirmation with `wb.js refresh P-NN` (without Node: one shell command, as in "Snapshot" in rules.md). For an orphan file, ask whether to link it or leave it.
+Ask the user which fixes to apply with `AskUserQuestion`: all, none, or a list of numbers (typed with "Other"); judgement calls as separate questions. Apply only those. Read only the files you fix, and in them only the lines the fix needs. Never delete files, with one exception: leftover snapshot folders and session markers in `workbench/.baseline/` of tasks that are not `In Progress` (finding 8) are removed on confirmation with `wb.js refresh P-NN` (without Node: one shell command, as in "Snapshot cleanup" in version-control.md). For an orphan file, ask whether to link it or leave it.
 
 **Renumber** (duplicate feature number, finding 3): a judgement call. Ask which feature keeps the number (show both slugs and titles) and confirm the new number for the other (default: `wb.js next-number`, which also sees other git branches). Then `wb.js renumber P-NN <slug> [new number]` - it renames the feature's files and subtasks folder, rewrites its IDs and links, moves its INDEX row, and logs an Activity row; it refuses while a task of that feature is `In Progress`. Tell the user that version control sees the renames as deleted and new files, to commit with their next change; never stage or commit yourself. Record each status correction as a TRK History row with reason "doctor: <what was fixed>". Report what was fixed and what remains.

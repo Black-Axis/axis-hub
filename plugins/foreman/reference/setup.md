@@ -9,7 +9,7 @@ The calling command gives you the user's defaults (only a command file gets them
 
 ## 1. Settings
 
-First detect the version control ("Version control" in rules.md). In Auto mode use the result; if detection gives `none`, ask once (`git` / `tfvc` / `none`), since TFVC server workspaces leave no marker. In Ask all mode, ask with the detected value as the recommended option. Then read the vcs file for the chosen value ("Per version control rules" in rules.md).
+First read `detection.md` and `project-block.md` (in this folder) if not read yet, and detect the version control ("Detection" in detection.md). In Auto mode use the result; if detection gives `none`, ask once (`git` / `tfvc` / `none`), since TFVC server workspaces leave no marker. In Ask all mode, ask with the detected value as the recommended option. Then read the vcs file for the chosen value ("Per version control rules" in version-control.md).
 
 | Setting | Auto | Ask all |
 |---------|------|---------|
@@ -19,7 +19,7 @@ First detect the version control ("Version control" in rules.md). In Auto mode u
 | Worker model (`sonnet` / `opus` / `haiku`) | Use the default | Ask; default recommended |
 | CLAUDE.md (`yes` / `no`) | Use the default; ask only if it is `ask` | Ask; default (if not `ask`) recommended |
 
-When asking about CLAUDE.md, explain it in one line: a short foreman block in the project's `CLAUDE.md` (Workbench `tracked`) or `CLAUDE.local.md` (Workbench `ignored`) so Claude knows about `workbench/` in every session. Show the block from `${CLAUDE_PLUGIN_ROOT}/templates/claude-md.md`. Apply the AGENTS.md rule from "Project instructions block" in rules.md before writing.
+When asking about CLAUDE.md, explain it in one line: a short foreman block in the project's `CLAUDE.md` (Workbench `tracked`) or `CLAUDE.local.md` (Workbench `ignored`) so Claude knows about `workbench/` in every session. Show the block from `${CLAUDE_PLUGIN_ROOT}/templates/claude-md.md`. Apply the AGENTS.md rule from "Project instructions block" in project-block.md before writing.
 
 Before asking anything, read `${CLAUDE_PLUGIN_ROOT}/templates/INDEX.md` (step 3) and, when the CLAUDE.md block may be written, `${CLAUDE_PLUGIN_ROOT}/templates/claude-md.md` ("Questions and follow-up turns" in rules.md). Ask the settings in as few `AskUserQuestion` calls as possible, at most 4 questions per call ("Questions and follow-up turns" in rules.md): Ask all mode asks Version control (only when detection gave `none`), Workbench, Output, Fix rounds in the first call, then Worker model and CLAUDE.md in the second.
 
@@ -47,7 +47,7 @@ In Auto mode, remove the `Working Rules Defaults` section from INDEX; each featu
 2. `workbench/INDEX.md` from `${CLAUDE_PLUGIN_ROOT}/templates/INDEX.md` with the chosen values and Created = today.
 3. Workbench `ignored`: add `workbench/` to the ignore file ("Ignore file" in the vcs file; create it if missing; no duplicate line).
 4. Workbench `tracked`: for git and tfvc, add `workbench/.baseline/` to the ignore file (temporary snapshots; "Ignore file" in the vcs file).
-5. CLAUDE.md `yes`: write the block ("Project instructions block" in rules.md).
+5. CLAUDE.md `yes`: write the block ("Project instructions block" in project-block.md).
 
 ## 4. Tell the user
 

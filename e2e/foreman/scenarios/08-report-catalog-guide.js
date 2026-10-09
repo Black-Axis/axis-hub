@@ -68,5 +68,33 @@ module.exports = {
     assert.match(wbOk(p, 'ready'), /^P-02 TASK-02 Filter GET \/notes by q$/m, 'the guide fills real arguments from ready tasks');
     p.remove('workbench');
     assert.ok(!p.exists('workbench/INDEX.md'), 'without INDEX.md the guide stays silent');
+
+    p.step('rules split (#103): what each command loads before its first question holds every section it cites');
+    const refDir = path.join(root, 'reference');
+    const hasSection = (text, name) => text.split(/\r?\n/).some((l) => l === `## ${name}` || l.startsWith(`## ${name} `) || l.startsWith(`**${name}**`));
+    for (const file of fs.readdirSync(path.join(root, 'commands')).filter((f) => f.endsWith('.md'))) {
+      const text = read(`commands/${file}`);
+      const first = text.split(/\r?\n/).find((l) => l.startsWith('First read ')) || '';
+      const loaded = [...first.matchAll(/`\$\{CLAUDE_PLUGIN_ROOT\}\/reference\/([a-z-]+\.md)`/g)].map((m) => m[1]);
+      if (['status.md', 'map.md', 'catalog.md'].includes(file)) {
+        assert.deepStrictEqual(loaded, [], `${file} loads no rules file`);
+        continue;
+      }
+      assert.strictEqual(loaded[0], 'rules.md', `${file} starts with rules.md`);
+      // Files read on demand are named with their path where the command needs them (run-all, detection).
+      const onDemand = [...text.matchAll(/`\$\{CLAUDE_PLUGIN_ROOT\}\/reference\/([a-z-]+\.md)`/g)].map((m) => m[1]);
+      for (const m of text.matchAll(/"([A-Z][^"]{2,40})" in `?(version-control|tasks|sessions|project-block|detection|snapshot)\.md`?/g)) {
+        assert.ok(loaded.includes(`${m[2]}.md`) || onDemand.includes(`${m[2]}.md`), `${file} cites "${m[1]}" in ${m[2]}.md without loading it`);
+        assert.ok(hasSection(fs.readFileSync(path.join(refDir, `${m[2]}.md`), 'utf8'), m[1]), `${m[2]}.md has no "${m[1]}"`);
+      }
+    }
+    const loadedChars = (file) => {
+      const first = read(`commands/${file}`).split(/\r?\n/).find((l) => l.startsWith('First read ')) || '';
+      return [...first.matchAll(/`\$\{CLAUDE_PLUGIN_ROOT\}\/reference\/([a-z-]+\.md)`/g)].reduce((n, m) => n + fs.statSync(path.join(refDir, m[1])).size, 0);
+    };
+    assert.ok(loadedChars('approve.md') < 20000, 'approve loads only the core');
+    assert.strictEqual(loadedChars('status.md'), 0, 'status loads no rules');
+    assert.ok(!read('commands/run.md').includes('## Run all'), 'a single run does not load the run-all text');
+    for (const f of ['new.md', 'interview.md', 'import.md']) assert.ok(!/project-block\.md/.test(read(`commands/${f}`)), `${f}: the CLAUDE.md block rules come with setup.md only`);
   },
 };

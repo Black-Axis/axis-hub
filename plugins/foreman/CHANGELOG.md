@@ -10,6 +10,10 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 
 - `/foreman:map [P-NN]` (#100): draws a Mermaid diagram of all features (or one) to `workbench/maps/MAP.md` (`MAP-NN.md` for one feature), overwritten each run. Each feature is a box with the files that exist - interview (with its status), plan, contract (status), tracking (progress), every task colored by status with dotted arrows for its dependencies, doc, and report - and a linked file list below the diagram. An interview without a plan gets its own box. Built by the new state script call `wb.js map [P-NN]`, so no feature file enters the main agent's context; without Node.js the command says the map needs it.
 
+### Changed
+
+- Smaller context per command (#103): `reference/rules.md` (28 KB, about 7,000 tokens, read by 18 commands) is split into a core of about 19 KB and topic files read only by the commands that use them - `reference/version-control.md` (INDEX lines, task baseline, snapshot cleanup), `tasks.md` (task size, test runs), `sessions.md`, and `project-block.md` (the CLAUDE.md block) - or only at the point that needs them: `detection.md` (when the INDEX `Version control` line is missing, setup, doctor), `snapshot.md` (tfvc and none, git only with untracked listed files), `run-all.md` (`/foreman:run ... all`), and the CLAUDE.md block rules through `setup.md` for `new`, `interview`, and `import`. Commands like `approve`, `resume`, `report`, and `ask` load about 2,400 tokens less, a single `/foreman:run` on git and `/foreman:new` about 700-900 less. `/foreman:status` and `/foreman:map` read no rules file (about 7,000 tokens less per call) and carry the few rules they need. The rules themselves are unchanged, only moved.
+
 ## [1.5.0] - 2026-10-09
 
 ### Added

@@ -16,6 +16,11 @@ Details: [foreman changelog](plugins/foreman/CHANGELOG.md).
 
 - `/foreman:map [P-NN]`: a Mermaid diagram of the features and their files in `workbench/maps/` (#100)
 
+#### Changed
+
+- Shared rules split into a core and topic files: fewer tokens per command (#103)
+- `/foreman:status` and `/foreman:map` load no rules file (#103)
+
 ### Marketplace
 
 #### Changed

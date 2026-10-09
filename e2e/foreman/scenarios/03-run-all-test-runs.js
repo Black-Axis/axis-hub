@@ -10,7 +10,7 @@ function taskTests(p, file) {
   return v === '—' ? null : v;
 }
 
-// The reuse checks of "Test runs" in rules.md: true when both print nothing.
+// The reuse checks of "Test runs" in tasks.md: true when both print nothing.
 function canReuse(p, hash) {
   const diff = p.git('diff', '--stat', hash, '--', '.', ':!workbench');
   const untracked = p.git('status', '--porcelain', '--untracked-files=all', '--', '.', ':!workbench');

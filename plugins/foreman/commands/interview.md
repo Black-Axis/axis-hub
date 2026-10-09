@@ -8,7 +8,7 @@ allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(g
 
 Input: $ARGUMENTS
 
-First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it throughout.
+First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` with its topic files `${CLAUDE_PLUGIN_ROOT}/reference/version-control.md` and `${CLAUDE_PLUGIN_ROOT}/reference/tasks.md` ("Topic files" in rules.md) and follow them throughout.
 
 State script: `node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js"` ("State script" in rules.md).
 

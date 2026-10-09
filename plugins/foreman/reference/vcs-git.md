@@ -1,6 +1,6 @@
 # Version control: git
 
-Rules for projects with INDEX `- Version control: git` ("Version control" in rules.md). The other version controls have the same sections in `vcs-tfvc.md` and `vcs-none.md`.
+Rules for projects with INDEX `- Version control: git` ("Version control" in version-control.md). The other version controls have the same sections in `vcs-tfvc.md` and `vcs-none.md`.
 
 ## Ignore file
 
@@ -21,7 +21,7 @@ As the contract's Working Rules say (asked by setup and `/foreman:new`).
 
 **Start hash** - isolates the task's changes from earlier uncommitted ones (an earlier task's or the user's) in the same files:
 - Before the worker starts, run `git stash create`. It stores the current tracked files and index as a commit object and prints its hash; it changes no file, the index, any branch, or the stash list. Empty output means a clean tree: use `git log -1 --format=%H`. If it fails (e.g. an unfinished merge), use `git log -1 --format=%H` and tell the user that earlier uncommitted changes will show in the task's diff.
-- Also record `git status --porcelain` (the untracked files at the start). `git stash create` does not include untracked files, so snapshot every file in the task's `Files Expected to Change` that is untracked at the start (e.g. new and not yet committed by an earlier task), as in "Snapshot" in rules.md.
+- Also record `git status --porcelain` (the untracked files at the start). `git stash create` does not include untracked files, so snapshot every file in the task's `Files Expected to Change` that is untracked at the start (e.g. new and not yet committed by an earlier task), as in "Snapshot" in snapshot.md (read `snapshot.md`, in this folder, only when there is such a file).
 - Log it (`Main agent`, `Action`, `start state: <hash>`).
 
 ## Task changes

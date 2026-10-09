@@ -8,27 +8,13 @@ allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(g
 
 Input: $ARGUMENTS
 
-First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it.
+First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` with its topic files `${CLAUDE_PLUGIN_ROOT}/reference/version-control.md`, `${CLAUDE_PLUGIN_ROOT}/reference/tasks.md`, and `${CLAUDE_PLUGIN_ROOT}/reference/sessions.md` ("Topic files" in rules.md) and follow them.
 
 State script: `node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js"` ("State script" in rules.md).
 
 Runs one task, or with `all` every remaining task of one plan in turn. You (the main agent) orchestrate and verify; the `foreman-worker` subagent implements.
 
-## Run all (`P-NN all`)
-
-`P-NN all`, or `all` alone when exactly one plan is active (otherwise list the active plans and ask):
-1. Run order: `wb.js chain P-NN` - every `Not Started` task in dependency order (including tasks that become ready as earlier ones finish), then `blocked:` lines for tasks waiting on one outside that order. `ERROR:` is refused as in step 1.3; `none`: nothing to run, stop. Without Node, build the order from the TRK `Tasks` table and the plan's `Task Breakdown`.
-2. Confirm once: show the numbered order and the blocked tasks, ask with `AskUserQuestion` whether to run them all, and log the answer (`User`, `Decision`, `run all: TASK-a, TASK-b, ...`). Never start without a yes. This replaces the per-task confirmation of step 1.1.
-3. Run each task through sections 1 (from step 1.2) to 7, exactly as a single run, with all tracking and logging. Before each task, check it is still `Not Started` and its `Depends On` tasks are `Done`; if not, stop before it.
-4. After each task, one progress line: `[k/n] TASK-TT <title>: Done (<f> fix rounds)` (or the status it ended in). No per-task report.
-5. Questions of a normal run (commit confirmation, `tf` commands, Auto-close `Ask`) are asked as usual; on the expected answer the run continues.
-6. **Stop** after the current task, starting no further one, when:
-   - verification fails and the task goes on `Hold` (or it is `Canceled`);
-   - the pre-check finds big problems, the user's own uncommitted changes in the task's files, or baseline tests that already fail - ask that step's question as a single run does and apply the answer to this task;
-   - a permission was denied to you or the worker;
-   - the user answers any question with anything other than continuing;
-   - the next task is no longer `Not Started` or one of its `Depends On` tasks is not `Done`.
-7. At the end, the section 8 report for the whole run: one row per task (result, fix rounds, files changed, tests), where and why the run stopped, the tasks not run, and the next step. End with the `/clear` line of section 8.
+With `all` in the input, also read `${CLAUDE_PLUGIN_ROOT}/reference/run-all.md` now and follow it: it runs each task through the sections below.
 
 ## 1. Resolve and check
 
@@ -43,12 +29,12 @@ Runs one task, or with `all` every remaining task of one plan in turn. You (the 
    - the plan is `Hold` or `Canceled`;
    - the task is `Done`, `Canceled`, or `Hold` (point to `/foreman:resume` for hold, `/foreman:round` to rework a `Done` or `Hold` task). A task already `In Progress` (restored by `/foreman:resume`, or left by an interrupted run) is continued: a new run from step 2, with step 3 using `wb.js continue`;
    - a `Depends On` task is not `Done`: ask whether to proceed anyway; only on explicit yes.
-   - **Running elsewhere** ("Sessions" in rules.md): `wb.js running P-NN`. Each line marked `elsewhere` (the chosen task, or another task of this plan) may be running in another session: show the lines and ask with `AskUserQuestion` - run anyway, or stop. Log the answer (`User`, `Decision`). On yes, step 3 passes `--confirmed`; never pass it without that yes. `run P-NN all` asks this once, before the confirmation of its step 2.
-4. Read `Version control` in INDEX (missing: detect and add it, "Version control" in rules.md), then read `${CLAUDE_PLUGIN_ROOT}/reference/vcs-<value>.md` (the vcs file below). For `tfvc`, check `tf` once ("`tf` availability" in the vcs file).
+   - **Running elsewhere** ("Sessions" in sessions.md): `wb.js running P-NN`. Each line marked `elsewhere` (the chosen task, or another task of this plan) may be running in another session: show the lines and ask with `AskUserQuestion` - run anyway, or stop. Log the answer (`User`, `Decision`). On yes, step 3 passes `--confirmed`; never pass it without that yes. `run P-NN all` asks this once, before the confirmation of its step 2 (`run-all.md`).
+4. Read `Version control` in INDEX (missing: read `${CLAUDE_PLUGIN_ROOT}/reference/detection.md`, detect, and add it, "Detection" in detection.md), then read `${CLAUDE_PLUGIN_ROOT}/reference/vcs-<value>.md` (the vcs file below). For `tfvc`, check `tf` once ("`tf` availability" in the vcs file).
 
 ## 2. Pre-check the task (before delegating)
 
-The code may have changed since the task was planned. First find what changed ("Task baseline" in rules.md):
+The code may have changed since the task was planned. First find what changed ("Task baseline" in version-control.md):
 1. **Since the baseline**: what changed in `Files Expected to Change` and the files named in Evidence since the task's `Baseline`. Re-read only the changed parts and check them against Evidence and Implementation.
 2. **Earlier foreman tasks**: from the TRK `Activity` rows of `Done` tasks in this and other active plans, tasks that changed the same files after this baseline. Check their changes (names, signatures, behavior) still fit this task.
 3. **Uncommitted changes** (git; tfvc with `tf`): `git status --porcelain -- <files>` or `tf status <files>`. Earlier foreman tasks' uncommitted changes are expected (Activity log). Any other change in the task's files is the user's: show the files and ask - commit (or check in) first, stash (or shelve) and re-run, or include them in the start state. Never commit, stash, shelve, or undo yourself. Log the answer (`User`, `Decision`).
@@ -69,11 +55,11 @@ Then:
 
 ## 3. Mark In Progress
 
-First, before anything else, save `In Progress` completely ("Statuses" in rules.md), so `workbench/` shows the task as started while the worker runs or after a crash: `wb.js status P-NN TASK-TT In Progress --by <By> --reason "<reason>" --note "worker running"` (plus `--confirmed` after a yes in step 1.3; an `ERROR: ... outside this session` means another session started a task meanwhile: ask as in step 1.3). For a task already `In Progress` (step 1.3): `wb.js continue P-NN TASK-TT --by <By> --reason "run continued<: after resume | interrupted run taken over>" --note "worker running"` instead (History `In Progress -> In Progress`, TRK Updated and Note, the session marker for this session; same `--confirmed` rule). `status` writes the TRK row, the History row now (not later with `Done`), the Plan Status and its History row when the plan starts, the task file `Status`, and INDEX Progress `<done>/<total> Done, TASK-TT In Progress`. Without Node, write these by hand ("State script" in rules.md).
+First, before anything else, save `In Progress` completely ("Statuses" in rules.md), so `workbench/` shows the task as started while the worker runs or after a crash: `wb.js status P-NN TASK-TT In Progress --by <By> --reason "<reason>" --note "worker running"` (plus `--confirmed` after a yes in step 1.3; an `ERROR: ... outside this session` means another session started a task meanwhile: ask as in step 1.3). For a task already `In Progress` (step 1.3): `wb.js continue P-NN TASK-TT --by <By> --reason "run continued<: after resume | interrupted run taken over>" --note "worker running"` instead (History `In Progress -> In Progress`, TRK Updated and Note, the session marker for this session; same `--confirmed` rule). It writes every part now, the History row too (not later with `Done`; "State script" in rules.md); without Node, write them by hand.
 
 Record the start state: "Start state" in the vcs file.
 
-**Baseline tests** (unless Working Rules say `Baseline tests: no`; missing = `yes`): run the task's tests now - its `Tests` header row, else the contract's commands ("Test runs" in rules.md). First do the "Baseline reuse" check in the vcs file, every time, and log the decision either way (`baseline reused from TASK-xx: ...`, or `(not reused: <reason>)` on the baseline row). Log each command with its failures only (`Main agent`, `Action`, `baseline tests: ...`). If anything already fails, name the tests and ask: proceed (not counted against the worker), or stop and fix them first (`Hold` with the reason). Log the answer (`User`, `Decision`).
+**Baseline tests** (unless Working Rules say `Baseline tests: no`; missing = `yes`): run the task's tests now - its `Tests` header row, else the contract's commands ("Test runs" in tasks.md). First do the "Baseline reuse" check in the vcs file, every time, and log the decision either way (`baseline reused from TASK-xx: ...`, or `(not reused: <reason>)` on the baseline row). Log each command with its failures only (`Main agent`, `Action`, `baseline tests: ...`). If anything already fails, name the tests and ask: proceed (not counted against the worker), or stop and fix them first (`Hold` with the reason). Log the answer (`User`, `Decision`).
 
 ## 4. Delegate
 
@@ -106,7 +92,7 @@ When the worker reports:
    - code and docs files: the full diff (`git diff <start hash>`, `tf diff`, or the snapshot diff); a new file as an added-lines diff;
    - deleted: path and line count; renamed: old → new plus any content diff;
    - lockfiles, build output, binaries, other generated files: path and size of the change only (e.g. `git diff <start hash> --stat`).
-4. Run the task's tests ("Test runs" in rules.md): its `Tests` row, else the contract's commands (and any the project obviously uses); with `Full tests: each task`, also the contract's commands once the task's pass. Record failures only, and with git the state ("Recording the state" in the vcs file). Only failures new since the baseline fail verification; an agreed baseline failure does not count, unless the Required Outcome is to fix it. Report baseline failures that still fail in one line.
+4. Run the task's tests ("Test runs" in tasks.md): its `Tests` row, else the contract's commands (and any the project obviously uses); with `Full tests: each task`, also the contract's commands once the task's pass. Record failures only, and with git the state ("Recording the state" in the vcs file). Only failures new since the baseline fail verification; an agreed baseline failure does not count, unless the Required Outcome is to fix it. Report baseline failures that still fail in one line.
 5. Log the checklist (`Main agent`, `Action`, `verification: <passed>/<total> pass` plus each point in short with result and evidence, `|`-escaped), the test run (command + result), and the worker round (`Worker`, `Action`, files changed + commands run).
 6. **Task File Updates** from the report: apply each detail correction that matches the code to the task file and log it (`Main agent`, `Action`, `task update from worker: <what>`); a change to the Required Outcome, scope, or files goes to the user as a big pre-check problem.
 7. All checks and tests pass: section 7 (Pass). Otherwise: section 6.
@@ -120,7 +106,7 @@ Limit: `- Fix rounds:` in INDEX `Settings` (whole number; missing or invalid = `
    - **Wrong** - done but incorrect: new test failures since the baseline (exact error), wrong behavior, broken rules or standards.
 2. Send only the feedback lists to the **same** worker with SendMessage (agent ID from step 4). If that is not possible, launch a new `foreman-worker` with the step 4 lines plus `Fix round: <n>` and the lists.
 3. Add a TRK History row by hand (no status change, no `wb.js`): `TASK-TT | In Progress -> In Progress | Main agent | Fix round <n>: <count> issues`, and an Activity row (`Main agent`, `Action`) with the items in short.
-4. On the reply, verify again exactly as in step 5, not only the listed items: the failed tests first when the runner can select them, then the task's tests in full ("Test runs" in rules.md).
+4. On the reply, verify again exactly as in step 5, not only the listed items: the failed tests first when the runner can select them, then the task's tests in full ("Test runs" in tasks.md).
 
 Passes: section 7 (Pass). Limit reached with issues left: section 7 (Fail).
 
@@ -132,7 +118,7 @@ Passes: section 7 (Pass). Limit reached with issues left: section 7 (Fail).
   3. Version control (the vcs file):
      - git: the contract's commit policy; if the main agent commits, follow "Commit": only the task's files (and, with Workbench `tracked`, this run's `workbench/` changes), shown first, committed on yes.
      - tfvc: never check in; follow "Commit" and "Deletes, renames, new files".
-     - The snapshot folder `workbench/.baseline/P-NN/TASK-TT/` was deleted by `wb.js status` in step 1 ("Snapshot" in rules.md); without Node, delete it now.
+     - The snapshot folder `workbench/.baseline/P-NN/TASK-TT/` was deleted by `wb.js status` in step 1 ("Snapshot cleanup" in version-control.md); without Node, delete it now.
   4. If every non-canceled task is now `Done`, apply the contract's Auto-close (missing or unclear = `Ask`):
      - `Ask`: read `${CLAUDE_PLUGIN_ROOT}/commands/close.md` first, then ask with `AskUserQuestion` "All tasks Done. Run /foreman:close P-NN now?"; run it only on yes. Log the answer (`User`, `Decision`).
      - `Yes`: after the step 8 report, run `/foreman:close P-NN` (follow `${CLAUDE_PLUGIN_ROOT}/commands/close.md`).
