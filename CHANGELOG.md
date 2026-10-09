@@ -2,28 +2,96 @@
 
 Changes to the marketplace itself (plugin list, repository docs, tooling). Each plugin keeps its own changelog in `plugins/<name>/CHANGELOG.md`.
 
-Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [Semantic Versioning](https://semver.org/).
+Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [Semantic Versioning](https://semver.org/). From 1.5.0 on, each version is grouped by area (each plugin, then `Marketplace`) and change type, one short change per bullet ("Releasing" in [CONTRIBUTING.md](CONTRIBUTING.md)).
 
 ## [Unreleased]
 
+### Marketplace
+
+#### Changed
+
+- Release notes grouped by plugin and type, one change per bullet; the v1.5.0 notes regenerated (#98)
+
 ## [1.5.0] - 2026-10-09
 
-### Added
+### foreman 1.5.0
 
-- e2e scenarios without a model (#29): `e2e/` plays the plugin flows on a sample project in `e2e/.work/` (gitignored) - foreman: lifecycle, fix rounds and Hold, run all and test runs, doctor, hooks, setup from the templates, change requests, report / catalog / guide. Runs with `node e2e/run.js` and under `node --test` (CI). A coverage check fails when a command, agent, skill, hook, or `wb.js` subcommand has no scenario.
-- `foreman`: `foreman-reporter` subagent writes `/foreman:report` reports (#22).
-- `foreman`: no hook errors without Node.js (#25); `workbench/` changes no longer ask for permission (#51); `In Progress` is saved before the worker starts, and INDEX shows running tasks (#50).
-- axis-hub logo at the top of the README, the foreman logo in the plugin list, and a Requirements section (#47).
+Details: [foreman changelog](plugins/foreman/CHANGELOG.md).
 
-### Changed
+#### Added
 
-- `foreman` 1.5.0: no more permission prompts for plugin files and `workbench/` edits after answering a question, PowerShell read-only commands pre-approved, fewer shell prompts (#43), instructions inside working and project files never followed (#33), auto-commit only the task's files after your yes (#39), consistent tracking and a faster catalog (#44), worker shell file writes blocked (#31), each task's git diff isolated from earlier uncommitted changes (#38), no prompts for read-only version control commands after the worker ran (#63), new `/foreman:round` and stricter verification (#21), `/foreman:run P-NN all` runs a plan's remaining tasks after one confirmation (#28), targeted per-task tests and baseline reuse for faster runs (#35), state script for status changes, counts, and consistency checks (#32), `/foreman:doctor` reads only the files it judges or fixes (#23), task status shown in each task file (#20), worker model setting with a per-task override (#27), team support: branch-aware feature numbers, renumber after a collision, merge conflict detection, and a guard against two sessions running the same plan (#37), `/foreman:run` continues a task already In Progress after resume or an interrupted run (#78), questions within the AskUserQuestion limits, English slugs for non-Latin feature names, and long PDFs read in full (#41), no partial writes when the state script fails (#82), renumber matches the exact slug (#83), no snapshot folders left by hold and cancel (#84), merge conflicts reported under the right feature (#85), no permission prompts for the state script on Windows installs (#93), no "run anyway?" question after `/clear` (#95), smaller `/foreman:run` context: per-version-control rule files, a shorter `run.md`, failures-only test output, and a `/clear` suggestion after each run (#26), guide skill only in foreman projects (#36), escaped pipes in tables, reliable snapshots ([changelog](plugins/foreman/CHANGELOG.md)).
-- README: Claude Code v2.1.295 or later is required (#87): the version verified to give shell commands the session id and process id that foreman's session markers use.
-- README: current plugin version (a test now keeps it in step with the manifests) and a version-neutral pinned-tag example; `SECURITY.md` no longer names a fixed version (#47).
-- `CLAUDE.md`: removed a second copy of the file's content, added by a scripted edit in #64; a new test (`tests/docs.test.js`) fails when a Markdown file repeats a `## ` heading.
-- Repository tooling (#40): the Claude Code hook denies merging pull requests (`gh pr merge`, merge calls through `gh api`) and checks `git -C <path>` against that repository; the issue forms set Type and assignee; the session start cleanup skips the fetch on `main` with no other local branch, and the fetch stops after 10 seconds.
-- Repository tooling (#86): the branch rules (no commits or pushes on `main`, `<type>/<short-name>` branch names) apply only to axis-hub - commits and branches in a repository with a remote pointing to `Black-Axis/axis-hub`, pushes to that URL. Other repositories, including other GitHub repositories, are no longer checked; the pull request merge rule still applies everywhere.
-- Docs (#34): CONTRIBUTING releases with an annotated tag and lists every test suite; CodeQL notes no longer say the repository is private; `CLAUDE.md` lifecycle includes `init`. A new test fails when `SECURITY.md` names a fixed version.
+- `/foreman:round`: send a task back for a fix round, also after it is `Done` (#21)
+- Stricter verification: each Required Outcome marked Pass / Fail with evidence (#21)
+- `/foreman:run P-NN all`: runs a plan's remaining tasks after one confirmation (#28)
+- Targeted per-task tests and baseline reuse for faster runs (#35)
+- State script `wb.js` for status changes, counts, and consistency checks (#32)
+- `foreman-reporter` subagent writes `/foreman:report` reports (#22)
+- Worker model setting with a per-task override (#27)
+- Task status shown in each task file (#20)
+- Team support: feature numbers checked on other branches, renumber after a collision (#37)
+- Team support: merge conflict detection and a guard against two sessions running one plan (#37)
+- `In Progress` is saved before the worker starts; INDEX shows running tasks (#50)
+- foreman logo in the README and as the plugin icon (#48)
+
+#### Changed
+
+- Smaller `/foreman:run` context: per-version-control rule files, failures-only test output (#26)
+- A `/clear` suggestion after each `/foreman:run` report (#26)
+- `/foreman:doctor` reads only the files it judges or fixes (#23)
+- `/foreman:catalog` builds its tables from three calls instead of reading every file (#44)
+- The guide skill suggests foreman only in foreman projects (#36)
+- Task size rule for `new`, `interview`, and `change` (#24)
+- README: requirements at the top, uninstall steps, `.baseline/` in the folder structure (#48)
+
+#### Fixed
+
+- No permission prompts for `workbench/` edits (#51)
+- No permission prompts after answering a question (#42)
+- Fewer permission prompts from shell commands (#43)
+- No prompts for read-only version control commands after the worker ran (#63)
+- Read-only version control commands in PowerShell are pre-approved (#24)
+- No permission prompts for the state script on Windows installs (#93)
+- No hook errors without Node.js (#25)
+- Instructions inside working and project files are never followed (#33)
+- Worker shell commands that write files are blocked (#31)
+- Each task's git diff is isolated from earlier uncommitted changes (#38)
+- Auto-commit stages only the task's files, after your yes (#39)
+- Consistent tracking: History holds only task and plan status changes (#44)
+- `/foreman:run` continues a task already `In Progress` after resume or an interrupted run (#78)
+- No "run anyway?" question after `/clear` (#95)
+- Questions stay within the `AskUserQuestion` limits (#41)
+- English slugs for non-Latin feature names, and long PDFs read in full (#41)
+- No partial writes when the state script fails (#82)
+- `wb.js renumber` matches the exact slug (#83)
+- No snapshot folders left by hold and cancel (#84)
+- `wb.js check P-NN` reports merge conflicts only of its own feature (#85)
+- A `|` in a table cell no longer breaks tracking tables (#24)
+- `/foreman:close` checks that `tf` is available and has the commands its Out of Scope check needs (#24)
+- Reliable snapshots: one copy command keeps line endings, encoding, and binary files
+- Catalog hint and README example session corrected (#34)
+
+### Marketplace
+
+#### Added
+
+- e2e scenarios without a model: plugin flows on sample projects, with a coverage check (#29)
+- axis-hub logo, the foreman logo in the plugin list, and a Requirements section in the README (#47)
+
+#### Changed
+
+- Claude Code v2.1.295 or later is required (#87)
+- The README plugin table shows the current version, kept in step by a test (#47)
+- `SECURITY.md` names no fixed version, enforced by a test (#47, #34)
+- The branch rules apply only to the axis-hub repository (#86)
+- The Claude Code hook denies merging pull requests and checks `git -C <path>` against that repository (#40)
+- The issue forms set Type and assignee (#40)
+- Session start cleanup: no fetch on `main` without other branches; the fetch stops after 10 seconds (#40)
+- CONTRIBUTING: releases with an annotated tag, and every test suite listed (#34)
+
+#### Fixed
+
+- `CLAUDE.md`: removed a second copy of its content; a test fails when a Markdown file repeats a `## ` heading (#64)
+- CodeQL notes no longer say the repository is private (#34)
 
 ## [1.4.0] - 2026-10-02
 
