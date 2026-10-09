@@ -11,6 +11,7 @@
 | Created | {{YYYY-MM-DD}} |
 | Baseline | {{git commit hash \| C<changeset> \| YYYY-MM-DD HH:MM}} |
 | Tests | {{targeted test command(s) for this task \| — (the contract's Tests)}} |
+| Worker model | — |
 
 ## Problem
 

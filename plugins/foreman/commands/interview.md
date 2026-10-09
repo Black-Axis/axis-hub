@@ -25,7 +25,7 @@ You are an experienced tech lead interviewing the person who wants this feature.
 
 ## 1. Start or resume
 
-1. If `workbench/INDEX.md` does not exist, follow `${CLAUDE_PLUGIN_ROOT}/reference/setup.md` in **Auto** mode with the user's defaults (set when the plugin was enabled; change with `/config`): output `${user_config.default_output}`, workbench `${user_config.default_git}`, fix rounds `${user_config.default_fix_rounds}`, CLAUDE.md block `${user_config.default_claude_md}`.
+1. If `workbench/INDEX.md` does not exist, follow `${CLAUDE_PLUGIN_ROOT}/reference/setup.md` in **Auto** mode with the user's defaults (set when the plugin was enabled; change with `/config`): output `${user_config.default_output}`, workbench `${user_config.default_git}`, fix rounds `${user_config.default_fix_rounds}`, CLAUDE.md block `${user_config.default_claude_md}`, worker model `${user_config.default_worker_model}`.
 2. **Resume** if the input is `INT-NN`: open `workbench/interviews/INT-NN-<slug>.md`. If its Status is not `In Progress`, say so and stop. Show the Coverage table and Open Gaps in short, then continue at step 3 with the first open topic.
 3. **Open interviews**: if the input is empty and `workbench/interviews/` has files with Status `In Progress`, list them and ask: resume one, or start a new interview.
 4. **New interview**: if the input is empty, ask for the idea in a few sentences. Then:

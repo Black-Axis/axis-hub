@@ -6,6 +6,7 @@
 - Workbench: tracked
 - Output: Concise
 - Fix rounds: 4
+- Worker model: sonnet
 - CLAUDE.md: no
 - Created: 2026-09-20
 

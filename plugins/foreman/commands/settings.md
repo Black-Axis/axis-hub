@@ -1,6 +1,6 @@
 ---
 description: View and change this project's foreman settings from a menu (current value and default for each), or directly by argument; reset to defaults
-argument-hint: "[vcs git|tfvc|none] [workbench tracked|ignored] [output concise|normal] [fix-rounds 0-10] [claude-md yes|no] [rules] [reset]"
+argument-hint: "[vcs git|tfvc|none] [workbench tracked|ignored] [output concise|normal] [fix-rounds 0-10] [worker-model sonnet|opus|haiku] [claude-md yes|no] [rules] [reset]"
 allowed-tools: Read, Glob, Edit(workbench/**), Bash(git ls-files:*), PowerShell(git ls-files:*), Bash(tf status:*), PowerShell(tf status:*), AskUserQuestion
 ---
 
@@ -19,6 +19,7 @@ The user's defaults (set when the plugin was enabled; change with `/config`):
 - Default workbench in version control: `${user_config.default_git}`
 - Default fix rounds: `${user_config.default_fix_rounds}`
 - Default CLAUDE.md block: `${user_config.default_claude_md}`
+- Default worker model: `${user_config.default_worker_model}`
 
 The **default** of a setting is the user's default above; if it is empty, still shows the literal `${user_config...}` text, or is invalid, use the built-in default from this table.
 
@@ -29,6 +30,7 @@ The **default** of a setting is the user's default above; if it is empty, still 
 | Project | CLAUDE.md | `yes`, `no` | `ask` (no value: the user must choose) | Whether a short foreman block in `CLAUDE.md` (Workbench `tracked`) or `CLAUDE.local.md` (Workbench `ignored`) tells Claude about `workbench/` |
 | Behavior | Output | `Concise`, `Normal` | `Concise` | Style of all foreman replies, reports, and files |
 | Behavior | Fix rounds | `0`-`10` | `4` | Times `/foreman:run` sends failed-verification feedback back to the worker before Hold; `0` = none |
+| Behavior | Worker model (`worker-model`) | `sonnet`, `opus`, `haiku` | `sonnet` | Model of the `foreman-worker` subagent in `/foreman:run`; a task's `Worker model` header row overrides it |
 | Working rules | Commit policy | never auto-commit / main agent commits after each verified task / other text | `never auto-commit` (always `never auto-commit (user checks in)` for tfvc and none - not asked) | Proposed for every new contract; existing contracts do not change |
 | Working rules | Auto-close | `Ask`, `Yes`, `No` | `Ask` | Same |
 | Working rules | Tests | command(s), or "none available" | proposed from the project (step 2 of `${CLAUDE_PLUGIN_ROOT}/reference/setup.md`) | Same |
@@ -68,12 +70,12 @@ Show one table with every setting: `Setting | Current | Default | Values`, group
 
 1. If nothing changed, say so and stop.
 2. Show a summary: one line per change, `Setting: old -> new`, and under it each side effect (from step 7): files outside `workbench/` that will be edited, the CLAUDE.md block moving, ignore file lines, warnings. Ask: apply all, or cancel. Apply only on yes.
-3. Apply each change to INDEX: `Settings` block (add the line if missing; Output values in Title Case, the others in lowercase; replace an old `Git:` line with `- Workbench:` when writing Workbench) or the `Working Rules Defaults` section (create it after `Settings` if missing, with the fields of the INDEX template). Then apply the side effects (step 7).
-4. Confirm the new values in one line, plus: "Your defaults for new projects: `/config` (foreman: Default output style, Default for workbench/ in version control, Default fix rounds, Default CLAUDE.md block)."
+3. Apply each change to INDEX: `Settings` block (add the line if missing; Output values in Title Case, the others in lowercase (`- Worker model:` goes after `- Fix rounds:`); replace an old `Git:` line with `- Workbench:` when writing Workbench) or the `Working Rules Defaults` section (create it after `Settings` if missing, with the fields of the INDEX template). Then apply the side effects (step 7).
+4. Confirm the new values in one line, plus: "Your defaults for new projects: `/config` (foreman: Default output style, Default for workbench/ in version control, Default fix rounds, Default CLAUDE.md block, Default worker model)."
 
 ## 6. Reset
 
-Build the change list: every setting to its default - Version control re-detected; Output, Fix rounds, and the working rules with a built-in value to their default; Tests, Standards, Ask the user when re-proposed from the project. For Workbench and CLAUDE.md whose default is `ask`, ask the user (as in step 4) instead of guessing. Skip settings already at their default. Then go to step 5 (the summary and confirmation are always shown for reset).
+Build the change list: every setting to its default - Version control re-detected; Output, Fix rounds, Worker model, and the working rules with a built-in value to their default; Tests, Standards, Ask the user when re-proposed from the project. For Workbench and CLAUDE.md whose default is `ask`, ask the user (as in step 4) instead of guessing. Skip settings already at their default. Then go to step 5 (the summary and confirmation are always shown for reset).
 
 ## 7. Side effects
 

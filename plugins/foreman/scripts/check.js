@@ -41,6 +41,7 @@ function check(wb, only) {
     ['Workbench', /^(tracked|ignored)$/, true],
     ['Output', /^(Concise|Normal)$/, true],
     ['Fix rounds', /^(\d|10)$/, true],
+    ['Worker model', /^(sonnet|opus|haiku)$/, false],
     ['CLAUDE.md', /^(yes|no)$/, true],
   ];
   if (!only) {
@@ -204,6 +205,8 @@ function checkFeature(wb, nn, slug, f, indexRow, head, add, notes) {
     const h = /^# TASK-\d+:\s*(.+)$/m.exec(text);
     const st = /^\|\s*Status\s*\|\s*([^|]*?)\s*\|/m.exec(text);
     fileTasks[id] = { rel, title: h ? h[1].trim() : '', status: st ? st[1] : null };
+    const wm = /^\|\s*Worker model\s*\|\s*([^|]*?)\s*\|/m.exec(text);
+    if (wm && !/^(—|-|sonnet|opus|haiku)$/.test(wm[1])) add(rel, `invalid Worker model "${wm[1]}" (—, sonnet, opus, or haiku)`);
     if (!st) notes.push(`${rel}: no Status header row (task from before 1.5.0; doctor can add it)`);
     for (const s of TASK_SECTIONS) {
       const body = section(text, s);

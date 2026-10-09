@@ -41,7 +41,7 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 > /foreman:new add a /health endpoint returning {status:"ok"} and the app version
   Keep workbench/ in version control (tracked) or ignore it?  > ignored
   Add a foreman block to CLAUDE.local.md so Claude knows about workbench/?  > yes
-  Applied settings: Version control git, Workbench ignored, Output Concise, Fix rounds 4, CLAUDE.md yes (change with /foreman:settings)
+  Applied settings: Version control git, Workbench ignored, Output Concise, Fix rounds 4, Worker model sonnet, CLAUDE.md yes (change with /foreman:settings)
   Feature review - 2 findings:
     1. Where does the version come from? (unclear)
     2. Auth required on /health? (missing)
@@ -62,7 +62,7 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 
 ## Workflow in detail
 
-0. **`/foreman:init`** (optional) - sets up `workbench/`, detects the version control (git, TFVC, or none), and asks every setting (Version control, Workbench, Output, Fix rounds, CLAUDE.md block), with your `/config` defaults as the recommended answers. It also agrees the project's **working rules defaults** (commit policy, auto-close, test commands, standards, when to ask), proposed from what it finds in the project; every new contract starts from them. Skip it and the first `new`, `interview`, or `import` sets up `workbench/` silently from your defaults. Run on an existing `workbench/`, it only adds what is missing and never overwrites.
+0. **`/foreman:init`** (optional) - sets up `workbench/`, detects the version control (git, TFVC, or none), and asks every setting (Version control, Workbench, Output, Fix rounds, Worker model, CLAUDE.md block), with your `/config` defaults as the recommended answers. It also agrees the project's **working rules defaults** (commit policy, auto-close, test commands, standards, when to ask), proposed from what it finds in the project; every new contract starts from them. Skip it and the first `new`, `interview`, or `import` sets up `workbench/` silently from your defaults. Run on an existing `workbench/`, it only adds what is missing and never overwrites.
 1. **`/foreman:new [working file path(s)] [text]`** - Claude reads the feature description from one or more working files, from your text, or both (text then acts as extra notes over the files; conflicts are confirmed with you). Text alone is treated as the feature description. With no input it asks for files or text, or points you to `/foreman:interview`. It reviews the feature for missing / unclear / conflicting / non-applicable items, resolves each finding with you, explores the codebase, and creates the plan, contract (`Draft`), tracking, task files, and a doc skeleton. Readable working file formats: Markdown, text, PDF (not `.docx` - export it to PDF or paste the text).
    **Or `/foreman:interview [idea]`** - for an idea without a written description. Claude studies the codebase, then interviews you topic by topic (goal and users, flows, data, edge cases, security, performance, UI, integrations, migration, tests, acceptance criteria, out of scope) as a blunt tech lead: vague answers ("fast", "the usual way"), contradictions, and scope creep are challenged until the answer is concrete. It proposes the files expected to change for you to confirm, shows a coverage check, and only then creates the plan, contract, tracking, and tasks. Progress is saved after every round in `workbench/interviews/INT-NN-<slug>.md`; `/foreman:interview INT-NN` continues it in a later session.
 2. **`/foreman:approve P-01`** - after you review the files.
@@ -118,8 +118,8 @@ There are two levels. You normally only touch the second.
 
 | Level | Where | What | Change with |
 |-------|-------|------|-------------|
-| Your defaults (all projects) | Claude Code plugin config, asked when you enable the plugin | Default output style, workbench in version control, fix rounds, CLAUDE.md block | `/config` |
-| This project | `workbench/INDEX.md` `Settings`, asked by `/foreman:init` or filled from your defaults on the first `/foreman:new`, `/foreman:interview`, or `/foreman:import` | Version control, Workbench, Output, Fix rounds, CLAUDE.md, working rules defaults (init only) | `/foreman:settings` |
+| Your defaults (all projects) | Claude Code plugin config, asked when you enable the plugin | Default output style, workbench in version control, fix rounds, CLAUDE.md block, worker model | `/config` |
+| This project | `workbench/INDEX.md` `Settings`, asked by `/foreman:init` or filled from your defaults on the first `/foreman:new`, `/foreman:interview`, or `/foreman:import` | Version control, Workbench, Output, Fix rounds, Worker model, CLAUDE.md, working rules defaults (init only) | `/foreman:settings` |
 
 | Setting | Values | Meaning |
 |---------|--------|---------|
@@ -127,9 +127,10 @@ There are two levels. You normally only touch the second.
 | Workbench | `tracked`, `ignored` | Whether `workbench/` is kept in version control (default choice `ask` = asked once per project). Called `Git: committed / ignored` before 1.3.0; old lines keep working |
 | Output | `Concise` (default), `Normal` | `Concise` keeps all foreman replies, worker reports, and files short and token-efficient - no other plugin needed. Affects foreman only. |
 | Fix rounds | `0`-`10` (default `4`) | Automatic fix rounds before a failing task goes on `Hold` |
+| Worker model | `sonnet` (default), `opus`, `haiku` | Model of the worker that implements each task. A single hard (or trivial) task can override it with its `Worker model` header row |
 | CLAUDE.md | `yes`, `no` (default choice `ask`) | Whether foreman adds a short block about `workbench/` to your project instructions (see below) |
 
-`/foreman:settings` without arguments shows every setting with its current value and its default (your `/config` default, or foreman's built-in one), marking values that differ. You then pick the groups to change - Project (Version control, Workbench, CLAUDE.md), Behavior (Output, Fix rounds), Working rules - and choose each value from a list, with the current and default values labeled. foreman shows a summary of the changes and their side effects (for example, the CLAUDE.md block moving or ignore file lines) and applies them only after you confirm. `/foreman:settings reset` puts everything back to the defaults, with the same summary first. Direct changes still work: `/foreman:settings output normal`.
+`/foreman:settings` without arguments shows every setting with its current value and its default (your `/config` default, or foreman's built-in one), marking values that differ. You then pick the groups to change - Project (Version control, Workbench, CLAUDE.md), Behavior (Output, Fix rounds, Worker model), Working rules - and choose each value from a list, with the current and default values labeled. foreman shows a summary of the changes and their side effects (for example, the CLAUDE.md block moving or ignore file lines) and applies them only after you confirm. `/foreman:settings reset` puts everything back to the defaults, with the same summary first. Direct changes still work: `/foreman:settings output normal`.
 
 If a project's settings are missing, the session start summary tells you to run `/foreman:settings`.
 
@@ -200,7 +201,7 @@ workbench/
 - **Plan** - Overview, Source, Feature Review Findings, Requirements, Technical Approach, Task Breakdown, Risks, Open Questions.
 - **Contract** - Status, Scope, Out of Scope, Acceptance Criteria, Working Rules (commit policy, auto-close, tests, baseline tests, full tests, standards, when to ask), Change Requests (`FEAT-n`).
 - **Tracking** - task table (status, updated, note); status History with who made each change (`User` / `Main agent` / `Worker`); Activity log of every user decision, worker action (files changed, commands run), and main agent action (task fixes, test runs, commits).
-- **Task** - header table (Status, Plan, Contract, Tracking, Depends On, Source, Created, Baseline, Tests; Status mirrors the tracking file and is updated with every status change), then Problem, Evidence, Required Outcome, Files Expected to Change, Out of Scope, Implementation, Report Requirements.
+- **Task** - header table (Status, Plan, Contract, Tracking, Depends On, Source, Created, Baseline, Tests, Worker model; Status mirrors the tracking file and is updated with every status change), then Problem, Evidence, Required Outcome, Files Expected to Change, Out of Scope, Implementation, Report Requirements.
 - **Doc** - updated after each completed task: Summary, Implemented Tasks, Architecture / Key Files, How to Extend, Acceptance, Known Limitations.
 - **Interview** - Status, Idea, Coverage (each topic `Open` / `Covered` / `N/A`), Files Expected to Change, Rounds (question, answer, challenge), Decisions, Open Gaps.
 - **Report** - Summary, Scope, Progress, Change Requests, Acceptance, Risks and Blockers, Next Steps.

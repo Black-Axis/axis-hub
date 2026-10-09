@@ -37,6 +37,12 @@
       "title": "Default CLAUDE.md block",
       "description": "yes, no, or ask. Whether foreman adds a short block about workbench/ to the project's CLAUDE.md (or CLAUDE.local.md when workbench/ is ignored) when it sets up a new project.",
       "default": "ask"
+    },
+    "default_worker_model": {
+      "type": "string",
+      "title": "Default worker model",
+      "description": "sonnet, opus, or haiku. The model the foreman-worker subagent runs on; offered as the default when foreman sets up a new project. A task can override it.",
+      "default": "sonnet"
     }
   }
 }
