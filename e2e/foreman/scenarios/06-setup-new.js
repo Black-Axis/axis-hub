@@ -77,6 +77,16 @@ module.exports = {
     assert.ok(c.notes.some((n) => /Missing - from import/.test(n)), c.out);
     assert.match(wbOk(p, 'overview'), /P-03 legacy-auth \| Plan: Done .*\| closed/);
 
+    p.step('non-Latin feature name: ASCII slug, original title; a non-ASCII slug is a finding');
+    writeFeature(p, '04', 'dark-mode', 'الوضع الداكن');
+    assertClean(p);
+    assert.match(p.read('workbench/plans/P-04-dark-mode.md'), /^# P-04: الوضع الداكن$/m);
+    assert.match(p.read('workbench/INDEX.md'), /^\| 04 \| الوضع الداكن \| \[P-04\]\(plans\/P-04-dark-mode\.md\)/m);
+    p.write('workbench/docs/DOC-04-الوضع.md', p.read('workbench/docs/DOC-04-dark-mode.md'));
+    assert.ok(check(p).findings.some((f) => /DOC-04-الوضع\.md: name does not follow DOC-NN-<slug>\.md/.test(f)));
+    p.remove('workbench/docs/DOC-04-الوضع.md');
+    assertClean(p);
+
     p.step('settings: valid changes pass, invalid values are findings');
     p.edit('workbench/INDEX.md', '- Output: Concise', '- Output: Normal');
     p.edit('workbench/INDEX.md', '- Fix rounds: 4', '- Fix rounds: 6');

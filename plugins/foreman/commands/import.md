@@ -12,7 +12,7 @@ First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it.
 
 State script: `node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js"` ("State script" in rules.md).
 
-Sources are local files only (md, txt, json, yaml, or any text). Never move, edit, or delete source files.
+Sources are local files only (md, txt, json, yaml, pdf, or any text). Read every chosen source in full: a PDF over 10 pages with `pages` in ranges of at most 20 (`1-20`, `21-40`, ...) until the last page; say in the preview how many pages were read. Never move, edit, or delete source files.
 
 ## 1. Prepare
 

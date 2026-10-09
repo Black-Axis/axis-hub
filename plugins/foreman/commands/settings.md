@@ -61,8 +61,8 @@ Show one table with every setting: `Setting | Current | Default | Values`, group
 1. Ask with one `AskUserQuestion` (multi-select): which groups to change - `Project`, `Behavior`, `Working rules`. If the user picks none, stop.
 2. For each chosen group, one `AskUserQuestion` call with one question per setting of that group (at most 4 per call; Working rules needs two calls: Commit policy, Auto-close, Baseline tests, Full tests - then Tests, Standards, Ask the user when). For each question:
    - Options are the valid values. The current value comes first, labeled `(current)`; label the default `(default)` (one option can carry both). Add a short description of what each option does.
-   - Fix rounds: options `4`, `2`, `6`, and the current value if different; other numbers via "Other".
-   - Text settings (Tests, Standards, Ask the user when, Commit policy "other"): offer the current value, a value proposed from the project, and "Other" to type.
+   - Fix rounds: the current value, the default, then `4`, `2`, `6` in that order, skipping duplicates, up to 4 options; other numbers via "Other".
+   - Text settings (Tests, Standards, Ask the user when, Commit policy "other"): offer the current value and a value proposed from the project, plus "Other" to type. When both are the same (or there is no proposal), offer the current value and `—` (none; for Commit policy "other": `never auto-commit`) instead.
    - Skip Commit policy for tfvc and none, and Workbench for none (always `tracked`). Use the Version control value chosen on the same screen, if it changed.
 3. A question answered with the current value is no change.
 

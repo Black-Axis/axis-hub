@@ -191,6 +191,33 @@ test('rules.md explains questions and follow-up turns', () => {
   assert.match(text, /\*\*Ask with `AskUserQuestion`\.\*\*/);
 });
 
+// AskUserQuestion takes 1-4 questions with 2-4 options each (#41): no instruction may
+// ask for more, and the shared rule covers long lists and single candidates.
+test('AskUserQuestion limits: rule in rules.md, no instruction outside them', () => {
+  const read = (...p) => fs.readFileSync(path.join(plugin, ...p), 'utf8');
+  const rules = read('reference', 'rules.md');
+  assert.match(rules, /at most 4 questions per call/);
+  assert.match(rules, /2-4 options per question/);
+  assert.match(rules, /only one candidate, add a second real choice/);
+  const files = [...fs.readdirSync(commandsDir).map((f) => ['commands', f]), ...fs.readdirSync(path.join(plugin, 'reference')).map((f) => ['reference', f])];
+  for (const f of files) {
+    const text = read(...f);
+    for (const m of text.matchAll(/\b(\d+)-(\d+) (?:focused )?questions\b/g)) assert.ok(Number(m[2]) <= 4, `${f.join('/')}: "${m[0]}"`);
+    assert.doesNotMatch(text, /settings together in one `AskUserQuestion` call/, f.join('/'));
+  }
+  assert.match(read('reference', 'setup.md'), /at most 4 questions per call[^\n]*first call, then Worker model and CLAUDE\.md in the second/);
+  const settings = read('commands', 'settings.md');
+  assert.match(settings, /Fix rounds: the current value, the default, then `4`, `2`, `6`[^\n]*up to 4 options/);
+  assert.match(settings, /When both are the same[^\n]*offer the current value and `—`/);
+  assert.match(read('commands', 'interview.md'), /Ask 2-4 focused questions about the topic in one `AskUserQuestion` call/);
+});
+
+test('non-Latin feature names get a confirmed English slug; long PDFs are read in full', () => {
+  const read = (...p) => fs.readFileSync(path.join(plugin, ...p), 'utf8');
+  assert.match(read('reference', 'rules.md'), /non-Latin script[^\n]*English slug[^\n]*confirm it with the user[^\n]*original name stays the feature title/);
+  for (const f of ['new.md', 'import.md']) assert.match(read('commands', f), /PDF over 10 pages[^\n]*`pages` in ranges of at most 20[^\n]*until the last page/, f);
+});
+
 test('commands that ask and write workbench/ allow AskUserQuestion', () => {
   for (const file of fs.readdirSync(commandsDir)) {
     const text = fs.readFileSync(path.join(commandsDir, file), 'utf8');
@@ -205,7 +232,7 @@ test('templates are read before the question that precedes writing them', () => 
     ['commands/new.md', 'Before asking, read the templates', 'ask for a resolution of each with `AskUserQuestion`'],
     ['commands/import.md', 'Before asking, read the templates', 'Ask the user with `AskUserQuestion` to confirm or correct'],
     ['commands/interview.md', 'read `${CLAUDE_PLUGIN_ROOT}/commands/new.md`, the templates', '## 3. Interview rounds'],
-    ['reference/setup.md', 'Before asking anything, read `${CLAUDE_PLUGIN_ROOT}/templates/INDEX.md`', 'Ask the settings together'],
+    ['reference/setup.md', 'Before asking anything, read `${CLAUDE_PLUGIN_ROOT}/templates/INDEX.md`', 'Ask the settings in as few `AskUserQuestion` calls'],
     ['commands/round.md', '`${CLAUDE_PLUGIN_ROOT}/commands/run.md` (this command reuses', 'ask what is wrong with `AskUserQuestion`'],
     ['commands/run.md', 'read `${CLAUDE_PLUGIN_ROOT}/commands/close.md` first', '"All tasks Done. Run /foreman:close P-NN now?"'],
   ];
