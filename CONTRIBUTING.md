@@ -197,10 +197,10 @@ A release is a git tag `vX.Y.Z` that matches `metadata.version` in `.claude-plug
 
 Read the "foreman plugin architecture" section of `CLAUDE.md` before changing `plugins/foreman`. In short:
 
-- `reference/rules.md` holds all cross-cutting rules (layout, naming, statuses, permissions, activity log, output style). Change shared behavior there, not in individual commands. Per-version-control rules live in `reference/vcs-git.md`, `vcs-tfvc.md`, and `vcs-none.md` (same section names in each); a command reads only the file for the project's value.
+- `reference/rules.md` holds the core cross-cutting rules (layout, naming, statuses, permissions, activity log, output style). Change shared behavior there, not in individual commands. A rule that only some commands need goes into a topic file (`reference/version-control.md`, `tasks.md`, `project-block.md`, or a new one): add it to the "Topic files" table in `rules.md` with the commands that read it, and name it in the first line of each of those commands. Per-version-control rules live in `reference/vcs-git.md`, `vcs-tfvc.md`, and `vcs-none.md` (same section names in each); a command reads only the file for the project's value.
 - `templates/*.md` define every generated `workbench/` file. If you change a template's headings or fields, update every command that reads or writes them, `commands/doctor.md`, and `hooks/session-start.js` (it parses the `## Tasks` and `## Task Breakdown` tables and the `- Status:` / `- Plan Status:` fields).
 - The worker (`agents/foreman-worker.md`) gets a path-only prompt. Keep its instructions in its agent file.
-- New commands must start by reading `reference/rules.md`, and must be added to the command order in `commands/catalog.md` and the command table in `plugins/foreman/README.md`.
+- New commands must start by reading `reference/rules.md` (plus the topic files they use), and must be added to the command order in `commands/catalog.md` and the command table in `plugins/foreman/README.md`.
 
 Testing a foreman change end to end, in a throwaway git project:
 

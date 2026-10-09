@@ -8,7 +8,7 @@ allowed-tools: Read, Glob, Edit(workbench/**), Bash(git ls-files:*), PowerShell(
 
 Input: $ARGUMENTS
 
-First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it.
+First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` with its topic files `${CLAUDE_PLUGIN_ROOT}/reference/version-control.md` and `${CLAUDE_PLUGIN_ROOT}/reference/project-block.md` ("Topic files" in rules.md) and follow them.
 
 If `workbench/INDEX.md` does not exist, tell the user to run `/foreman:init` (or that the first `/foreman:new`, `/foreman:interview`, or `/foreman:import` creates the settings from their defaults) and stop.
 
@@ -25,7 +25,7 @@ The **default** of a setting is the user's default above; if it is empty, still 
 
 | Group | Setting | Values | Built-in default | Effect |
 |-------|---------|--------|------------------|--------|
-| Project | Version control (`vcs`) | `git`, `tfvc`, `none` | detected ("Version control" in rules.md) | The project's version control |
+| Project | Version control (`vcs`) | `git`, `tfvc`, `none` | detected ("Version control" in version-control.md) | The project's version control |
 | Project | Workbench | `tracked`, `ignored` | `ask` (no value: the user must choose) | Whether `workbench/` is kept in version control (older line: `Git: committed / ignored`; `git committed\|ignored` is accepted as an argument) |
 | Project | CLAUDE.md | `yes`, `no` | `ask` (no value: the user must choose) | Whether a short foreman block in `CLAUDE.md` (Workbench `tracked`) or `CLAUDE.local.md` (Workbench `ignored`) tells Claude about `workbench/` |
 | Behavior | Output | `Concise`, `Normal` | `Concise` | Style of all foreman replies, reports, and files |
@@ -43,7 +43,7 @@ Working rules values live in the INDEX `Working Rules Defaults` section (missing
 
 ## 1. Read
 
-Read the `Settings` block and the `Working Rules Defaults` section of `workbench/INDEX.md`. A missing line counts as `not set`; an old `Git:` line is the Workbench value (`committed` = `tracked`); a missing Version control shows the detected value, marked `(detected)`. Read the vcs file `${CLAUDE_PLUGIN_ROOT}/reference/vcs-<value>.md` for that value ("Version control" in rules.md); when Version control is changed, also read the new value's file before applying.
+Read the `Settings` block and the `Working Rules Defaults` section of `workbench/INDEX.md`. A missing line counts as `not set`; an old `Git:` line is the Workbench value (`committed` = `tracked`); a missing Version control shows the detected value, marked `(detected)`. Read the vcs file `${CLAUDE_PLUGIN_ROOT}/reference/vcs-<value>.md` for that value ("Version control" in version-control.md); when Version control is changed, also read the new value's file before applying.
 
 ## 2. Mode
 
@@ -84,7 +84,7 @@ Build the change list: every setting to its default - Version control re-detecte
   - To `ignored`, tfvc: add `\workbench` to `.tfignore` (create it if missing; no duplicate line). Warn that files already in source control stay there until the user removes them in Visual Studio (`.tfignore` only affects new files). Never delete anything from source control.
   - To `tracked`: remove the `workbench/` (or `\workbench`) line from the ignore file if present. Add `workbench/.baseline/` instead (git and tfvc). Do not stage, commit, add, or check in anything.
   - With Version control `none`: no ignore file; only the CLAUDE.md target changes.
-  - If CLAUDE.md is `yes`: the target file changed, so write the block to the new target and remove it from the old one ("Project instructions block" in rules.md).
+  - If CLAUDE.md is `yes`: the target file changed, so write the block to the new target and remove it from the old one ("Project instructions block" in project-block.md).
 - **Version control**: to `tfvc` or `none`, set the Working Rules Defaults Commit policy (if present) to `never auto-commit (user checks in)` and tell the user that existing contracts with an auto-commit policy are no longer committed by foreman. Move the ignore lines to the new version control's ignore file (none: leave the old file as it is). Never run state-changing version control commands.
-- **CLAUDE.md** ("Project instructions block" in rules.md): to `yes`, write the block; to `no`, remove it.
+- **CLAUDE.md** ("Project instructions block" in project-block.md): to `yes`, write the block; to `no`, remove it.
 - **Working rules**: none - existing contracts keep their rules; say so once.

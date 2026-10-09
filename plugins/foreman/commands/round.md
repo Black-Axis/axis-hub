@@ -8,7 +8,7 @@ allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(g
 
 Input: $ARGUMENTS
 
-First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and `${CLAUDE_PLUGIN_ROOT}/commands/run.md` (this command reuses its steps 3-8) and follow them.
+First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` with its topic files `${CLAUDE_PLUGIN_ROOT}/reference/version-control.md`, `${CLAUDE_PLUGIN_ROOT}/reference/tasks.md`, and `${CLAUDE_PLUGIN_ROOT}/reference/sessions.md` ("Topic files" in rules.md) and `${CLAUDE_PLUGIN_ROOT}/commands/run.md` (this command reuses its steps 3-8) and follow them.
 
 State script: `node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js"` ("State script" in rules.md).
 
@@ -23,7 +23,7 @@ Use this when the user finds that a task's result is wrong or incomplete - also 
    - The plan is `Hold`: suggest `/foreman:resume P-NN` first.
    - The task is `Not Started` (suggest `/foreman:run`) or `Canceled`.
    - Contract Status is not `Approved` (suggest `/foreman:approve P-NN`).
-4. Read `Version control` in INDEX, then read the vcs file `${CLAUDE_PLUGIN_ROOT}/reference/vcs-<value>.md` ("Version control" in rules.md); for `tfvc`, check once whether `tf` is available ("`tf` availability" in the vcs file).
+4. Read `Version control` in INDEX, then read the vcs file `${CLAUDE_PLUGIN_ROOT}/reference/vcs-<value>.md` ("Version control" in version-control.md); for `tfvc`, check once whether `tf` is available ("`tf` availability" in the vcs file).
 
 ## 2. User findings
 

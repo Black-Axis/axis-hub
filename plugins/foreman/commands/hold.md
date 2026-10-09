@@ -8,12 +8,12 @@ allowed-tools: Read, Glob, Edit(workbench/**), Bash(node "${CLAUDE_PLUGIN_ROOT}/
 
 Input: $ARGUMENTS
 
-First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` and follow it.
+First read `${CLAUDE_PLUGIN_ROOT}/reference/rules.md` with its topic file `${CLAUDE_PLUGIN_ROOT}/reference/version-control.md` ("Topic files" in rules.md) and follow them.
 
 State script: `node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js"` ("State script" in rules.md).
 
 1. Parse `P-NN`, optional `TASK-TT`, and the reason. If the reason is missing, ask for it.
 2. Task target: allowed only from `Not Started` or `In Progress`. Set it to `Hold`.
 3. Plan target (no `TASK-TT`): set the TRK Plan Status to `Hold`. Task statuses stay unchanged; no task of this plan may run while the plan is on hold.
-4. Record the change with `wb.js status P-NN [TASK-TT] Hold --by <User|Main agent> --reason "<reason>" --note "<reason>"` (TRK table, History with the reason, task file Status, INDEX; for a task that was `In Progress`, also its snapshot folder and session marker in `workbench/.baseline/` - without Node, delete the folder as in "Snapshot" in rules.md).
+4. Record the change with `wb.js status P-NN [TASK-TT] Hold --by <User|Main agent> --reason "<reason>" --note "<reason>"` (TRK table, History with the reason, task file Status, INDEX; for a task that was `In Progress`, also its snapshot folder and session marker in `workbench/.baseline/` - without Node, delete the folder as in "Snapshot cleanup" in version-control.md).
 5. Confirm to the user what was put on hold.

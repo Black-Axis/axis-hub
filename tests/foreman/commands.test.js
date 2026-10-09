@@ -261,8 +261,10 @@ test('every command is listed in the README, the catalog order, and the guide sk
   }
 });
 
-test('every command except catalog starts by reading rules.md', () => {
-  for (const file of fs.readdirSync(commandsDir).filter((f) => f.endsWith('.md') && f !== 'catalog.md')) {
+const LIGHT = ['catalog.md', 'status.md', 'map.md']; // read no rules file (#103)
+
+test('every command except catalog, status, and map starts by reading rules.md', () => {
+  for (const file of fs.readdirSync(commandsDir).filter((f) => f.endsWith('.md') && !LIGHT.includes(f))) {
     const body = fs.readFileSync(path.join(commandsDir, file), 'utf8').split(/\r?\n---\r?\n/).slice(1).join('\n---\n');
     const first = body.split(/\r?\n/).find((l) => l.trim() && !l.startsWith('#') && !l.startsWith('Input: '));
     assert.match(first, /^First read `\$\{CLAUDE_PLUGIN_ROOT\}\/reference\/rules\.md`/, `${file}: first instruction is not reading rules.md`);
@@ -286,7 +288,7 @@ test('doctor: no feature-file reads with Node, only the files it fixes', () => {
 test('run all: one confirmation, chain order, full flow per task, stop rules (#28)', () => {
   const text = fs.readFileSync(path.join(commandsDir, 'run.md'), 'utf8');
   assert.match(text, /^argument-hint: "\[P-NN\] \[TASK-TT \| all\]"$/m);
-  const all = text.slice(text.indexOf('## Run all'), text.indexOf('## 1. Resolve'));
+  const all = fs.readFileSync(path.join(plugin, 'reference', 'run-all.md'), 'utf8'); // read only with `all` (#103)
   assert.match(all, /`wb\.js chain P-NN`/);
   assert.match(all, /Confirm once/);
   assert.match(all, /exactly as a single run/);
@@ -301,8 +303,8 @@ test('run all: one confirmation, chain order, full flow per task, stop rules (#2
 
 // #35: targeted task tests, Full tests rule, baseline reuse (git only).
 test('test runs: task Tests row, Full tests rule, baseline reuse', () => {
-  const rules = fs.readFileSync(path.join(plugin, 'reference', 'rules.md'), 'utf8');
-  const sec = rules.slice(rules.indexOf('## Test runs'), rules.indexOf('## Scope discipline'));
+  const tasks = fs.readFileSync(path.join(plugin, 'reference', 'tasks.md'), 'utf8');
+  const sec = tasks.slice(tasks.indexOf('## Test runs'), tasks.indexOf('## Sessions'));
   assert.match(sec, /header row `Tests`/);
   assert.match(sec, /\*\*Full tests\*\* \(contract Working Rule, missing = `close`\)/);
   assert.match(sec, /`\/foreman:close` always runs the contract's Tests in full/);
@@ -314,7 +316,7 @@ test('test runs: task Tests row, Full tests rule, baseline reuse', () => {
     assert.match(fs.readFileSync(path.join(plugin, 'reference', `vcs-${v}.md`), 'utf8'), /## Baseline reuse\s+Never: always run the baseline tests\./, v);
   }
   const run = fs.readFileSync(path.join(commandsDir, 'run.md'), 'utf8');
-  assert.equal((run.match(/"Test runs" in rules\.md/g) || []).length >= 3, true, 'run.md points to Test runs for baseline, verify, fix rounds');
+  assert.equal((run.match(/"Test runs" in tasks\.md/g) || []).length >= 3, true, 'run.md points to Test runs for baseline, verify, fix rounds');
   assert.match(fs.readFileSync(path.join(commandsDir, 'close.md'), 'utf8'), /never a task's `Tests` row/);
   assert.match(fs.readFileSync(path.join(plugin, 'templates', 'task.md'), 'utf8'), /^\| Tests \| /m);
   for (const t of ['contract.md', 'INDEX.md']) {
@@ -338,14 +340,15 @@ test('version control split: vcs files share sections, rules.md and run.md hold 
   assert.deepStrictEqual(heads('tfvc'), heads('git'));
   assert.deepStrictEqual(heads('none'), heads('git'));
   const rules = read('rules.md');
+  const vc = read('version-control.md');
   const run = fs.readFileSync(path.join(commandsDir, 'run.md'), 'utf8');
-  // Detection in rules.md still names the TFVC markers ($tf, .tfignore).
+  // Detection in version-control.md still names the TFVC markers ($tf, .tfignore).
   const tfvcOnly = /\\workbench|tf checkout|tf delete|tf add|\/stopafter|Visual Studio/;
-  for (const [name, text] of [['rules.md', rules], ['run.md', run], ['vcs-git.md', read('vcs-git.md')]]) {
+  for (const [name, text] of [['rules.md', rules], ['version-control.md', vc], ['run.md', run], ['vcs-git.md', read('vcs-git.md')]]) {
     assert.doesNotMatch(text, tfvcOnly, name);
   }
-  assert.doesNotMatch(rules, /git commit -m|untracked-files=all/, 'rules.md');
-  assert.match(rules, /`\$\{CLAUDE_PLUGIN_ROOT\}\/reference\/vcs-<value>\.md`/);
+  for (const [name, text] of [['rules.md', rules], ['version-control.md', vc]]) assert.doesNotMatch(text, /git commit -m|untracked-files=all/, name);
+  assert.match(vc, /`\$\{CLAUDE_PLUGIN_ROOT\}\/reference\/vcs-<value>\.md`/);
   assert.match(run, /then read `\$\{CLAUDE_PLUGIN_ROOT\}\/reference\/vcs-<value>\.md`/);
   for (const file of ['close.md', 'round.md', 'settings.md', 'new.md', 'import.md', 'interview.md', 'change.md', 'doctor.md']) {
     assert.match(fs.readFileSync(path.join(commandsDir, file), 'utf8'), /the vcs file/, file);
@@ -355,12 +358,12 @@ test('version control split: vcs files share sections, rules.md and run.md hold 
 
 // #26: test output in context and Activity is limited to failures; run reports suggest /clear.
 test('run context: test output limited to failures, /clear suggested after every run', () => {
-  const rules = fs.readFileSync(path.join(plugin, 'reference', 'rules.md'), 'utf8');
-  assert.match(rules, /\*\*Output\*\*: keep only what verification needs/);
-  assert.match(rules, /A failing run: the failing test names and their exact errors, nothing else/);
+  const tasks = fs.readFileSync(path.join(plugin, 'reference', 'tasks.md'), 'utf8');
+  assert.match(tasks, /\*\*Output\*\*: keep only what verification needs/);
+  assert.match(tasks, /A failing run: the failing test names and their exact errors, nothing else/);
   const run = fs.readFileSync(path.join(commandsDir, 'run.md'), 'utf8');
   assert.match(run.slice(run.indexOf('## 8. Report')), /End with one line: `\/clear` before the next `\/foreman:run`/);
-  assert.match(run.slice(run.indexOf('## Run all'), run.indexOf('## 1. Resolve')), /End with the `\/clear` line of section 8/);
+  assert.match(fs.readFileSync(path.join(plugin, 'reference', 'run-all.md'), 'utf8'), /End with the `\/clear` line of section 8/);
 });
 
 // #27: the worker's model comes from the task row, else INDEX, else sonnet, and is

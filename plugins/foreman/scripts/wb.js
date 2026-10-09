@@ -190,7 +190,7 @@ function writeMarker(wb, nn, task) {
 }
 
 // A task left In Progress: removes its session marker and its snapshot folder
-// (workbench/.baseline/P-NN/TASK-TT/, "Snapshot" in rules.md), and the P-NN folder
+// (workbench/.baseline/P-NN/TASK-TT/, "Snapshot" in version-control.md), and the P-NN folder
 // when that is left empty. Returns what was removed.
 function removeMarker(wb, nn, task) {
   const file = markerFile(wb, nn, task);

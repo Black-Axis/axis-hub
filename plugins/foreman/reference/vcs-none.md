@@ -1,6 +1,6 @@
 # Version control: none
 
-Rules for projects with INDEX `- Version control: none` ("Version control" in rules.md). The other version controls have the same sections in `vcs-git.md` and `vcs-tfvc.md`.
+Rules for projects with INDEX `- Version control: none` ("Version control" in version-control.md). The other version controls have the same sections in `vcs-git.md` and `vcs-tfvc.md`.
 
 ## Ignore file
 
@@ -16,11 +16,11 @@ Always `never auto-commit (user checks in)`; do not ask about it.
 
 ## Start state
 
-A snapshot of the task's listed files ("Snapshot" in rules.md).
+A snapshot of the task's listed files ("Snapshot" in snapshot.md - read `snapshot.md`, in this folder, now).
 
 ## Task changes
 
-The snapshot diff and the modification-time check ("Snapshot" in rules.md).
+The snapshot diff and the modification-time check ("Snapshot" in snapshot.md).
 
 ## Commit
 
@@ -32,7 +32,7 @@ The worker deletes and renames only the files the task lists for that.
 
 ## Task baseline
 
-A date baseline ("Task baseline" in rules.md).
+A date baseline ("Task baseline" in version-control.md).
 
 ## Baseline reuse
 

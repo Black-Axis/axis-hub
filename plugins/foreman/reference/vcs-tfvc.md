@@ -1,6 +1,6 @@
 # Version control: tfvc
 
-Rules for projects with INDEX `- Version control: tfvc` ("Version control" in rules.md): Team Foundation Version Control (Azure DevOps Server / TFS). `tf.exe` may be missing, so every step has a no-`tf` fallback. The other version controls have the same sections in `vcs-git.md` and `vcs-none.md`.
+Rules for projects with INDEX `- Version control: tfvc` ("Version control" in version-control.md): Team Foundation Version Control (Azure DevOps Server / TFS). `tf.exe` may be missing, so every step has a no-`tf` fallback. The other version controls have the same sections in `vcs-git.md` and `vcs-none.md`.
 
 ## `tf` availability
 
@@ -23,11 +23,11 @@ Always `never auto-commit (user checks in)`; do not ask about it.
 
 ## Start state
 
-`tf status` (if `tf` is available), and a snapshot of the task's listed files ("Snapshot" in rules.md). The snapshot is kept even when `tf` works, so the diff of each listed file never depends on the workspace type.
+`tf status` (if `tf` is available), and a snapshot of the task's listed files ("Snapshot" in snapshot.md - read `snapshot.md`, in this folder, now). The snapshot is kept even when `tf` works, so the diff of each listed file never depends on the workspace type.
 
 ## Task changes
 
-`tf diff /format:unified` and `tf status` (if `tf` is available), and the snapshot diff and modification-time check ("Snapshot" in rules.md).
+`tf diff /format:unified` and `tf status` (if `tf` is available), and the snapshot diff and modification-time check ("Snapshot" in snapshot.md).
 
 ## Read-only files
 
@@ -44,7 +44,7 @@ The worker never deletes or renames; it reports what is needed. After a verified
 ## Task baseline
 
 - With `tf`: set the latest changeset, `C<number>` from `tf history . /recursive /stopafter:1 /noprompt`. What changed since: `tf history <file> /version:C<n+1>~T /noprompt` per file, and `tf status <files>` for pending changes.
-- Without `tf`: a date baseline ("Task baseline" in rules.md).
+- Without `tf`: a date baseline ("Task baseline" in version-control.md).
 
 ## Baseline reuse
 
