@@ -9,6 +9,8 @@
   <!-- Concise (default) | Normal - style of all foreman replies, reports, and files -->
 - Fix rounds: {{0-10, default 4}}
   <!-- times the main agent sends failed-verification feedback back to the worker before Hold; 0 = none -->
+- Worker model: {{sonnet | opus | haiku}}
+  <!-- model of the foreman-worker subagent; a task's "Worker model" header row overrides it -->
 - CLAUDE.md: {{yes | no}}
   <!-- yes = a short foreman block in CLAUDE.md (Workbench tracked) or CLAUDE.local.md (Workbench ignored) tells Claude about workbench/ -->
 

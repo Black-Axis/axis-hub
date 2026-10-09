@@ -78,7 +78,9 @@ Record the start state: "Start state" in the vcs file.
 
 Launch the worker only after every write of step 3 is saved - in a later message, never the same one. Check first that TRK History has this task's `-> In Progress` row dated today and INDEX shows `TASK-TT In Progress`; if not, write them now.
 
-Launch `foreman:foreman-worker` with exactly these lines - never file contents, summaries, or instructions (its definition has them):
+Worker model: the task header row `Worker model` when it is `sonnet`, `opus`, or `haiku`; else INDEX `- Worker model:`; missing or invalid = `sonnet`. Pass it as the Agent tool's `model` (it overrides the agent's own `model: sonnet`), also for a new worker in a fix round.
+
+Launch `foreman:foreman-worker` with that `model` and exactly these lines - never file contents, summaries, or instructions (its definition has them):
 
 ```
 Task: workbench/subtasks/P-NN-<slug>/TASK-TT-<task-slug>.md

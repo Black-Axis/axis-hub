@@ -335,3 +335,22 @@ test('run context: test output limited to failures, /clear suggested after every
   assert.match(run.slice(run.indexOf('## 8. Report')), /End with one line: `\/clear` before the next `\/foreman:run`/);
   assert.match(run.slice(run.indexOf('## Run all'), run.indexOf('## 1. Resolve')), /End with the `\/clear` line of section 8/);
 });
+
+// #27: the worker's model comes from the task row, else INDEX, else sonnet, and is
+// passed as the Agent tool's model (it overrides the agent's frontmatter; checked live).
+test('worker model: setting, task override, passed to the Agent tool', () => {
+  assert.strictEqual(manifest.userConfig.default_worker_model.default, 'sonnet');
+  assert.ok(!('options' in manifest.userConfig.default_worker_model), 'no options on userConfig');
+  const run = fs.readFileSync(path.join(commandsDir, 'run.md'), 'utf8');
+  const delegate = run.slice(run.indexOf('## 4. Delegate'), run.indexOf('## 5. Verify'));
+  assert.match(delegate, /the task header row `Worker model` when it is `sonnet`, `opus`, or `haiku`; else INDEX `- Worker model:`; missing or invalid = `sonnet`/);
+  assert.match(delegate, /Pass it as the Agent tool's `model`/);
+  assert.match(delegate, /Launch `foreman:foreman-worker` with that `model`/);
+  assert.match(fs.readFileSync(path.join(plugin, 'agents', 'foreman-worker.md'), 'utf8'), /^model: sonnet$/m, 'frontmatter fallback stays');
+  assert.match(fs.readFileSync(path.join(plugin, 'templates', 'INDEX.md'), 'utf8'), /^- Worker model: \{\{sonnet \| opus \| haiku\}\}$/m);
+  assert.match(fs.readFileSync(path.join(plugin, 'templates', 'task.md'), 'utf8'), /^\| Worker model \| — \|$/m);
+  const settings = fs.readFileSync(path.join(commandsDir, 'settings.md'), 'utf8');
+  assert.match(settings, /^\| Behavior \| Worker model \(`worker-model`\) \| `sonnet`, `opus`, `haiku` \| `sonnet` \|/m);
+  assert.match(settings, /\[worker-model sonnet\|opus\|haiku\]/);
+  assert.match(fs.readFileSync(path.join(plugin, 'reference', 'setup.md'), 'utf8'), /^\| Worker model \(`sonnet` \/ `opus` \/ `haiku`\) \| Use the default \|/m);
+});

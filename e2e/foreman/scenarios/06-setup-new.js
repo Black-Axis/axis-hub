@@ -89,5 +89,21 @@ module.exports = {
     const old = check(p);
     assert.deepStrictEqual(old.findings, []);
     assert.ok(old.notes.some((n) => /old "Git: committed" line/.test(n)), 'older Git line still read');
+
+    p.step('worker model: INDEX setting from the template, task override row, invalid values are findings');
+    assert.match(p.read('workbench/INDEX.md'), /^- Worker model: sonnet$/m, 'template default');
+    const task1 = 'workbench/subtasks/P-01-tags/TASK-01-first-task.md';
+    assert.match(p.read(task1), /^\| Worker model \| — \|$/m, 'new task: no override');
+    p.edit('workbench/INDEX.md', '- Worker model: sonnet', '- Worker model: opus');
+    p.edit(task1, '| Worker model | — |', '| Worker model | haiku |');
+    assert.deepStrictEqual(check(p).findings, []);
+    p.edit('workbench/INDEX.md', '- Worker model: opus', '- Worker model: gpt');
+    p.edit(task1, '| Worker model | haiku |', '| Worker model | fast |');
+    const wm = check(p).findings;
+    assert.ok(wm.some((f) => /INDEX\.md: invalid Worker model value "gpt"/.test(f)), wm.join('\n'));
+    assert.ok(wm.some((f) => /TASK-01-first-task\.md: invalid Worker model "fast"/.test(f)), wm.join('\n'));
+    p.edit('workbench/INDEX.md', /- Worker model: gpt\n(  <!--[^\n]*\n)?/, '');
+    p.edit(task1, '| Worker model | fast |\n', '');
+    assert.deepStrictEqual(check(p).findings, [], 'missing setting and row (older projects) mean sonnet');
   },
 };

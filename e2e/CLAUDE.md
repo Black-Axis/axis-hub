@@ -30,4 +30,4 @@ node --test                           # e2e/e2e.test.js runs every scenario too 
 
 ## foreman fixture `notes-api`
 
-P-01 health-check (Done, closed), P-02 search-notes (In Progress: TASK-01 Done; TASK-02 depends on TASK-01, TASK-03 on TASK-02; TASK-01 title contains a `|`), P-03 note-stats (contract Draft), INT-04 dark-mode (interview In Progress). INDEX: git, Workbench tracked, Fix rounds 2, CLAUDE.md no.
+P-01 health-check (Done, closed), P-02 search-notes (In Progress: TASK-01 Done; TASK-02 depends on TASK-01, TASK-03 on TASK-02; TASK-01 title contains a `|`), P-03 note-stats (contract Draft), INT-04 dark-mode (interview In Progress). INDEX: git, Workbench tracked, Fix rounds 2, CLAUDE.md no, no `Worker model` line (an older project: it means `sonnet`).

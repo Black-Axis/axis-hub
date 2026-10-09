@@ -5,7 +5,7 @@ Creates `workbench/` and its settings. Used in two modes:
 - **Ask all** - by `/foreman:init`: ask every setting and the working rules defaults.
 - **Auto** - by `/foreman:new`, `/foreman:import`, and `/foreman:interview` when `workbench/INDEX.md` does not exist: apply the user's defaults without asking.
 
-The calling command gives you the user's defaults (only a command file gets them filled in, never this file). A default that is empty, still shows the literal `${user_config...}` text, or is invalid counts as: output `Concise`, workbench `ask`, fix rounds `4`, CLAUDE.md block `ask`. The workbench default (`default_git`) is `tracked`, `ignored`, or `ask`; the older value `committed` means `tracked`.
+The calling command gives you the user's defaults (only a command file gets them filled in, never this file). A default that is empty, still shows the literal `${user_config...}` text, or is invalid counts as: output `Concise`, workbench `ask`, fix rounds `4`, CLAUDE.md block `ask`, worker model `sonnet`. The workbench default (`default_git`) is `tracked`, `ignored`, or `ask`; the older value `committed` means `tracked`.
 
 ## 1. Settings
 
@@ -16,6 +16,7 @@ First detect the version control ("Version control" in rules.md). In Auto mode u
 | Workbench (`tracked` / `ignored`) | Use the default; ask only if it is `ask`. With Version control `none`, use `tracked` (nothing to ignore) | Ask (except for `none`); the default (if not `ask`) is the recommended option |
 | Output (`Concise` / `Normal`) | Use the default | Ask; default recommended |
 | Fix rounds (`0`-`10`) | Use the default | Ask; default recommended |
+| Worker model (`sonnet` / `opus` / `haiku`) | Use the default | Ask; default recommended |
 | CLAUDE.md (`yes` / `no`) | Use the default; ask only if it is `ask` | Ask; default (if not `ask`) recommended |
 
 When asking about CLAUDE.md, explain it in one line: a short foreman block in the project's `CLAUDE.md` (Workbench `tracked`) or `CLAUDE.local.md` (Workbench `ignored`) so Claude knows about `workbench/` in every session. Show the block from `${CLAUDE_PLUGIN_ROOT}/templates/claude-md.md`. Apply the AGENTS.md rule from "Project instructions block" in rules.md before writing.

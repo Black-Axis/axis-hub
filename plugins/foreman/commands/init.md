@@ -12,6 +12,7 @@ The user's defaults (set when the plugin was enabled; change with `/config`):
 - Default workbench in version control: `${user_config.default_git}`
 - Default fix rounds: `${user_config.default_fix_rounds}`
 - Default CLAUDE.md block: `${user_config.default_claude_md}`
+- Default worker model: `${user_config.default_worker_model}`
 
 ## New project
 
