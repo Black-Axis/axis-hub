@@ -219,7 +219,9 @@ function owner(wb, nn, task) {
   const pid = Number(field(text, 'Process')) || 0;
   const since = `since ${field(text, 'Started') || '?'}`;
   if (id && id === cur.id) return { mine: true, text: `this session, ${since}` };
-  if (pid && pid === cur.pid) return { mine: false, text: `an earlier session of this Claude Code process, not running now, ${since}` };
+  // Same process, other session id (e.g. after /clear, #95): one Claude Code window runs
+  // one conversation at a time, so the earlier session is not running - this window's task.
+  if (pid && pid === cur.pid) return { mine: true, text: `this Claude Code window (an earlier session, e.g. before /clear), ${since}` };
   if (!pid) return { mine: false, text: `another session, running or ended (no process id recorded), ${since}` };
   if (alive(pid)) return { mine: false, text: `another Claude Code session (process ${pid}) is running, ${since}` };
   return { mine: false, text: `interrupted - its Claude Code session has ended, ${since}` };

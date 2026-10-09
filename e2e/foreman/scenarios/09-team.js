@@ -46,14 +46,18 @@ module.exports = {
     assert.ok(!p.exists(MARKER));
     assert.match(wbOk(p, 'running', 'P-02'), /TASK-03 .* \| elsewhere: another Claude Code session/);
 
-    p.step('ended process, no process id, earlier session of this process, no marker');
+    p.step('ended process, no process id');
     const m3 = 'workbench/.baseline/P-02/TASK-03.session';
     p.edit(m3, /- Process: \d+/, `- Process: ${ended}`);
     assert.match(wbOk(p, 'running', 'P-02'), /elsewhere: interrupted - its Claude Code session has ended, since /);
     p.edit(m3, /- Process: \d+/, '- Process: —');
     assert.match(wbOk(p, 'running', 'P-02'), /elsewhere: another session, running or ended \(no process id recorded\)/);
+    p.step('same Claude Code window after /clear (same process, new session id): this window\'s task, no --confirmed (#95)');
     p.edit(m3, '- Process: —', `- Process: ${process.pid}`);
-    assert.match(wbOk(p, 'running', 'P-02'), /elsewhere: an earlier session of this Claude Code process, not running now/);
+    assert.match(wbOk(p, 'running', 'P-02'), /^P-02 TASK-03 .* \| this Claude Code window \(an earlier session, e\.g\. before \/clear\), since /m);
+    assert.match(wbOk(p, 'continue', 'P-02', 'TASK-03', '--by', 'User', '--reason', 'run continued: after /clear'), /continued/);
+    assert.match(p.read(m3), /^- Session: e2e-session$/m, 'marker now names this session');
+    p.step('no marker');
     p.remove(m3);
     assert.match(wbOk(p, 'running', 'P-02'), /elsewhere: no session marker - started on another machine/);
 

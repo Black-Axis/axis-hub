@@ -8,7 +8,7 @@ Claude Code plugin marketplace by Black-Axis.
 
 ## Requirements
 
-- [Claude Code](https://code.claude.com/docs) v2.1.269 or later (the one-step install below needs v2.1.275 or later).
+- [Claude Code](https://code.claude.com/docs) v2.1.295 or later.
 - [Node.js](https://nodejs.org/) on `PATH` (optional) - foreman's hooks and state script use it: the session-start summary, prompt-free `workbench/` changes, and exact tracking updates. Without it the hooks are skipped and tracking is updated by hand, with no errors.
 
 ## Install
@@ -43,8 +43,6 @@ claude plugin install foreman@axis-hub
 ```
 
 ### Add and install in one step
-
-Claude Code v2.1.275 or later:
 
 ```
 /plugin install foreman --marketplace https://github.com/Black-Axis/axis-hub.git
