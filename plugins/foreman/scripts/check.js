@@ -289,7 +289,7 @@ function checkFeature(wb, nn, slug, f, indexRow, head, add, notes) {
     const row = tasks.find((x) => x.id === (marker ? marker[1] : name));
     if (row && row.status === 'In Progress') continue;
     if (marker) add(`.baseline/P-${nn}/${name}`, `leftover session marker of a task that is not In Progress (fix: wb.js refresh P-${nn})`);
-    else add(`.baseline/P-${nn}/${name}/`, 'leftover snapshot of a task that is not In Progress');
+    else add(`.baseline/P-${nn}/${name}/`, `leftover snapshot of a task that is not In Progress (fix: wb.js refresh P-${nn})`);
   }
 }
 

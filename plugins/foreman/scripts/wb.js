@@ -187,13 +187,17 @@ function writeMarker(wb, nn, task) {
   fs.writeFileSync(file, `- Session: ${s.id || '—'}\n- Process: ${s.pid || '—'}\n- Started: ${now()}\n`);
 }
 
-// Removes a marker, and its P-NN folder when that is left empty.
+// A task left In Progress: removes its session marker and its snapshot folder
+// (workbench/.baseline/P-NN/TASK-TT/, "Snapshot" in rules.md), and the P-NN folder
+// when that is left empty. Returns what was removed.
 function removeMarker(wb, nn, task) {
   const file = markerFile(wb, nn, task);
-  const had = fs.existsSync(file);
-  if (had) fs.rmSync(file, { force: true });
+  const snapshot = path.join(path.dirname(file), task);
+  const removed = { marker: fs.existsSync(file), snapshot: fs.existsSync(snapshot) };
+  if (removed.marker) fs.rmSync(file, { force: true });
+  if (removed.snapshot) fs.rmSync(snapshot, { recursive: true, force: true });
   try { fs.rmdirSync(path.dirname(file)); } catch { /* missing or not empty */ }
-  return had;
+  return removed;
 }
 
 function alive(pid) {
@@ -404,10 +408,13 @@ function cmdRefresh(args) {
   const taskDocs = tasks.map((t) => syncTaskFile(wb, f, t.id, t.status, out));
   const indexDoc = syncIndex(wb, f, tasks, out);
   saveAll(doc, ...taskDocs, indexDoc);
-  for (const name of listDir(path.join(wb, '.baseline', `P-${f.nn}`))) {
-    const m = /^(TASK-\d+)\.session$/.exec(name);
-    const t = m && tasks.find((x) => x.id === m[1]);
-    if (m && (!t || t.status !== 'In Progress') && removeMarker(wb, f.nn, m[1])) out.push(`${m[1]} session marker removed (not In Progress)`);
+  const left = new Set(listDir(path.join(wb, '.baseline', `P-${f.nn}`)).map((n) => n.replace(/\.session$/, '')).filter((n) => /^TASK-\d+$/.test(n)));
+  for (const id of [...left].sort()) {
+    const t = tasks.find((x) => x.id === id);
+    if (t && t.status === 'In Progress') continue;
+    const r = removeMarker(wb, f.nn, id);
+    if (r.marker) out.push(`${id} session marker removed (not In Progress)`);
+    if (r.snapshot) out.push(`${id} snapshot removed (not In Progress)`);
   }
   return out.length ? out : [`P-${f.nn}: up to date`];
 }
