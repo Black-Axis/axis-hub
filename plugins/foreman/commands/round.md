@@ -44,7 +44,7 @@ Show the three lists (each item with its source: `user` or `found by main agent`
 
 ## 5. Reopen
 
-1. If the task is `Done` or `Hold`, set it to `In Progress` now with `wb.js status P-NN TASK-TT In Progress --by User --reason "Round requested: <short summary>" --note "fix round requested"` (TRK row, History `TASK-TT | <old> -> In Progress | User | Round requested: ...`, task file Status, INDEX Progress). A `Done` task's doc entry stays until step 6 updates it.
+1. If the task is `Done` or `Hold`, set it to `In Progress` now with `wb.js status P-NN TASK-TT In Progress --by User --reason "Round requested: <short summary>" --note "fix round requested"` (TRK row, History `TASK-TT | <old> -> In Progress | User | Round requested: ...`, task file Status, INDEX Progress). A `Done` task's doc entry stays until step 6 updates it. If it is already `In Progress`, run `wb.js continue P-NN TASK-TT --by User --reason "Round requested: <short summary>" --note "fix round requested"` instead (History `In Progress -> In Progress`, session marker for this session); an `ERROR: ... outside this session` is asked as in `run` step 1.3.
 2. Record a new start state and run the baseline tests, as in `run` step 3 (start hash or snapshot), so this round's changes are isolated from the earlier ones.
 
 ## 6. Send and finish

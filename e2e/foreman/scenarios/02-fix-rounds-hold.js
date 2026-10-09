@@ -1,10 +1,10 @@
-// Fix rounds up to the limit -> Hold -> resume; round on a Done task; cancel; plan hold.
+// Fix rounds up to the limit -> Hold -> resume -> run continues the task; round on a Done task; cancel; plan hold.
 const { feature, wb, wbOk, assertClean, trk, task, indexRow, appendRow, activity, today } = require('../lib');
 
 module.exports = {
   name: 'fix rounds, Hold, resume, round on a Done task, cancel, plan hold',
   fixture: 'notes-api',
-  covers: ['command:round', 'command:hold', 'command:resume', 'command:cancel'],
+  covers: ['command:round', 'command:hold', 'command:resume', 'command:cancel', 'command:run', 'wb:continue'],
   run(p, assert) {
     const f = feature(p, '02');
     const limit = Number(/- Fix rounds: (\d+)/.exec(p.read('workbench/INDEX.md'))[1]);
@@ -37,7 +37,26 @@ module.exports = {
     const before = trk(p, '02').history.filter((h) => h.target === 'TASK-02' && / -> Hold$/.test(h.change)).pop();
     assert.strictEqual(before.change, 'In Progress -> Hold');
     wbOk(p, 'status', 'P-02', 'TASK-02', 'In Progress', '--by', 'User', '--reason', 'resumed: fixed by hand');
+
+    p.step('run after resume: status refuses (already In Progress, points to continue); continue starts the new run');
+    const again = wb(p, 'status', 'P-02', 'TASK-02', 'In Progress', '--by', 'User', '--reason', '/foreman:run P-02 TASK-02');
+    assert.match(again.out, /^ERROR: TASK-02 is already In Progress - to run it again, use: continue P-02 TASK-02/);
+    assert.match(wb(p, 'continue', 'P-02', 'TASK-03', '--by', 'User', '--reason', 'x').out, /^ERROR: TASK-03 is Not Started, not In Progress/);
+    const marker = 'workbench/.baseline/P-02/TASK-02.session';
+    p.remove(marker); // as after an interrupted run on another machine: no marker
+    const elsewhere = wb(p, 'continue', 'P-02', 'TASK-02', '--by', 'User', '--reason', 'run continued: after resume');
+    assert.match(elsewhere.out, /^ERROR: P-02 has a task In Progress outside this session: TASK-02 \(no session marker/);
+    const cont = wbOk(p, 'continue', 'P-02', 'TASK-02', '--by', 'User', '--reason', 'run continued: after resume', '--note', 'worker running', '--confirmed');
+    assert.match(cont, /^TASK-02: In Progress \(continued\)$/m);
+    assert.match(p.read(marker), /^- Session: e2e-session$/m, 'marker names this session');
+    const h = trk(p, '02').history.pop();
+    assert.deepStrictEqual([h.target, h.change, h.by, h.reason], ['TASK-02', 'In Progress -> In Progress', 'User', 'run continued: after resume']);
+    assert.strictEqual(task(p, '02', 'TASK-02').note, 'worker running');
+    assert.strictEqual(indexRow(p, '02').progress, '1/3 Done, TASK-02 In Progress');
+    assert.match(wbOk(p, 'continue', 'P-02', 'TASK-02', '--by', 'Main agent', '--reason', 'run continued'), /continued/, 'own session: no --confirmed needed');
+    assertClean(p, 'P-02');
     wbOk(p, 'status', 'P-02', 'TASK-02', 'Done', '--by', 'Main agent', '--reason', 'verified; 2 fix rounds');
+    assert.ok(!p.exists(marker));
     assert.strictEqual(indexRow(p, '02').progress, '2/3 Done');
 
     p.step('round on a Done task: reopened by the user, verified again');

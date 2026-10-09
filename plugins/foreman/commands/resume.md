@@ -17,4 +17,4 @@ State script: `node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js"` ("State script" in ru
 3. Find in the TRK History the most recent `-> Hold` entry for the target and restore the status it had before (`Not Started` or `In Progress`).
    - For a plan target: restore the Plan Status by the derivation rule in the shared rules.
 4. Record the change with `wb.js status P-NN [TASK-TT] <restored status> --by User --reason "resumed<: note>"` (TRK table, History with reason "resumed" plus the note, task file Status, INDEX). For a plan target, `<restored status>` is the derived status (step 3).
-5. If a task was restored to `In Progress`, tell the user to continue it with `/foreman:run P-NN TASK-TT`.
+5. If a task was restored to `In Progress`, tell the user to continue it with `/foreman:run P-NN TASK-TT` (the run continues the `In Progress` task).
