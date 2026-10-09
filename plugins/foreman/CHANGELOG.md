@@ -23,6 +23,8 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 ### Changed
 
 - Smaller main agent context in `/foreman:run` (#26). The per-version-control rules moved out of `reference/rules.md` into `reference/vcs-git.md`, `vcs-tfvc.md`, and `vcs-none.md`; each command reads only the file for the project's version control, so a git project loads no TFVC or no-VCS text (same rules, new place; commands that need none of them, like `status` or `approve`, load 16% less). `run.md` is shorter (19.1 KB to 15.2 KB) with the same steps. Test output is kept to the failing tests and their exact errors, in replies and in the Activity log; a passing run is one line, and new task `Tests` rows prefer a quiet runner output (e.g. `node --test --test-reporter=dot`). Every run report ends with a `/clear` suggestion before the next run (`workbench/` holds all state).
+- Task size rule in `reference/rules.md` (one checkable outcome, about 5 files or fewer, split by outcome), used by `new`, `interview`, and `change` (#24).
+- README: version and Node.js requirement at the top; correct statement about the hook without Node.js; how to remove the CLAUDE.md block before uninstalling; `workbench/.baseline/` in the folder structure; license link (#48).
 
 ### Fixed
 
@@ -53,11 +55,6 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 - Snapshots (TFVC without `tf`, no version control): copied with one shell command instead of Read + Write, which could change line endings or encoding and could not copy binary files; a `.stamp` file marks the snapshot time instead of a remembered time; date baselines come from a command, never from memory. Snapshot folders are deleted with one shell command, and `/foreman:doctor` can delete leftover ones on confirmation (#24).
 - `/foreman:doctor` reads no feature files to check them when Node is available (`wb.js check` does those checks), and only the files it fixes when applying fixes (#23).
 - Docs (#34): the catalog's example hint for `/foreman:run` is `[P-NN] [TASK-TT]` (was `<P-NN> <TASK-TT>`); the README example session asks whether `workbench/` is tracked or ignored, as the default `ask` does. New tests fail when a command is missing from the README command tables, the catalog order, or the guide skill, or does not start by reading `reference/rules.md`.
-
-### Changed
-
-- Task size rule in `reference/rules.md` (one checkable outcome, about 5 files or fewer, split by outcome), used by `new`, `interview`, and `change` (#24).
-- README: version and Node.js requirement at the top; correct statement about the hook without Node.js; how to remove the CLAUDE.md block before uninstalling; `workbench/.baseline/` in the folder structure; license link (#48).
 
 ## [1.4.0] - 2026-10-02
 

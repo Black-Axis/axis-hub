@@ -155,6 +155,23 @@ A release is a git tag `vX.Y.Z` that matches `metadata.version` in `.claude-plug
 
 1. Bump the versions of the changed plugins (both manifests) and `metadata.version` in `marketplace.json`.
 2. In each changed plugin's `CHANGELOG.md` and in the root `CHANGELOG.md`, rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD` and add a new empty `## [Unreleased]` above it.
+   The root `CHANGELOG.md` is the release page text. Group each version by area, then by change type, with one short change per bullet and its issue; details stay in the plugin changelog (`tests/release.test.js` enforces it):
+   ```
+   ### foreman X.Y.Z
+
+   Details: [foreman changelog](plugins/foreman/CHANGELOG.md).
+
+   #### Added
+
+   - `/foreman:round`: send a task back for a fix round (#21)
+
+   ### Marketplace
+
+   #### Changed
+
+   - Claude Code v2.1.295 or later is required (#87)
+   ```
+   Areas are `<plugin> X.Y.Z` (the plugin's version in this release) and `Marketplace`; types are `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`; bullets have at most 140 characters. On the release page the headings move up one level.
 3. Update the version in the root `README.md` plugin table.
 4. Check the notes: `node .github/scripts/release-notes.js vX.Y.Z` (fails if the tag does not match or the changelog has no section).
 5. Merge to `main`, then create an annotated tag on `main` and push it to GitHub (`origin` in a plain clone of `Black-Axis/axis-hub`):
