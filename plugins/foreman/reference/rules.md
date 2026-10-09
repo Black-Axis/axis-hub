@@ -106,6 +106,7 @@ The INDEX setting `- CLAUDE.md: yes | no` controls a short block that tells Clau
 | Call | Does |
 |------|------|
 | `status P-NN TASK-TT <status> --by <User\|Main agent> --reason "<text>" [--note "<text>"] [--confirmed]` | Task status change: TRK row (Status, Updated, Note - cleared without `--note`), History row, derived Plan Status (with its History row), the task file `Status` row, INDEX Progress, the session marker ("Sessions"; `--confirmed` only after the user's yes) |
+| `continue P-NN TASK-TT --by ... --reason "..." [--note "..."] [--confirmed]` | A new run of a task already `In Progress` (after `/foreman:resume`, or an interrupted run): History `In Progress -> In Progress`, TRK Updated and Note, the session marker for this session; `ERROR:` if the task is not `In Progress` |
 | `status P-NN <status> --by ... --reason "..."` | Plan status change (`Hold`, `Canceled`, `Done`, back to `In Progress` / `Not Started`), History row |
 | `refresh P-NN` | After adding or removing task rows, or a contract status change: derived Plan Status, every task file `Status` row (from TRK; added when missing), INDEX Progress and Contract Status; removes session markers of tasks not `In Progress` |
 | `ready [P-NN]` | Tasks that can run now (`Not Started`, dependencies `Done`, plan active, contract `Approved`) |

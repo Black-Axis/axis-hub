@@ -3,6 +3,7 @@
 // agent does not edit status cells or compute counts by hand. No dependencies.
 // Run from the project root (or set CLAUDE_PROJECT_DIR):
 //   node wb.js status P-NN [TASK-TT] <status> --by <User|Main agent> --reason "<text>" [--note "<text>"]  (no --note: note cleared)
+//   node wb.js continue P-NN TASK-TT --by ... --reason ... [--note ...] [--confirmed]  new run of an In Progress task
 //   node wb.js refresh P-NN        recompute derived Plan Status, task file Status rows, INDEX Progress and Contract Status
 //   node wb.js ready [P-NN]        tasks that can run now
 //   node wb.js chain P-NN          Not Started tasks in run order (/foreman:run P-NN all), then blocked ones
@@ -295,6 +296,49 @@ function parseOpts(args) {
   return { pos, opts };
 }
 
+// Fails when a task of the plan (other than `skip`) is In Progress outside this session.
+function refuseElsewhere(wb, nn, doc, skip) {
+  const elsewhere = tasksOf(doc.text).filter((x) => x.id !== skip && x.status === 'In Progress')
+    .map((x) => ({ id: x.id, o: owner(wb, nn, x.id) })).filter((x) => !x.o.mine);
+  if (elsewhere.length) {
+    fail(`P-${nn} has a task In Progress outside this session: ${elsewhere.map((x) => `${x.id} (${x.o.text})`).join('; ')}. Ask the user; only on yes run this again with --confirmed`);
+  }
+}
+
+// A new run of a task that is already In Progress (restored by /foreman:resume, or
+// left by an interrupted run): History row `In Progress -> In Progress`, the TRK row's
+// Updated date and Note, and the session marker now names this session. No status change.
+function cmdContinue(args) {
+  const { pos, opts } = parseOpts(args);
+  const wb = workbench();
+  const nn = planId(pos.shift());
+  const task = /^TASK-\d+$/i.test(pos[0] || '') ? pos.shift().toUpperCase() : fail('usage: continue P-NN TASK-TT --by <User|Main agent> --reason "<text>" [--note "<text>"] [--confirmed]');
+  const by = BY.find((b) => b.toLowerCase() === String(opts.by || '').toLowerCase());
+  if (!by) fail('--by must be "User" or "Main agent"');
+  if (!opts.reason || !opts.reason.trim()) fail('--reason is required');
+
+  const f = feature(wb, nn);
+  const doc = new Doc(f.trk);
+  const t = tableAt(doc.lines, 'Tasks');
+  const r = t && t.rows.find((i) => taskIds(cells(doc.lines[i])[0] || '')[0] === task);
+  if (r === undefined) fail(`${task} is not in the Tasks table of TRK-${nn}`);
+  const cs = cells(doc.lines[r]);
+  while (cs.length < 5) cs.push('');
+  const status = canonStatus(cs[2]) || cs[2];
+  if (status !== 'In Progress') fail(`${task} is ${status}, not In Progress - use: status P-${nn} ${task} In Progress`);
+  if (!opts.confirmed) refuseElsewhere(wb, nn, doc, null);
+  cs[3] = today();
+  cs[4] = opts.note || '';
+  doc.setLine(r, row(cs));
+  appendHistory(doc, [today(), task, 'In Progress -> In Progress', by, opts.reason]);
+  doc.save();
+  writeMarker(wb, nn, task);
+  const out = [`${task}: In Progress (continued)`];
+  syncTaskFile(wb, f, task, status, out);
+  syncIndex(wb, f, out);
+  return out;
+}
+
 function cmdStatus(args) {
   const { pos, opts } = parseOpts(args);
   const wb = workbench();
@@ -316,14 +360,8 @@ function cmdStatus(args) {
     const cs = cells(doc.lines[r]);
     while (cs.length < 5) cs.push('');
     const old = canonStatus(cs[2]) || cs[2];
-    if (old === next) fail(`${task} is already ${next}`);
-    if (next === 'In Progress' && !opts.confirmed) {
-      const elsewhere = tasksOf(doc.text).filter((x) => x.id !== task && x.status === 'In Progress')
-        .map((x) => ({ id: x.id, o: owner(wb, nn, x.id) })).filter((x) => !x.o.mine);
-      if (elsewhere.length) {
-        fail(`P-${nn} has a task In Progress outside this session: ${elsewhere.map((x) => `${x.id} (${x.o.text})`).join('; ')}. Ask the user; only on yes run this again with --confirmed`);
-      }
-    }
+    if (old === next) fail(`${task} is already ${next}${next === 'In Progress' ? ` - to run it again, use: continue P-${nn} ${task}` : ''}`);
+    if (next === 'In Progress' && !opts.confirmed) refuseElsewhere(wb, nn, doc, task);
     cs[2] = next;
     cs[3] = today();
     cs[4] = opts.note || ''; // a note belongs to one status; a new status without --note clears it
@@ -571,7 +609,7 @@ function cmdCheck(args) {
   return { out, code: findings.length ? 2 : 0 };
 }
 
-const COMMANDS = { status: cmdStatus, refresh: cmdRefresh, ready: cmdReady, chain: cmdChain, overview: cmdOverview, 'next-number': cmdNextNumber, running: cmdRunning, renumber: cmdRenumber, check: cmdCheck };
+const COMMANDS = { status: cmdStatus, continue: cmdContinue, refresh: cmdRefresh, ready: cmdReady, chain: cmdChain, overview: cmdOverview, 'next-number': cmdNextNumber, running: cmdRunning, renumber: cmdRenumber, check: cmdCheck };
 
 function main(argv) {
   const [name, ...args] = argv;
