@@ -129,7 +129,8 @@ function links(f) {
     !f.files.P && f.interviewStatus && `interview ${f.interviewStatus}`,
   ].filter(Boolean);
   const id = f.files.P ? `P-${f.nn}` : `INT-${f.nn}`;
-  return `- **${id} ${f.title.replace(/([*_[\]])/g, '\\$1')}** (${facts.join(', ')}): ${parts.join(' · ')}`;
+  // Markdown-escape the title: backslash first in the class, so a title's own `\` cannot undo an escape.
+  return `- **${id} ${f.title.replace(/([\\`*_[\]<>])/g, '\\$1')}** (${facts.join(', ')}): ${parts.join(' · ')}`;
 }
 
 // Writes the map; returns { file, lines } (lines = the summary for the reply).

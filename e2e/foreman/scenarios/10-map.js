@@ -60,6 +60,11 @@ module.exports = {
     assert.ok(g.edges.some((e) => e.from === 'f02_INT' && e.to === 'f02_P'), 'interview leads to its plan');
     assert.ok(g.edges.some((e) => e.from === 'f02_P' && e.to === 'f02_REP'), 'report');
 
+    p.step('Markdown characters in a feature title are escaped in the file list, backslash included');
+    p.edit('workbench/plans/P-03-note-stats.md', /^# P-03: .*$/m, '# P-03: Stats \\*all* _x_ `y` <b> [z]\\');
+    wbOk(p, 'map');
+    assert.match(p.read('workbench/maps/MAP.md'), /^- \*\*P-03 Stats \\\\\\\*all\\\* \\_x\\_ \\`y\\` \\<b\\> \\\[z\\\]\\\\\*\* \(/m);
+
     p.step('map P-02: that feature only, in MAP-02.md; unknown number refused');
     assert.deepStrictEqual(wbOk(p, 'map', 'P-02').split('\n'), ['workbench/maps/MAP-02.md', '1 plan(s), 3 task(s)']);
     g = graph(p.read('workbench/maps/MAP-02.md'));
