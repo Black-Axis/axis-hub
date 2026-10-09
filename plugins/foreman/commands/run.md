@@ -132,13 +132,13 @@ Passes: section 7 (Pass). Limit reached with issues left: section 7 (Fail).
   3. Version control (the vcs file):
      - git: the contract's commit policy; if the main agent commits, follow "Commit": only the task's files (and, with Workbench `tracked`, this run's `workbench/` changes), shown first, committed on yes.
      - tfvc: never check in; follow "Commit" and "Deletes, renames, new files".
-     - Delete the snapshot folder `workbench/.baseline/P-NN/TASK-TT/`, if any ("Snapshot" in rules.md).
+     - The snapshot folder `workbench/.baseline/P-NN/TASK-TT/` was deleted by `wb.js status` in step 1 ("Snapshot" in rules.md); without Node, delete it now.
   4. If every non-canceled task is now `Done`, apply the contract's Auto-close (missing or unclear = `Ask`):
      - `Ask`: read `${CLAUDE_PLUGIN_ROOT}/commands/close.md` first, then ask with `AskUserQuestion` "All tasks Done. Run /foreman:close P-NN now?"; run it only on yes. Log the answer (`User`, `Decision`).
      - `Yes`: after the step 8 report, run `/foreman:close P-NN` (follow `${CLAUDE_PLUGIN_ROOT}/commands/close.md`).
      - `No`: tell the user they can run `/foreman:close P-NN`.
 - **Fail** (limit reached, or blocked):
-  - Right away, set `Hold` and save it: `wb.js status P-NN TASK-TT Hold --by "Main agent" --reason "Verification failed after <n> fix rounds" --note "<remaining issues>"`. Delete the snapshot folder, if any (a re-run takes a new one). `Canceled` only if the task turned out obsolete, with the reason.
+  - Right away, set `Hold` and save it: `wb.js status P-NN TASK-TT Hold --by "Main agent" --reason "Verification failed after <n> fix rounds" --note "<remaining issues>"`. `wb.js status` deletes the snapshot folder (without Node, delete it; a re-run takes a new one). `Canceled` only if the task turned out obsolete, with the reason.
   - Show the remaining Revert / Not done / Wrong items and propose: `/foreman:resume` then re-run, `/foreman:change`, or a manual fix.
 
 ## 8. Report to the user

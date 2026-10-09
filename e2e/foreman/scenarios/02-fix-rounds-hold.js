@@ -1,5 +1,5 @@
 // Fix rounds up to the limit -> Hold -> resume -> run continues the task; round on a Done task; cancel; plan hold.
-const { feature, wb, wbOk, assertClean, trk, task, indexRow, appendRow, activity, today } = require('../lib');
+const { feature, wb, wbOk, check, assertClean, trk, task, indexRow, appendRow, activity, today } = require('../lib');
 
 module.exports = {
   name: 'fix rounds, Hold, resume, round on a Done task, cancel, plan hold',
@@ -25,9 +25,12 @@ module.exports = {
     assertClean(p, 'P-02');
     assert.strictEqual(trk(p, '02').history.filter((h) => h.target === 'TASK-02' && /^Fix round \d/.test(h.reason)).length, limit);
 
-    p.step('limit reached: Hold with the remaining issues');
+    p.step('limit reached: Hold with the remaining issues; Hold deletes the snapshot folder (#84)');
+    p.write('workbench/.baseline/P-02/TASK-02/src/notes.js', 'snapshot');
+    p.write('workbench/.baseline/P-02/TASK-02/.stamp', '');
     wbOk(p, 'status', 'P-02', 'TASK-02', 'Hold', '--by', 'Main agent', '--reason', `Verification failed after ${limit} fix rounds`, '--note', 'Wrong: order not kept');
     assert.strictEqual(task(p, '02', 'TASK-02').status, 'Hold');
+    assert.ok(!p.exists('workbench/.baseline/P-02'), 'snapshot folder, marker, and empty P-02 folder removed');
     assert.strictEqual(indexRow(p, '02').progress, '1/3 Done');
     assert.strictEqual(wbOk(p, 'ready', 'P-02'), 'none');
     assert.match(wbOk(p, 'chain', 'P-02'), /^blocked: P-02 TASK-03 .*\(waits for TASK-02 Hold\)$/m);
@@ -66,9 +69,16 @@ module.exports = {
     assert.ok(trk(p, '02').history.some((h) => h.target === 'TASK-01' && h.change === 'Done -> In Progress' && h.by === 'User'));
     assertClean(p, 'P-02');
 
-    p.step('cancel: a Canceled task leaves the progress count');
+    p.step('cancel: a Canceled task leaves the progress count; cancel of an In Progress task deletes its snapshot (#84)');
+    wbOk(p, 'status', 'P-02', 'TASK-03', 'In Progress', '--by', 'User', '--reason', '/foreman:run P-02 TASK-03');
+    p.write('workbench/.baseline/P-02/TASK-03/README.md', 'snapshot');
+    p.write('workbench/.baseline/P-02/TASK-01/README.md', 'leftover of an older run');
+    assert.ok(check(p, 'P-02').findings.some((f) => /\.baseline\/P-02\/TASK-01\/: leftover snapshot .*\(fix: wb\.js refresh P-02\)/.test(f)));
+    assert.match(wbOk(p, 'refresh', 'P-02'), /^TASK-01 snapshot removed \(not In Progress\)$/m);
+    assert.ok(!p.exists('workbench/.baseline/P-02/TASK-01') && p.exists('workbench/.baseline/P-02/TASK-03/README.md'), 'refresh keeps the In Progress task\'s snapshot');
     wbOk(p, 'status', 'P-02', 'TASK-03', 'Canceled', '--by', 'User', '--reason', 'README is generated elsewhere');
     assert.strictEqual(indexRow(p, '02').progress, '2/2 Done');
+    assert.ok(!p.exists('workbench/.baseline/P-02'), 'cancel removed the snapshot and marker');
     assert.match(wbOk(p, 'overview'), /P-02 search-notes .*all tasks Done - \/foreman:close P-02/);
 
     p.step('plan hold and resume');
