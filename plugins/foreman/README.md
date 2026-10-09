@@ -6,7 +6,7 @@
 
 Plan, contract, track, delegate, and document feature work with Claude Code.
 
-Version 1.5.0 - [changelog](CHANGELOG.md). Uses [Node.js](https://nodejs.org/) on `PATH` for its two hooks (session-start summary, prompt-free `workbench/` changes) and its state script (tracking updates); everything else works without it, with no errors.
+Version 1.6.0 - [changelog](CHANGELOG.md). Uses [Node.js](https://nodejs.org/) on `PATH` for its two hooks (session-start summary, prompt-free `workbench/` changes) and its state script (tracking updates); everything else works without it, with no errors.
 
 The main agent acts as the foreman: it reviews requirements, writes the plan, agrees a contract with you, and tracks every task. Implementation of each task is delegated - one task at a time, chosen by you - to the `foreman-worker` subagent running on Sonnet. The main agent then verifies the result, runs tests, and updates tracking and docs.
 
@@ -103,6 +103,7 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 | `/foreman:import <path(s)>` | Move plans/tasks/progress from another workflow's local files into `workbench/` (preview first; originals untouched) |
 | `/foreman:doctor [P-NN]` | Find inconsistencies in `workbench/`; fix them after your confirmation |
 | `/foreman:report <P-NN>` | Write a stakeholder report to `workbench/reports/REP-NN-<slug>.md` (by the `foreman-reporter` subagent) |
+| `/foreman:map [P-NN]` | Draw a Mermaid diagram of all features (or one) with their interview, plan, contract, tracking, tasks and dependencies, doc, and reports to `workbench/maps/MAP.md` (`MAP-NN.md` for one); open it in GitHub, GitLab, or VS Code to see it. Needs Node.js |
 | `/foreman:settings [vcs ...] [workbench ...] [output ...] [fix-rounds N] [claude-md ...] [rules] [reset]` | Settings menu: every setting with current value and default; change by choosing, or directly by argument; reset to defaults |
 
 **Help**
@@ -187,7 +188,7 @@ Without `tf.exe` (or without version control), foreman still shows you the diff 
 - **`foreman-reporter`** (subagent, Sonnet) - writes the stakeholder report for `/foreman:report`. It reads only the sections the report needs (plan overview, risks, and task order; contract scope and change requests; task statuses; doc acceptance), never task files or code, and cannot write any file. It returns the finished report, which the main session saves without a permission prompt; the feature files never enter the main session's context.
 - **`foreman-guide`** (skill) - in a project that uses foreman (`workbench/INDEX.md` exists), when you ask for foreman-type work without a command (e.g. "let's build X", "what's left?"), Claude suggests the matching `/foreman:*` command, at most once per topic. In other projects it stays silent unless you explicitly ask to plan or track feature work. It never runs a command.
 - **PreToolUse hook** (`workbench-guard`) - lets the main agent change `workbench/` without permission prompts, blocks subagents from changing it, and blocks the worker's shell file writes (see [Permissions](#permissions)). Requires Node.js on `PATH`; without it the hook is skipped, with no error.
-- **State script** (`scripts/wb.js`) - makes every status change in one step (tracking row, History, derived plan status, INDEX progress) and answers overview, ready tasks, running tasks per session, and the next feature number; `renumber` moves a feature to a new number after a collision; `check` runs the mechanical consistency checks that `/foreman:doctor` reports (and every command runs after it changed a feature), so the tracking files never drift apart. Commands run it as `node "<plugin>/scripts/wb.js" ...`, pre-approved and allowed by the hook. Without Node.js, the main agent updates the files by hand.
+- **State script** (`scripts/wb.js`) - makes every status change in one step (tracking row, History, derived plan status, INDEX progress) and answers overview, ready tasks, running tasks per session, and the next feature number; `renumber` moves a feature to a new number after a collision; `check` runs the mechanical consistency checks that `/foreman:doctor` reports (and every command runs after it changed a feature); `map` writes the `/foreman:map` diagram, so the tracking files never drift apart. Commands run it as `node "<plugin>/scripts/wb.js" ...`, pre-approved and allowed by the hook. Without Node.js, the main agent updates the files by hand.
 - **SessionStart hook** - at session start, if the project has `workbench/`, shows each active plan with its contract status, progress, tasks In Progress, next ready tasks, plans waiting for `/foreman:close`, and interviews in progress. Requires Node.js on `PATH`; without it there is no summary and no error.
 
 ## Folder structure (in your project)
@@ -202,7 +203,8 @@ workbench/
 ├─ docs/DOC-01-user-login.md
 ├─ interviews/INT-02-dark-mode.md             # only with /foreman:interview
 ├─ .baseline/P-01/TASK-01/...                 # temporary snapshots during /foreman:run (TFVC without tf.exe, no version control)
-└─ reports/REP-01-user-login.md               # only after /foreman:report
+├─ reports/REP-01-user-login.md               # only after /foreman:report
+└─ maps/MAP.md                                # only after /foreman:map (MAP-01.md for one feature)
 ```
 
 - One feature = one plan, contract, tracking file, doc, and subtasks folder, all sharing the same 2-digit number and slug.

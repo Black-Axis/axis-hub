@@ -82,7 +82,7 @@ Remove with `claude plugin uninstall foreman@axis-hub` or, to remove the marketp
 
 | Plugin | Version | Description |
 |--------|---------|-------------|
-| <img src="plugins/foreman/assets/images/foreman-logo.png" alt="" width="20"> [foreman](plugins/foreman/README.md) | 1.5.0 | Plan, contract, track, delegate, and document feature work in a `workbench/` folder |
+| <img src="plugins/foreman/assets/images/foreman-logo.png" alt="" width="20"> [foreman](plugins/foreman/README.md) | 1.6.0 | Plan, contract, track, delegate, and document feature work in a `workbench/` folder |
 
 - What changed: [CHANGELOG.md](CHANGELOG.md) (marketplace) and each plugin's `CHANGELOG.md`.
 - See it in action: [examples/foreman](examples/foreman/README.md) - a sample `workbench/`.

@@ -6,6 +6,16 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-10-09
+
+### foreman 1.6.0
+
+Details: [foreman changelog](plugins/foreman/CHANGELOG.md).
+
+#### Added
+
+- `/foreman:map [P-NN]`: a Mermaid diagram of the features and their files in `workbench/maps/` (#100)
+
 ### Marketplace
 
 #### Changed
