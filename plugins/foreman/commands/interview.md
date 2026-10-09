@@ -40,7 +40,7 @@ Before the first question, read `${CLAUDE_PLUGIN_ROOT}/commands/new.md`, the tem
 
 Work through the Coverage topics in the template order, one topic per round:
 
-1. Ask 3-5 focused questions about the topic with `AskUserQuestion` (open questions too: offer likely answers, the user types their own with "Other"). Offer your recommended option first when you have one.
+1. Ask 2-4 focused questions about the topic in one `AskUserQuestion` call (its limit; a topic that needs more gets another round) (open questions too: offer likely answers, the user types their own with "Other"). Offer your recommended option first when you have one.
 2. Challenge every weak answer as in "Your stance" and ask again until it is concrete. Do not move to the next topic while the current one has a vague answer, unless the user explicitly parks it - then add it to Open Gaps.
 3. Mark a topic `N/A` only when the user confirms it does not apply, with the reason.
 4. **Save after every round**: append the round (question, final answer, challenge given) to Rounds, update Coverage, Decisions, Open Gaps, and Updated. A session can end at any time; nothing agreed may be lost.
