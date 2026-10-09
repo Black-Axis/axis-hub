@@ -561,7 +561,8 @@ function cmdRenumber(args) {
     if (running.length) fail(`P-${nn} has tasks In Progress (${running.join(', ')}) - finish them or put them on Hold first`);
   }
 
-  const links = new RegExp(`\\b(${PREFIXES.join('|')})-${nn}-${slug}\\b`, 'g');
+  // The exact name: not followed by more slug text, so `tags` never matches `tags-v2`.
+  const links = new RegExp(`\\b(${PREFIXES.join('|')})-${nn}-${slug}(?![a-z0-9-])`, 'g');
   const ids = new RegExp(`\\b(${PREFIXES.join('|')})-${nn}\\b(?!-[a-z0-9])`, 'g');
   const rewrite = (text) => text.replace(links, `$1-${to}-${slug}`).replace(ids, `$1-${to}`);
   const out = [];
@@ -573,7 +574,7 @@ function cmdRenumber(args) {
     if (text !== null && rewrite(text) !== text) fs.writeFileSync(file, rewrite(text));
   }
 
-  const r = rows.find((i) => cells(indexDoc.lines[i])[0] === nn && indexDoc.lines[i].includes(`-${nn}-${slug}`));
+  const r = rows.find((i) => cells(indexDoc.lines[i])[0] === nn && new RegExp(links.source).test(indexDoc.lines[i]));
   if (r !== undefined) {
     const cs = cells(indexDoc.lines[r]).map(rewrite);
     cs[0] = to;
