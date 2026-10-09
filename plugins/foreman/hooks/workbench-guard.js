@@ -10,9 +10,13 @@
 // - foreman-worker: shell commands that write files (redirects, tee, sed -i, Set-Content,
 //   script one-liners that write files, ...) are denied; it changes files only with
 //   Edit / Write, so every change reaches the user as a diff.
+// - Main agent: Read of a file inside foreman's own plugin folder is allowed in every
+//   turn (commands read some instructions only when a step needs them), unless the
+//   user's settings deny or ask for that read.
 // - Everything else: no decision, the user's permission mode applies.
-// Active only when workbench/ has an INDEX.md or does not exist yet (first setup), never
-// in plan mode, and never when the user's settings deny Edit / Write for workbench/.
+// Active only when workbench/ has an INDEX.md or does not exist yet (first setup; plugin
+// reads: always), never in plan mode, and never when the user's settings deny Edit /
+// Write for workbench/.
 // Never fails the tool call: all errors exit 0 with no decision.
 
 const fs = require('fs');
@@ -208,10 +212,85 @@ function settingsRestrictShell(root, tool, command) {
   return false;
 }
 
+// A path in the POSIX form permission rules match against (Windows `C:\x` -> `/c/x`).
+function posix(p) {
+  const s = p.replace(/\\/g, '/');
+  return WIN ? s.replace(/^([a-zA-Z]):/, (_, d) => '/' + d.toLowerCase()) : s;
+}
+
+// A Read permission rule's path pattern (gitignore style) as a regex on POSIX paths:
+// `//abs`, `~/home`, `/root-relative`, `./cwd-relative`, else matching at any depth.
+function readRuleRegex(pattern, root) {
+  let p = pattern.replace(/\\/g, '/');
+  let base = '';
+  if (p.startsWith('//')) p = p.slice(1);
+  else if (p.startsWith('~/')) [base, p] = [os.homedir(), p.slice(1)];
+  else if (p.startsWith('/')) base = root;
+  else if (p.startsWith('./')) [base, p] = [root, p.slice(1)];
+  else p = '**/' + p;
+  const prefix = base ? posix(base).replace(/\/$/, '') : '';
+  const body = p.split(/(\*\*\/?|\*|\?)/).map((part) => {
+    if (part === '**/') return '(?:.*/)?';
+    if (part === '**') return '.*';
+    if (part === '*') return '[^/]*';
+    if (part === '?') return '[^/]';
+    return part.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+  }).join('');
+  return new RegExp(`^${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}${body}(?:/.*)?$`, WIN ? 'i' : '');
+}
+
+// True when the user's settings deny or ask for reading `file` (a hook allow would
+// override those rules). A bare `Read` rule counts for every file.
+function settingsRestrictRead(root, file) {
+  const files = [
+    path.join(os.homedir(), '.claude', 'settings.json'),
+    path.join(root, '.claude', 'settings.json'),
+    path.join(root, '.claude', 'settings.local.json'),
+  ];
+  const target = posix(file);
+  for (const f of files) {
+    let perms = {};
+    try {
+      perms = JSON.parse(fs.readFileSync(f, 'utf8')).permissions || {};
+    } catch {
+      continue;
+    }
+    for (const rule of [...(perms.deny || []), ...(perms.ask || [])]) {
+      const m = /^Read(?:\((.*)\))?$/.exec(String(rule).trim());
+      if (!m) continue;
+      if (!m[1] || /^\*+$/.test(m[1].trim())) return true;
+      try {
+        if (readRuleRegex(m[1].trim(), root).test(target)) return true;
+      } catch {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+// foreman's own plugin folder (this script lives in <plugin>/hooks/).
+const PLUGIN_ROOT = path.join(__dirname, '..');
+
 function decide(input) {
   const tool = input.tool_name;
-  if (!FILE_TOOLS.has(tool) && tool !== 'Bash' && tool !== 'PowerShell') return null;
   if (input.permission_mode === 'plan') return null;
+
+  // Main agent reading foreman's own files (instructions, templates, reference files):
+  // allowed in every turn, also after an Agent call, so commands can read a file when
+  // they reach the step that needs it (#105). Only this plugin's folder, never subagents.
+  if (tool === 'Read') {
+    const root = process.env.CLAUDE_PROJECT_DIR || input.cwd || process.cwd();
+    const file = (input.tool_input || {}).file_path;
+    if (input.agent_id || typeof file !== 'string' || !file) return null;
+    const given = path.resolve(input.cwd || root, file);
+    const target = realish(given);
+    if (!inside(target, realish(PLUGIN_ROOT))) return null;
+    if (settingsRestrictRead(root, given) || settingsRestrictRead(root, target)) return null;
+    return { permissionDecision: 'allow', permissionDecisionReason: 'foreman: plugin file' };
+  }
+
+  if (!FILE_TOOLS.has(tool) && tool !== 'Bash' && tool !== 'PowerShell') return null;
 
   const root = process.env.CLAUDE_PROJECT_DIR || input.cwd || process.cwd();
   const wbPath = path.join(root, 'workbench');

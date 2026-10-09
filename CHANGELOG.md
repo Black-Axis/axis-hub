@@ -21,6 +21,8 @@ Details: [foreman changelog](plugins/foreman/CHANGELOG.md).
 - Shared rules split into a core and topic files: fewer tokens per command (#103)
 - `/foreman:status` and `/foreman:map` load no rules file (#103)
 - Shorter command descriptions: about half the context they take in every session (#102)
+- `/foreman:run` loads the fix round and commit steps only when it needs them (#105)
+- The main agent reads foreman's own files without prompts, also after the worker ran (#105)
 
 ### Marketplace
 

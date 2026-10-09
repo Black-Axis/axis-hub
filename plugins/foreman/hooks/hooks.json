@@ -1,5 +1,5 @@
 {
-  "description": "Foreman: show active plans and next ready tasks at session start; let the main agent change workbench/ without prompts and keep subagents out of it",
+  "description": "Foreman: show active plans and next ready tasks at session start; let the main agent change workbench/ without prompts and keep subagents out of it; let the main agent read the plugin's own files in any turn",
   "hooks": {
     "SessionStart": [
       {
@@ -14,7 +14,7 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash|PowerShell",
+        "matcher": "Read|Edit|Write|MultiEdit|NotebookEdit|Bash|PowerShell",
         "hooks": [
           {
             "type": "command",

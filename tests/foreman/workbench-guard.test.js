@@ -259,17 +259,57 @@ test('state script: node "<plugin>/scripts/wb.js" is allowed for the main agent 
   assert.strictEqual(run(project({ deny: ['Edit(workbench/**)'] }), 'Bash', { command: `node "${fwd}" overview` }), null, 'workbench edits denied');
 });
 
+const pluginRoot = path.join(repo, 'plugins', 'foreman');
+
+test('main agent: Read of the plugin\'s own files is allowed in every turn (#105)', () => {
+  const dir = project();
+  for (const rel of ['reference/fix-rounds.md', 'reference/commit-git.md', 'commands/run.md', 'templates/task.md', 'agents/foreman-worker.md']) {
+    assert.strictEqual(run(dir, 'Read', { file_path: path.join(pluginRoot, rel) }), 'allow', rel);
+  }
+  assert.strictEqual(run(dir, 'Read', { file_path: path.join(pluginRoot, 'reference', 'rules.md').replace(/\\/g, '/') }), 'allow', 'forward slashes');
+  assert.strictEqual(run(project({ workbench: false }), 'Read', { file_path: path.join(pluginRoot, 'commands', 'new.md') }), 'allow', 'before first setup');
+  assert.strictEqual(run(project({ index: false }), 'Read', { file_path: path.join(pluginRoot, 'commands', 'doctor.md') }), 'allow', 'workbench/ without INDEX.md');
+});
+
+test('Read: other paths, subagents, and plan mode get no decision', () => {
+  const dir = project();
+  assert.strictEqual(run(dir, 'Read', { file_path: path.join(dir, 'src', 'app.js') }), null, 'project file');
+  assert.strictEqual(run(dir, 'Read', { file_path: path.join(pluginRoot, '..', 'other', 'x.md') }), null, 'sibling plugin');
+  assert.strictEqual(run(dir, 'Read', { file_path: path.join(pluginRoot, 'commands', '..', '..', '..', 'package.json') }), null, '.. escape');
+  assert.strictEqual(run(dir, 'Read', { file_path: pluginRoot + '-old/x.md' }), null, 'sibling prefix');
+  assert.strictEqual(run(dir, 'Read', { file_path: path.join(pluginRoot, 'commands', 'run.md') }, worker), null, 'subagent');
+  assert.strictEqual(run(dir, 'Read', { file_path: path.join(pluginRoot, 'commands', 'run.md') }, { permission_mode: 'plan' }), null, 'plan mode');
+  assert.strictEqual(run(dir, 'Read', {}), null, 'no path');
+});
+
+test('Read: deny and ask rules in settings are respected', () => {
+  const file = path.join(pluginRoot, 'reference', 'commit-git.md');
+  // Rules match POSIX paths: on Windows D:\x is /d/x, written //d/x in a rule.
+  const abs = '/' + file.replace(/\\/g, '/').replace(/^([a-zA-Z]):/, (_, d) => '/' + d.toLowerCase());
+  for (const deny of [['Read'], ['Read(*)'], ['Read(**)'], ['Read(**/reference/**)'], ['Read(commit-git.md)'], ['Read(*.md)'], [`Read(${abs})`]]) {
+    assert.strictEqual(run(project({ deny }), 'Read', { file_path: file }), null, JSON.stringify(deny));
+  }
+  for (const deny of [['Read(.env)'], ['Read(./secrets/**)'], ['Read(//etc/**)'], ['Edit(src/**)'], ['Bash(rm:*)']]) {
+    assert.strictEqual(run(project({ deny }), 'Read', { file_path: file }), 'allow', JSON.stringify(deny));
+  }
+  const dir = project();
+  fs.mkdirSync(path.join(dir, '.claude'));
+  fs.writeFileSync(path.join(dir, '.claude', 'settings.local.json'), JSON.stringify({ permissions: { ask: ['Read(**/foreman/**)'] } }));
+  assert.strictEqual(run(dir, 'Read', { file_path: file }), null, 'ask rule');
+});
+
 test('other tools and broken input get no decision', () => {
   const dir = project();
-  assert.strictEqual(run(dir, 'Read', { file_path: wbFile(dir) }), null);
+  assert.strictEqual(run(dir, 'Read', { file_path: wbFile(dir) }), null, 'Read outside the plugin');
+  assert.strictEqual(run(dir, 'Glob', { pattern: '**' }), null);
   const res = spawnSync(process.execPath, [hook], { input: 'not json', encoding: 'utf8' });
   assert.strictEqual(res.status, 0);
   assert.strictEqual(res.stdout, '');
 });
 
-test('hooks.json runs the guard on file and shell tools', () => {
+test('hooks.json runs the guard on Read, file, and shell tools', () => {
   const hooks = JSON.parse(fs.readFileSync(path.join(repo, 'plugins', 'foreman', 'hooks', 'hooks.json'), 'utf8')).hooks;
   const entry = hooks.PreToolUse[0];
-  assert.strictEqual(entry.matcher, 'Edit|Write|MultiEdit|NotebookEdit|Bash|PowerShell');
+  assert.strictEqual(entry.matcher, 'Read|Edit|Write|MultiEdit|NotebookEdit|Bash|PowerShell');
   assert.match(entry.hooks[0].command, /hooks\/workbench-guard\.js"; exit 0$/);
 });

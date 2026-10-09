@@ -50,5 +50,5 @@ Show the three lists (each item with its source: `user` or `found by main agent`
 ## 6. Send and finish
 
 1. Round number `<n>` = the task's highest fix round so far (History and Activity) + 1.
-2. If the worker that ran this task still exists in this session, send it the lists with SendMessage (only the lists, as in `run` step 6). Otherwise launch a new `foreman-worker` (`foreman:foreman-worker`) with exactly the lines of `run` step 4, plus `Fix round: <n>` and the lists. Log it (`Main agent`, `Action`, `fix round <n> sent (user round)`).
+2. If the worker that ran this task still exists in this session, send it the lists with SendMessage (only the lists, as in "Fix rounds" in `${CLAUDE_PLUGIN_ROOT}/reference/fix-rounds.md`; read it now). Otherwise launch a new `foreman-worker` (`foreman:foreman-worker`) with exactly the lines of `run` step 4, plus `Fix round: <n>` and the lists. Log it (`Main agent`, `Action`, `fix round <n> sent (user round)`).
 3. Continue with `run` steps 5-8: verify, automatic fix rounds (the `Fix rounds` limit counts again from zero for this round), then Pass or Fail. On Pass, update the doc's `Implemented Tasks` entry for this task with the rework (`Rework (round <n>): ...`). A task that was committed before gets a new commit for the fix; earlier commits are never changed.

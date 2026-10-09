@@ -169,10 +169,12 @@ test('guide skill is gated on workbench/INDEX.md; ask runs commands only via Ski
 test('git commit: only the task\'s files, shown first, never add -A / . / commit -a', () => {
   const vcs = fs.readFileSync(path.join(plugin, 'reference', 'vcs-git.md'), 'utf8');
   assert.match(vcs, /^## Commit$/m);
-  assert.match(vcs, /`git commit -m "<message>" -- <paths>`/);
+  const commit = fs.readFileSync(path.join(plugin, 'reference', 'commit-git.md'), 'utf8'); // read only when committing (#105)
+  assert.match(commit, /^## Commit$/m);
+  assert.match(commit, /`git commit -m "<message>" -- <paths>`/);
   assert.match(fs.readFileSync(path.join(commandsDir, 'run.md'), 'utf8'), /follow "Commit": only the task's files/);
   assert.match(fs.readFileSync(path.join(commandsDir, 'close.md'), 'utf8'), /as in "Commit" in the vcs file/);
-  const files = [path.join(plugin, 'reference', 'rules.md'), path.join(plugin, 'reference', 'vcs-git.md'), path.join(plugin, 'agents', 'foreman-worker.md'),
+  const files = [path.join(plugin, 'reference', 'rules.md'), path.join(plugin, 'reference', 'vcs-git.md'), path.join(plugin, 'reference', 'commit-git.md'), path.join(plugin, 'agents', 'foreman-worker.md'),
     ...fs.readdirSync(commandsDir).map((f) => path.join(commandsDir, f))];
   for (const file of files) {
     for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
@@ -316,7 +318,8 @@ test('test runs: task Tests row, Full tests rule, baseline reuse', () => {
     assert.match(fs.readFileSync(path.join(plugin, 'reference', `vcs-${v}.md`), 'utf8'), /## Baseline reuse\s+Never: always run the baseline tests\./, v);
   }
   const run = fs.readFileSync(path.join(commandsDir, 'run.md'), 'utf8');
-  assert.equal((run.match(/"Test runs" in tasks\.md/g) || []).length >= 3, true, 'run.md points to Test runs for baseline, verify, fix rounds');
+  assert.equal((run.match(/"Test runs" in tasks\.md/g) || []).length >= 2, true, 'run.md points to Test runs for baseline and verify');
+  assert.match(fs.readFileSync(path.join(plugin, 'reference', 'fix-rounds.md'), 'utf8'), /"Test runs" in tasks\.md/, 'fix rounds (read on demand, #105)');
   assert.match(fs.readFileSync(path.join(commandsDir, 'close.md'), 'utf8'), /never a task's `Tests` row/);
   assert.match(fs.readFileSync(path.join(plugin, 'templates', 'task.md'), 'utf8'), /^\| Tests \| /m);
   for (const t of ['contract.md', 'INDEX.md']) {

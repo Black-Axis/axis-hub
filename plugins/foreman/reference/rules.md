@@ -43,7 +43,7 @@ Rules that only some commands need are in their own files in `${CLAUDE_PLUGIN_RO
 | `sessions.md` | "Sessions" | `run`, `round` |
 | `project-block.md` | "Project instructions block" (the CLAUDE.md block) | `init`, `settings`, `doctor` |
 
-Read only when needed, at the point named (still in the command's turn):
+Read only when needed, at the point named ("Questions and follow-up turns"):
 
 | File | Sections | Read when |
 |------|----------|-----------|
@@ -51,6 +51,8 @@ Read only when needed, at the point named (still in the command's turn):
 | `snapshot.md` | "Snapshot" | the vcs file's start state needs a snapshot (tfvc, none; git with untracked listed files) |
 | `project-block.md` | "Project instructions block" | `setup.md` (first setup by `new`, `interview`, `import`) |
 | `run-all.md` | "Run all" | `/foreman:run` with `all` |
+| `fix-rounds.md` | "Fix rounds" | `/foreman:run` verification failed; `/foreman:round` sends a round |
+| `commit-git.md` | "Commit" | git, when the commit policy says the main agent commits (`/foreman:run` Pass, `/foreman:close`) |
 
 `/foreman:status` and `/foreman:map` only run the state script and read no rules file; the few rules they need are in the command.
 
@@ -132,9 +134,10 @@ Every change to a code or docs file must reach the user as a diff. The worker th
 
 ## Questions and follow-up turns
 
-A command's `allowed-tools` apply only in the turn the command was run in; they end when the user sends the next message. After that, reading plugin files and editing `workbench/` go through the user's permission prompts. So:
+A command's `allowed-tools` end with the user's next message and with your first `Agent` call. foreman's hook still allows your `workbench/` edits and reads of `${CLAUDE_PLUGIN_ROOT}` files (with Node; else they prompt). So:
 
 - **Read first.** Before the first question, read every plugin file the command will need later (`${CLAUDE_PLUGIN_ROOT}/...`: templates, `reference/setup.md`, other command files it follows). Files already read stay in context; never re-read them in a later turn.
+- **On demand.** Files in the on-demand table ("Topic files") are read only when their step is reached, also after a question or the worker.
 - **Ask with `AskUserQuestion`.** It keeps the command's turn, so its permissions stay. Use it for every question, including open ones: the user types free text with "Other". The tool's limits hold for every question in every command: at most 4 questions per call - for more (e.g. one per review finding), use several calls in a row; 2-4 options per question - with more candidates (tasks, plans, values), offer the recommended one and the next most likely up to 4 and name the rest in the question text for the user to type with "Other"; with only one candidate, add a second real choice (e.g. `—` none, `cancel`, or `keep as is`), never a duplicate.
 - **Plain-text questions** only when `AskUserQuestion` is not available or fails. End that message with one line: "Your answer continues in a new turn: `workbench/` edits may ask for permission." Then continue normally after the answer; never work around a prompt. If a needed plugin file is not in context and its read is refused, stop, name the file, and tell the user to run the command again or allow the read.
 

@@ -34,7 +34,7 @@ test('topic files hold their sections, rules.md no longer does', () => {
   const rows = topicRows();
   assert.deepStrictEqual(rows.map((r) => r.file), ['version-control.md', 'tasks.md', 'sessions.md', 'project-block.md']);
   const later = topicRows(true);
-  assert.deepStrictEqual(later.map((r) => r.file), ['detection.md', 'snapshot.md', 'project-block.md', 'run-all.md']);
+  assert.deepStrictEqual(later.map((r) => r.file), ['detection.md', 'snapshot.md', 'project-block.md', 'run-all.md', 'fix-rounds.md', 'commit-git.md']);
   const rules = read(ref, 'rules.md');
   for (const { file, sections } of [...rows, ...later]) {
     const text = read(ref, file);
@@ -82,6 +82,14 @@ test('on-demand files: read only at the point that needs them', () => {
   assert.match(read(ref, 'setup.md'), /First read `detection\.md` and `project-block\.md` \(in this folder\)/);
   for (const v of ['tfvc', 'none']) assert.match(read(ref, `vcs-${v}.md`), /read `snapshot\.md`, in this folder, now/, v);
   assert.match(read(ref, 'vcs-git.md'), /read `snapshot\.md`, in this folder, only when there is such a file/);
+  // #105: fix rounds and the git commit steps load only when needed, after the worker ran.
+  assert.doesNotMatch(run, /^\d\. Feedback in three lists/m, 'fix rounds moved out of run.md');
+  assert.match(run, /^## 6\. Fix rounds\r?\n\r?\nRead `\$\{CLAUDE_PLUGIN_ROOT\}\/reference\/fix-rounds\.md` now \(only when verification failed\)/m);
+  assert.match(read(ref, 'fix-rounds.md'), /^## Fix rounds\r?$/m);
+  assert.match(read(commandsDir, 'round.md'), /`\$\{CLAUDE_PLUGIN_ROOT\}\/reference\/fix-rounds\.md`; read it now/);
+  assert.doesNotMatch(read(ref, 'vcs-git.md'), /git commit -m/, 'the commit steps moved to commit-git.md');
+  assert.match(read(ref, 'vcs-git.md'), /read `commit-git\.md`, in this folder, now/);
+  for (const c of ['run.md', 'round.md']) assert.ok(!firstRead(c).includes('fix-rounds.md') && !firstRead(c).includes('commit-git.md'), c);
   for (const c of ['new.md', 'interview.md', 'import.md']) {
     assert.ok(!firstRead(c).includes('project-block.md'), `${c} reads project-block.md only through setup.md`);
   }

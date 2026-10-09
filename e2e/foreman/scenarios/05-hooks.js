@@ -60,6 +60,21 @@ module.exports = {
     p.step('guard: no decision in plan mode');
     assert.strictEqual(guard(p, 'Edit', { file_path: trk }, 'main', { permission_mode: 'plan' }), null);
 
+    p.step('guard: main agent reads plugin files in any turn (#105); project files, subagents, plan mode: no decision');
+    const commitGit = path.join(p.pluginRoot, 'reference', 'commit-git.md');
+    assert.ok(fs.existsSync(commitGit));
+    assert.strictEqual(guard(p, 'Read', { file_path: commitGit }), 'allow');
+    assert.strictEqual(guard(p, 'Read', { file_path: path.join(p.pluginRoot, 'templates', 'task.md') }), 'allow');
+    assert.strictEqual(guard(p, 'Read', { file_path: p.path('src/notes.js') }), null);
+    assert.strictEqual(guard(p, 'Read', { file_path: commitGit }, 'worker'), null);
+    assert.strictEqual(guard(p, 'Read', { file_path: commitGit }, 'main', { permission_mode: 'plan' }), null);
+
+    p.step('guard: a settings deny rule for the read wins');
+    p.write('.claude/settings.local.json', JSON.stringify({ permissions: { deny: ['Read(**/reference/commit-*.md)'] } }));
+    assert.strictEqual(guard(p, 'Read', { file_path: commitGit }), null);
+    assert.strictEqual(guard(p, 'Read', { file_path: path.join(p.pluginRoot, 'reference', 'fix-rounds.md') }), 'allow');
+    p.remove('.claude/settings.local.json');
+
     p.step('session start: one line per active feature and the open interview; closed P-01 left out');
     let r = p.hook('session-start.js');
     assert.strictEqual(r.code, 0);
