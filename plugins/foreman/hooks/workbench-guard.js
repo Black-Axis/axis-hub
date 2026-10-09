@@ -170,9 +170,12 @@ function readOnlyVcs(command) {
 
 // foreman's own state script, run as `node "<this plugin>/scripts/wb.js" <args>`: one
 // command, plain or quoted arguments only. It changes nothing outside workbench/.
+// The script path may contain backslashes (a plugin installed on Windows, #93); it
+// must still resolve to this plugin's wb.js.
 const WB_SCRIPT = path.join(__dirname, '..', 'scripts', 'wb.js');
+const SCRIPT_ARG = String.raw`(?:'[^'$\x60]*'|"[^"$\x60]*"|[^\s'"$\x60;&|<>(){}*?]+)`;
 function stateScript(command) {
-  const m = new RegExp(String.raw`^node\s+(${ARG})((?:\s+${ARG})*)$`).exec(command.trim());
+  const m = new RegExp(String.raw`^node\s+(${SCRIPT_ARG})((?:\s+${ARG})*)$`).exec(command.trim());
   if (!m) return false;
   let target = unquote(m[1]);
   if (WIN) target = target.replace(/^\/([a-zA-Z])\//, '$1:/'); // Git Bash form /c/Users/...

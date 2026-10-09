@@ -238,12 +238,20 @@ test('state script: node "<plugin>/scripts/wb.js" is allowed for the main agent 
   if (process.platform === 'win32') {
     const gitBash = fwd.replace(/^([A-Za-z]):/, (_, d) => `/${d.toLowerCase()}`);
     assert.strictEqual(run(dir, 'Bash', { command: `node "${gitBash}" overview` }), 'allow', 'Git Bash path');
+    // Installed plugin on Windows: ${CLAUDE_PLUGIN_ROOT} with backslashes (#93).
+    for (const tool of ['Bash', 'PowerShell']) {
+      assert.strictEqual(run(dir, tool, { command: `node "${wb}" status P-01 TASK-02 Done --by "Main agent" --reason "verified"` }), 'allow', `${tool} backslash path`);
+    }
+    assert.strictEqual(run(dir, 'PowerShell', { command: `node ${wb} overview` }), 'allow', 'unquoted backslash path');
   }
   for (const command of [
     `node "${fwd}" overview; rm -rf src`,
     `node "${fwd}" overview > out.txt`,
     `node "${fwd}" status P-01 Done --reason "$(whoami)"`,
     `node "${path.join(dir, 'wb.js').replace(/\\/g, '/')}" overview`,
+    `node "${path.join(dir, 'wb.js').replace(/\//g, '\\')}" overview`,
+    `node "${wb}" overview --reason "a\\b"`,
+    `node "${wb}\\..\\..\\hooks\\session-start.js" overview`,
     'node scripts/wb.js overview',
     `node -e "x" "${fwd}"`,
   ]) assert.strictEqual(run(dir, 'Bash', { command }), null, command);
