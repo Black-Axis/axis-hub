@@ -1,10 +1,10 @@
 // /foreman:doctor: seeded inconsistencies are found by wb.js check, then fixed.
-const { feature, check, assertClean, appendRow, today, wbOk } = require('../lib');
+const { feature, check, assertClean, appendRow, today, wb, wbOk } = require('../lib');
 
 module.exports = {
   name: 'doctor finds seeded problems; clean after the fixes',
   fixture: 'notes-api',
-  covers: ['command:doctor', 'wb:check', 'wb:refresh'],
+  covers: ['command:doctor', 'wb:check', 'wb:refresh', 'wb:status', 'wb:continue'],
   run(p, assert) {
     const f2 = feature(p, '02');
     const f3 = feature(p, '03');
@@ -48,6 +48,31 @@ module.exports = {
     assert.ok(n.notes.some((x) => /TASK-03-readme-search\.md: no Status header row/.test(x)), n.out);
     assert.match(wbOk(p, 'refresh', 'P-02'), /^TASK-03 task file Status: Not Started$/m);
     assert.match(p.read(task3), /\| Field \| Value \|\n\|-------\|-------\|\n\| Status \| Not Started \|\n\| Plan \|/);
+    assertClean(p);
+
+    p.step('missing INDEX row: status, continue, and refresh fail before writing anything (#82)');
+    p.edit('workbench/INDEX.md', /\| 02 \| Search notes \|[^\n]*\n/, '');
+    const snapshot = () => p.files('workbench').map((f) => `${f}\n${p.read(f)}`).join('\n');
+    const before = snapshot();
+    for (const args of [
+      ['status', 'P-02', 'TASK-02', 'In Progress', '--by', 'User', '--reason', '/foreman:run P-02 TASK-02'],
+      ['status', 'P-02', 'Hold', '--by', 'User', '--reason', 'x'],
+      ['refresh', 'P-02'],
+    ]) {
+      const r = wb(p, ...args);
+      assert.strictEqual(r.code, 1, args.join(' '));
+      assert.match(r.out, /^ERROR: INDEX\.md has no Features row for P-02$/, args.join(' '));
+      assert.strictEqual(snapshot(), before, `${args.join(' ')}: nothing written`);
+    }
+    p.git('checkout', '--', '.');
+    wbOk(p, 'status', 'P-02', 'TASK-02', 'In Progress', '--by', 'User', '--reason', '/foreman:run P-02 TASK-02');
+    p.commit('TASK-02 In Progress');
+    p.edit('workbench/INDEX.md', /\| 02 \| Search notes \|[^\n]*\n/, '');
+    const running = snapshot();
+    const cont = wb(p, 'continue', 'P-02', 'TASK-02', '--by', 'User', '--reason', 'run continued');
+    assert.match(cont.out, /^ERROR: INDEX\.md has no Features row for P-02$/);
+    assert.strictEqual(snapshot(), running, 'continue: nothing written');
+    p.git('checkout', '--', '.');
     assertClean(p);
   },
 };

@@ -247,23 +247,26 @@ function syncPlan(doc, out, nn) {
 // Mirrors a task's TRK status into the `| Status |` row of its task file header
 // table, adding the row (first, under the separator) to older task files. The TRK
 // `Tasks` table stays the source of truth. No task file: nothing to mirror.
+// Returns the changed Doc (not saved yet), or null.
 function syncTaskFile(wb, f, task, status, out) {
   const file = findFile(path.join(wb, 'subtasks', `P-${f.nn}-${f.slug}`), `${task}-`);
-  if (!file) return;
+  if (!file) return null;
   const doc = new Doc(file);
   const head = doc.lines.findIndex((l) => /^\|\s*Field\s*\|\s*Value\s*\|/i.test(l));
-  if (head === -1) return;
+  if (head === -1) return null;
   let end = head + 2;
   while (end < doc.lines.length && /^\|/.test(doc.lines[end])) end++;
   const i = doc.lines.slice(head + 2, end).findIndex((l) => /^\|\s*Status\s*\|/i.test(l));
   if (i !== -1) doc.setLine(head + 2 + i, row(['Status', status]));
   else doc.insertAfter(head + 1, row(['Status', status]));
-  if (doc.changed) out.push(`${task} task file Status: ${status}`);
-  doc.save();
+  if (!doc.changed) return null;
+  out.push(`${task} task file Status: ${status}`);
+  return doc;
 }
 
-// Updates the INDEX features row of P-NN: Progress and Contract Status.
-function syncIndex(wb, f, out) {
+// Updates the INDEX features row of P-NN (Progress from `tasks`, Contract Status).
+// Returns the Doc, not saved yet: callers check everything before the first write.
+function syncIndex(wb, f, tasks, out) {
   const doc = new Doc(path.join(wb, 'INDEX.md'));
   const t = tableAt(doc.lines, 'Features');
   if (!t || t.header === -1) fail('INDEX.md has no Features table');
@@ -274,12 +277,17 @@ function syncIndex(wb, f, out) {
   const r = t.rows.find((i) => new RegExp(`\\bP-${f.nn}\\b`).test(cells(doc.lines[i])[iPlan] || ''));
   if (r === undefined) fail(`INDEX.md has no Features row for P-${f.nn}`);
   const cs = cells(doc.lines[r]);
-  const prog = progress(tasksOf(readText(f.trk) || ''));
+  const prog = progress(tasks);
   const cont = field(readText(f.contract || '') || '', 'Status');
   if (iProg !== -1 && cs[iProg] !== prog) { out.push(`INDEX P-${f.nn} Progress: ${prog}`); cs[iProg] = prog; }
   if (iCont !== -1 && cont && cs[iCont] !== cont) { out.push(`INDEX P-${f.nn} Contract Status: ${cont}`); cs[iCont] = cont; }
   doc.setLine(r, row(cs));
-  doc.save();
+  return doc;
+}
+
+// Saves every prepared Doc (nulls skipped). Called only after all checks passed.
+function saveAll(...docs) {
+  for (const d of docs) if (d) d.save();
 }
 
 function parseOpts(args) {
@@ -331,11 +339,11 @@ function cmdContinue(args) {
   cs[4] = opts.note || '';
   doc.setLine(r, row(cs));
   appendHistory(doc, [today(), task, 'In Progress -> In Progress', by, opts.reason]);
-  doc.save();
-  writeMarker(wb, nn, task);
   const out = [`${task}: In Progress (continued)`];
-  syncTaskFile(wb, f, task, status, out);
-  syncIndex(wb, f, out);
+  const taskDoc = syncTaskFile(wb, f, task, status, out);
+  const indexDoc = syncIndex(wb, f, tasksOf(doc.text), out);
+  saveAll(doc, taskDoc, indexDoc);
+  writeMarker(wb, nn, task);
   return out;
 }
 
@@ -369,9 +377,6 @@ function cmdStatus(args) {
     appendHistory(doc, [today(), task, `${old} -> ${next}`, by, opts.reason]);
     out.push(`${task}: ${old} -> ${next}`);
     syncPlan(doc, out, nn);
-    doc.save();
-    if (next === 'In Progress') writeMarker(wb, nn, task);
-    else removeMarker(wb, nn, task);
   } else {
     const i = doc.lines.findIndex((l) => /^- Plan Status:/i.test(l));
     if (i === -1) fail(`TRK-${nn} has no "- Plan Status:" line`);
@@ -381,9 +386,11 @@ function cmdStatus(args) {
     appendHistory(doc, [today(), `P-${nn}`, `${old} -> ${next}`, by, opts.reason]);
     out.push(`P-${nn}: ${old} -> ${next}`);
   }
-  doc.save();
-  if (task) syncTaskFile(wb, f, task, next, out);
-  syncIndex(wb, f, out);
+  const taskDoc = task ? syncTaskFile(wb, f, task, next, out) : null;
+  const indexDoc = syncIndex(wb, f, tasksOf(doc.text), out);
+  saveAll(doc, taskDoc, indexDoc);
+  if (task && next === 'In Progress') writeMarker(wb, nn, task);
+  else if (task) removeMarker(wb, nn, task);
   return out;
 }
 
@@ -393,15 +400,15 @@ function cmdRefresh(args) {
   const doc = new Doc(f.trk);
   const out = [];
   syncPlan(doc, out, f.nn);
-  doc.save();
   const tasks = tasksOf(doc.text);
-  for (const t of tasks) syncTaskFile(wb, f, t.id, t.status, out);
+  const taskDocs = tasks.map((t) => syncTaskFile(wb, f, t.id, t.status, out));
+  const indexDoc = syncIndex(wb, f, tasks, out);
+  saveAll(doc, ...taskDocs, indexDoc);
   for (const name of listDir(path.join(wb, '.baseline', `P-${f.nn}`))) {
     const m = /^(TASK-\d+)\.session$/.exec(name);
     const t = m && tasks.find((x) => x.id === m[1]);
     if (m && (!t || t.status !== 'In Progress') && removeMarker(wb, f.nn, m[1])) out.push(`${m[1]} session marker removed (not In Progress)`);
   }
-  syncIndex(wb, f, out);
   return out.length ? out : [`P-${f.nn}: up to date`];
 }
 
