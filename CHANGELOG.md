@@ -6,7 +6,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ## [Unreleased]
 
-## [1.5.0] - 2026-10-02
+## [1.5.0] - 2026-10-09
 
 ### Added
 
