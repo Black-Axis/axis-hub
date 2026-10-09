@@ -13,6 +13,7 @@ const repo = path.resolve(__dirname, '..', '..');
 const script = path.join(repo, 'plugins', 'foreman', 'scripts', 'wb.js');
 const fixture = path.join(repo, 'examples', 'foreman', 'workbench');
 const TRK = path.join('workbench', 'tracking', 'TRK-01-health-endpoint.md');
+const TASK02 = path.join('workbench', 'subtasks', 'P-01-health-endpoint', 'TASK-02-add-health-tests.md');
 
 function project(withWorkbench = true) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'foreman-wb-'));
@@ -53,7 +54,8 @@ test('status: one call writes the task row, History, and INDEX Progress', () => 
   const dir = project();
   const r = wb(dir, 'status', 'P-01', 'TASK-02', 'In', 'Progress', '--by', 'Main agent', '--reason', '/foreman:run', '--note', 'worker running');
   assert.strictEqual(r.code, 0, r.out);
-  assert.strictEqual(r.out, 'TASK-02: Not Started -> In Progress\nINDEX P-01 Progress: 1/2 Done, TASK-02 In Progress');
+  assert.strictEqual(r.out, 'TASK-02: Not Started -> In Progress\nTASK-02 task file Status: In Progress\nINDEX P-01 Progress: 1/2 Done, TASK-02 In Progress');
+  assert.match(read(dir, TASK02), /^\| Status \| In Progress \|\r?$/m, 'task file Status mirrors TRK');
   const trk = read(dir, TRK);
   assert.match(trk, new RegExp(`\\| Add health route tests \\| In Progress \\| ${today()} \\| worker running \\|`));
   assert.match(trk, new RegExp(`\\| ${today()} \\| TASK-02 \\| Not Started -> In Progress \\| Main agent \\| /foreman:run \\|\\r?\\n\\r?\\n## Activity`), 'History row appended at the end of History');
@@ -214,4 +216,22 @@ test('check: Full tests values in contract and INDEX defaults (#35)', () => {
   const ok = project();
   edit(ok, path.join('workbench', 'contracts', 'CONT-01-health-endpoint.md'), /- Full tests: close/, '- Full tests: each task (also after each task)');
   assert.strictEqual(wb(ok, 'check').code, 0);
+});
+
+// #20: the task file Status row mirrors TRK; refresh adds it to older task files;
+// check reports a mismatch as a finding and a missing row as a note.
+test('task file Status: mirrored, added by refresh, checked', () => {
+  const dir = project();
+  edit(dir, TASK02, /\| Status \| Not Started \|\r?\n/, '');
+  let c = wb(dir, 'check', 'P-01');
+  assert.strictEqual(c.code, 0, c.out);
+  assert.match(c.out, /note: subtasks\/P-01-health-endpoint\/TASK-02-add-health-tests\.md: no Status header row/);
+  assert.strictEqual(wb(dir, 'refresh', 'P-01').out, 'TASK-02 task file Status: Not Started');
+  assert.match(read(dir, TASK02), /\| Field \| Value \|\r?\n\|-------\|-------\|\r?\n\| Status \| Not Started \|\r?\n\| Plan \|/, 'added as the first row');
+  edit(dir, TASK02, /\| Status \| Not Started \|/, '| Status | Done |');
+  c = wb(dir, 'check', 'P-01');
+  assert.strictEqual(c.code, 2);
+  assert.match(c.out, /TASK-02-add-health-tests\.md: Status "Done" but TRK says "Not Started"/);
+  wb(dir, 'refresh', 'P-01');
+  assert.strictEqual(wb(dir, 'check', 'P-01').code, 0);
 });

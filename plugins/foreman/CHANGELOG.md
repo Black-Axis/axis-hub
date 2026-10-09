@@ -16,6 +16,7 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 - Stricter verification in `/foreman:run`: every Required Outcome and Implementation point is marked `Pass` / `Fail` with evidence (file:line, test, command output) and logged in Activity; `/foreman:round` re-checks against it (#21).
 - `foreman-reporter` subagent: `/foreman:report` now delegates the report to it (#22). It reads only the sections the report needs (never task files) and returns the finished report, which the main agent saves without a permission prompt; the feature files stay out of the main session's context.
 - foreman logo: shown at the top of the README and set as the `icon` in `plugin.json` (#48).
+- Task status in each task file (#20): the task file header table starts with a `Status` row, a mirror of the task's status in the tracking file (which stays the source of truth). `wb.js status` writes it in the same call as the tracking row, History, and INDEX, so every command that changes a status (`run`, `round`, `hold`, `resume`, `cancel`, `change`) keeps it in step; `wb.js refresh P-NN` rewrites all of a plan's task file rows and adds the row to older task files. `wb.js check` / `/foreman:doctor` reports a mismatch (fix: `refresh`) and notes older task files without the row, adding it on confirmation. The worker never changes it.
 
 ### Changed
 

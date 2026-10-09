@@ -2,6 +2,7 @@
 
 | Field | Value |
 |-------|-------|
+| Status | Done |
 | Plan | [P-01-health-endpoint](../../plans/P-01-health-endpoint.md) |
 | Contract | [CONT-01-health-endpoint](../../contracts/CONT-01-health-endpoint.md) |
 | Tracking | [TRK-01-health-endpoint](../../tracking/TRK-01-health-endpoint.md) |

@@ -33,6 +33,8 @@ module.exports = {
     assert.ok(t.history.some((h) => h.target === 'TASK-01' && h.change === 'Not Started -> In Progress' && h.by === 'User'));
     assert.ok(t.history.some((h) => h.target === 'P-03' && h.change === 'Not Started -> In Progress'));
     assert.strictEqual(indexRow(p, '03').progress, '0/1 Done, TASK-01 In Progress');
+    const taskFile = 'workbench/subtasks/P-03-note-stats/TASK-01-stats-route.md';
+    assert.match(p.read(taskFile), /^\| Status \| In Progress \|$/m, 'task file Status mirrors TRK');
 
     p.step('worker: edits code with Edit / Write (no decision), workbench/ edits denied');
     assert.strictEqual(guard(p, 'Edit', { file_path: p.path('src/app.js') }, 'worker'), null);
@@ -60,6 +62,7 @@ test('GET /notes/stats counts notes', async () => {
     wbOk(p, 'status', 'P-03', 'TASK-01', 'Done', '--by', 'Main agent', '--reason', 'verified; 0 fix rounds', '--note', 'verified; 0 fix rounds');
     assert.strictEqual(trk(p, '03').planStatus, 'In Progress');
     assert.strictEqual(indexRow(p, '03').progress, '1/1 Done');
+    assert.match(p.read(taskFile), /^\| Status \| Done \|$/m);
     assert.match(wbOk(p, 'overview'), /P-03 note-stats \| .*\| all tasks Done - \/foreman:close P-03/);
     assertClean(p, 'P-03');
 

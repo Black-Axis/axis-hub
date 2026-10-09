@@ -3,7 +3,7 @@
 // agent does not edit status cells or compute counts by hand. No dependencies.
 // Run from the project root (or set CLAUDE_PROJECT_DIR):
 //   node wb.js status P-NN [TASK-TT] <status> --by <User|Main agent> --reason "<text>" [--note "<text>"]  (no --note: note cleared)
-//   node wb.js refresh P-NN        recompute derived Plan Status, INDEX Progress and Contract Status
+//   node wb.js refresh P-NN        recompute derived Plan Status, task file Status rows, INDEX Progress and Contract Status
 //   node wb.js ready [P-NN]        tasks that can run now
 //   node wb.js chain P-NN          Not Started tasks in run order (/foreman:run P-NN all), then blocked ones
 //   node wb.js overview            one line per feature and open interview
@@ -181,6 +181,24 @@ function syncPlan(doc, out, nn) {
   return next;
 }
 
+// Mirrors a task's TRK status into the `| Status |` row of its task file header
+// table, adding the row (first, under the separator) to older task files. The TRK
+// `Tasks` table stays the source of truth. No task file: nothing to mirror.
+function syncTaskFile(wb, f, task, status, out) {
+  const file = findFile(path.join(wb, 'subtasks', `P-${f.nn}-${f.slug}`), `${task}-`);
+  if (!file) return;
+  const doc = new Doc(file);
+  const head = doc.lines.findIndex((l) => /^\|\s*Field\s*\|\s*Value\s*\|/i.test(l));
+  if (head === -1) return;
+  let end = head + 2;
+  while (end < doc.lines.length && /^\|/.test(doc.lines[end])) end++;
+  const i = doc.lines.slice(head + 2, end).findIndex((l) => /^\|\s*Status\s*\|/i.test(l));
+  if (i !== -1) doc.setLine(head + 2 + i, row(['Status', status]));
+  else doc.insertAfter(head + 1, row(['Status', status]));
+  if (doc.changed) out.push(`${task} task file Status: ${status}`);
+  doc.save();
+}
+
 // Updates the INDEX features row of P-NN: Progress and Contract Status.
 function syncIndex(wb, f, out) {
   const doc = new Doc(path.join(wb, 'INDEX.md'));
@@ -253,6 +271,7 @@ function cmdStatus(args) {
     out.push(`P-${nn}: ${old} -> ${next}`);
   }
   doc.save();
+  if (task) syncTaskFile(wb, f, task, next, out);
   syncIndex(wb, f, out);
   return out;
 }
@@ -264,6 +283,7 @@ function cmdRefresh(args) {
   const out = [];
   syncPlan(doc, out, f.nn);
   doc.save();
+  for (const t of tasksOf(doc.text)) syncTaskFile(wb, f, t.id, t.status, out);
   syncIndex(wb, f, out);
   return out.length ? out : [`P-${f.nn}: up to date`];
 }

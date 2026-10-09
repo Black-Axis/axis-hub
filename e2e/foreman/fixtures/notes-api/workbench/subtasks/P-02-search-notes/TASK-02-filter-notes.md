@@ -2,6 +2,7 @@
 
 | Field | Value |
 |-------|-------|
+| Status | Not Started |
 | Plan | [P-02-search-notes](../../plans/P-02-search-notes.md) |
 | Contract | [CONT-02-search-notes](../../contracts/CONT-02-search-notes.md) |
 | Tracking | [TRK-02-search-notes](../../tracking/TRK-02-search-notes.md) |

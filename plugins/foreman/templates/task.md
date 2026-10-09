@@ -2,6 +2,7 @@
 
 | Field | Value |
 |-------|-------|
+| Status | Not Started |
 | Plan | [P-{{NN}}-{{slug}}](../../plans/P-{{NN}}-{{slug}}.md) |
 | Contract | [CONT-{{NN}}-{{slug}}](../../contracts/CONT-{{NN}}-{{slug}}.md) |
 | Tracking | [TRK-{{NN}}-{{slug}}](../../tracking/TRK-{{NN}}-{{slug}}.md) |

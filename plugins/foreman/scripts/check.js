@@ -202,7 +202,9 @@ function checkFeature(wb, nn, slug, f, indexRow, head, add, notes) {
     if (fileTasks[id]) add(rel, `duplicate task number ${id}`);
     const text = readText(path.join(dir, name)) || '';
     const h = /^# TASK-\d+:\s*(.+)$/m.exec(text);
-    fileTasks[id] = { rel, title: h ? h[1].trim() : '' };
+    const st = /^\|\s*Status\s*\|\s*([^|]*?)\s*\|/m.exec(text);
+    fileTasks[id] = { rel, title: h ? h[1].trim() : '', status: st ? st[1] : null };
+    if (!st) notes.push(`${rel}: no Status header row (task from before 1.5.0; doctor can add it)`);
     for (const s of TASK_SECTIONS) {
       const body = section(text, s);
       if (body === null) add(rel, `missing section "${s}"`);
@@ -225,6 +227,9 @@ function checkFeature(wb, nn, slug, f, indexRow, head, add, notes) {
     if (f.P && !breakdown[id]) add(`plans/P-${nn}-${f.P}.md`, `${id} is missing from the Task Breakdown`);
     const titles = [fileTasks[id] && fileTasks[id].title, row && row.title, breakdown[id] && breakdown[id].title].filter((x) => x !== undefined);
     if (new Set(titles).size > 1) add(trkRel, `${id} title differs: ${titles.map((x) => `"${x}"`).join(' / ')} (task file / TRK / plan)`);
+    if (row && fileTasks[id] && fileTasks[id].status !== null && fileTasks[id].status !== row.status) {
+      add(fileTasks[id].rel, `Status "${fileTasks[id].status}" but TRK says "${row.status}" (fix: wb.js refresh P-${nn})`);
+    }
     for (const d of (breakdown[id] && breakdown[id].deps) || []) {
       if (!ids.has(d)) add(`plans/P-${nn}-${f.P}.md`, `${id} depends on unknown ${d}`);
     }
