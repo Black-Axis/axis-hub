@@ -14,14 +14,15 @@ const { segments, check } = require('../.claude/hooks/guard-git.js');
 const repo = path.resolve(__dirname, '..');
 const hook = path.join(repo, '.claude', 'hooks', 'guard-git.js');
 
-// Temporary git repo on `main` with one commit, a tag, a GitHub remote, and a non-GitHub remote.
-function tempRepo() {
+// Temporary git repo on `main` with one commit, a tag, a GitHub remote (axis-hub
+// unless `origin` is given), and a non-GitHub remote.
+function tempRepo(origin = 'https://github.com/Black-Axis/axis-hub.git') {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'guard-'));
   const git = (...args) => execFileSync('git', args, { cwd: dir, stdio: 'ignore' });
   git('init', '-q', '-b', 'main');
   git('-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-q', '--allow-empty', '-m', 'init');
   git('tag', 'v1.0.0');
-  git('remote', 'add', 'origin', 'https://github.com/Black-Axis/axis-hub.git');
+  if (origin) git('remote', 'add', 'origin', origin);
   git('remote', 'add', 'backup', 'https://example.com/backup.git');
   return dir;
 }
@@ -41,13 +42,23 @@ test('commit refused on main, allowed on a named branch or detached HEAD', () =>
   assert.strictEqual(guard.checkCommit(null), null);
 });
 
-test('push to main refused on GitHub only; tags allowed', () => {
+test('axis-hub URLs', () => {
+  for (const ok of ['https://github.com/Black-Axis/axis-hub.git', 'https://github.com/black-axis/axis-hub', 'git@github.com:Black-Axis/axis-hub.git', 'ssh://git@github.com/Black-Axis/axis-hub.git\n']) {
+    assert.ok(guard.isAxisHubUrl(ok), ok);
+  }
+  for (const bad of ['https://github.com/someone/axis-hub.git', 'https://github.com/Black-Axis/axis-hub-x.git', 'https://example.com/Black-Axis/axis-hub.git', '', null]) {
+    assert.ok(!guard.isAxisHubUrl(bad), String(bad));
+  }
+});
+
+test('push to main refused on axis-hub only; tags allowed', () => {
   const gh = 'git@github.com:Black-Axis/axis-hub.git';
   assert.strictEqual(guard.checkPush(gh, [{ remoteRef: 'refs/heads/main', localSha: 'abc' }]).length, 1);
   assert.strictEqual(guard.checkPush(gh, [{ remoteRef: 'refs/heads/feat/x', localSha: 'abc' }]).length, 0);
   assert.strictEqual(guard.checkPush(gh, [{ remoteRef: 'refs/heads/wip', localSha: 'abc' }]).length, 1);
   assert.strictEqual(guard.checkPush(gh, [{ remoteRef: 'refs/tags/v1.0.0', localSha: 'abc' }]).length, 0);
   assert.strictEqual(guard.checkPush('https://example.com/x.git', [{ remoteRef: 'refs/heads/main', localSha: 'abc' }]).length, 0);
+  assert.strictEqual(guard.checkPush('https://github.com/someone/other.git', [{ remoteRef: 'refs/heads/main', localSha: 'abc' }]).length, 0, 'other GitHub repository');
 });
 
 test('command splitting honors quotes and operators', () => {
@@ -139,4 +150,18 @@ test('Claude hook: git -C checks that repository', () => {
   assert.strictEqual(check(`git -C "${onMain}" switch -c fix/z && git commit -m y`, onBranch).length, 0, 'own repo untouched by the other');
   const rel = path.relative(path.dirname(onBranch), onBranch);
   assert.strictEqual(check(`git -C .. -C ${rel} commit -m y`, onMain).length, 0, 'relative -C chain');
+});
+
+test('Claude hook: other repositories are not checked (#86)', () => {
+  const axisHub = tempRepo();
+  for (const other of [tempRepo('https://github.com/someone/other.git'), tempRepo(null)]) {
+    for (const cmd of ['git commit -m x', 'git checkout -q -b other', 'git switch -c wip && git commit -m y', 'git branch wip', 'git push origin main', 'git push']) {
+      assert.strictEqual(check(cmd, other).length, 0, cmd);
+    }
+    assert.ok(check('git push https://github.com/Black-Axis/axis-hub.git main', other).length, 'push to axis-hub main from another repository');
+    assert.match(check('gh pr merge 1', other).join(' '), /user reviews and merges/, 'merge rule applies everywhere');
+    assert.ok(check(`git -C "${axisHub}" commit -m y`, other).length, 'git -C axis-hub on main');
+    assert.ok(check(`git -C "${axisHub}" switch -c other`, other).length, 'git -C axis-hub bad branch name');
+    assert.strictEqual(check(`git -C "${other}" commit -m y`, axisHub).length, 0, 'git -C other repository from axis-hub');
+  }
 });

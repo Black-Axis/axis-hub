@@ -2,8 +2,11 @@
 // PreToolUse hook: stops Claude from committing on main, pushing to main on
 // GitHub, creating branches not named <type>/<short-name>, or merging pull
 // requests (`gh pr merge`, merge calls through `gh api`). The branch rules live in
-// .githooks/guard.js (shared with the git hooks). Always exits 0; a refusal is
-// returned as a "deny" decision with the reason.
+// .githooks/guard.js (shared with the git hooks) and apply only to axis-hub:
+// commits and branches in a repository with a remote pointing to
+// Black-Axis/axis-hub, pushes to that URL. Other repositories are not checked;
+// the merge rule applies everywhere. Always exits 0; a refusal is returned as a
+// "deny" decision with the reason.
 'use strict';
 
 const { execFileSync } = require('child_process');
@@ -109,6 +112,12 @@ function git(cwd, args) {
   }
 }
 
+// True when a remote of the repository at `cwd` points to Black-Axis/axis-hub.
+function isAxisHubRepo(cwd) {
+  const remotes = git(cwd, ['remote', '-v']);
+  return !!remotes && remotes.split(/\r?\n/).some((line) => guard.isAxisHubUrl((line.split(/\s+/)[1]) || ''));
+}
+
 function positionals(args) {
   return args.filter((a) => !a.startsWith('-'));
 }
@@ -129,7 +138,7 @@ function checkPushCall(args, branch, cwd, newTags = new Set()) {
   const pos = positionals(args);
   const remote = pos[0] || (branch && git(cwd, ['config', `branch.${branch}.remote`])) || 'origin';
   const url = /[:/]/.test(remote) ? remote : git(cwd, ['remote', 'get-url', remote]);
-  if (!guard.isGitHubUrl(url)) return [];
+  if (!guard.isAxisHubUrl(url)) return [];
 
   if (args.includes('--all') || args.includes('--mirror') || args.includes('--branches')) {
     return guard.checkPush(url, [{ remoteRef: `refs/heads/${guard.PROTECTED}`, localSha: '1' }]);
@@ -158,6 +167,7 @@ function checkPushCall(args, branch, cwd, newTags = new Set()) {
 // Branches are tracked per repository, so `git -C <path>` is checked against that repository.
 function check(command, cwd) {
   const branches = new Map();
+  const axisHub = new Map();
   const newTags = new Set();
   for (const tokens of segments(command)) {
     const ghError = checkGh(tokens);
@@ -167,18 +177,23 @@ function check(command, cwd) {
     const { sub, args } = call;
     const dir = call.cwd;
     if (!branches.has(dir)) branches.set(dir, guard.currentBranch(dir));
+    if (!axisHub.has(dir)) axisHub.set(dir, isAxisHubRepo(dir));
     let branch = branches.get(dir);
     let errors = [];
+    // Branch and commit rules: axis-hub only. Pushes are checked by their target URL.
+    const ruled = axisHub.get(dir);
     if (sub === 'switch' || sub === 'checkout') {
       const createAt = args.findIndex((a) => ['-c', '-C', '-b', '-B', '--create', '--force-create'].includes(a));
       if (createAt !== -1 && args[createAt + 1]) {
-        const err = guard.checkBranchName(args[createAt + 1]);
+        const err = ruled && guard.checkBranchName(args[createAt + 1]);
         if (err) errors = [err];
         else branch = args[createAt + 1];
       } else {
         const target = positionals(args)[0];
-        if (target && !args.includes('--') && (target === guard.PROTECTED || guard.BRANCH_PATTERN.test(target))) branch = target;
+        if (target && !args.includes('--') && (!ruled || target === guard.PROTECTED || guard.BRANCH_PATTERN.test(target))) branch = target;
       }
+    } else if (!ruled && sub !== 'tag' && sub !== 'push') {
+      // another repository: branch names and commits are not checked
     } else if (sub === 'branch') {
       const renameAt = args.findIndex((a) => ['-m', '-M', '--move'].includes(a));
       const pos = positionals(args);

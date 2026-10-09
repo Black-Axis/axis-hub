@@ -21,6 +21,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 - README: current plugin version (a test now keeps it in step with the manifests) and a version-neutral pinned-tag example; `SECURITY.md` no longer names a fixed version (#47).
 - `CLAUDE.md`: removed a second copy of the file's content, added by a scripted edit in #64; a new test (`tests/docs.test.js`) fails when a Markdown file repeats a `## ` heading.
 - Repository tooling (#40): the Claude Code hook denies merging pull requests (`gh pr merge`, merge calls through `gh api`) and checks `git -C <path>` against that repository; the issue forms set Type and assignee; the session start cleanup skips the fetch on `main` with no other local branch, and the fetch stops after 10 seconds.
+- Repository tooling (#86): the branch rules (no commits or pushes on `main`, `<type>/<short-name>` branch names) apply only to axis-hub - commits and branches in a repository with a remote pointing to `Black-Axis/axis-hub`, pushes to that URL. Other repositories, including other GitHub repositories, are no longer checked; the pull request merge rule still applies everywhere.
 - Docs (#34): CONTRIBUTING releases with an annotated tag and lists every test suite; CodeQL notes no longer say the repository is private; `CLAUDE.md` lifecycle includes `init`. A new test fails when `SECURITY.md` names a fixed version.
 
 ## [1.4.0] - 2026-10-02
