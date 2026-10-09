@@ -22,6 +22,9 @@ module.exports = {
       ['main', 'Bash', { command: 'git status && git push' }, null],
       ['main', 'Bash', { command: 'git diff > out.txt' }, null],
       ['main', 'Bash', { command: wbJs }, 'allow'],
+      // native plugin path: backslashes on Windows, as an installed plugin's ${CLAUDE_PLUGIN_ROOT} (#93)
+      ['main', 'Bash', { command: `node "${path.join(p.pluginRoot, 'scripts', 'wb.js')}" ready` }, 'allow'],
+      ['main', 'PowerShell', { command: `node "${path.join(p.pluginRoot, 'scripts', 'wb.js')}" ready` }, 'allow'],
       ['main', 'Bash', { command: 'git push origin main' }, null],
       ['worker', 'Edit', { file_path: p.path('src/notes.js') }, null],
       ['worker', 'Edit', { file_path: trk }, 'deny'],
