@@ -48,8 +48,10 @@ function check(wb, only) {
   const indexText = readText(path.join(wb, 'INDEX.md')) || '';
 
   // Unresolved merge conflicts (parallel branches editing INDEX or the same TRK file).
+  // With P-NN: INDEX and that feature's files only (<folder>/<PREFIX>-NN-..., subtasks/P-NN-<slug>/...).
+  const own = only && new RegExp(`^(P|CONT|TRK|DOC|INT|REP)-${only}-`);
   for (const rel of markdownFiles(wb)) {
-    if (only && rel !== 'INDEX.md' && !rel.includes(`-${only}-`)) continue;
+    if (only && rel !== 'INDEX.md' && !own.test(rel.split('/')[1] || '')) continue;
     if (/^(<{7}|>{7})( |$)/m.test(readText(path.join(wb, rel)) || '')) add(rel, 'unresolved merge conflict (<<<<<<< / >>>>>>> lines) - resolve it, then run /foreman:doctor');
   }
 

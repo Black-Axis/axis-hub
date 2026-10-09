@@ -92,6 +92,15 @@ module.exports = {
     const dup = check(p).findings;
     assert.ok(dup.some((f) => /duplicate feature number 05 \(fix: wb\.js renumber P-05 <slug>/.test(f)), dup.join('\n'));
 
+    p.step('check P-NN reports a conflict only under its own feature (#85)');
+    const taskRel = 'workbench/subtasks/P-05-tags/TASK-01-stats-route.md';
+    const taskText = p.read(taskRel);
+    p.write(taskRel, `${taskText}\n<<<<<<< HEAD\nmine\n=======\ntheirs\n>>>>>>> bob\n`);
+    const conflict = /^subtasks\/P-05-tags\/TASK-01-stats-route\.md: unresolved merge conflict/;
+    assert.ok(!check(p, 'P-01').findings.some((f) => conflict.test(f)), 'TASK-01 of P-05 is not a P-01 file');
+    assert.ok(check(p, 'P-05').findings.some((f) => conflict.test(f)));
+    p.write(taskRel, taskText);
+
     p.step('renumber refuses a used number and an unknown feature');
     assert.match(wb(p, 'renumber', 'P-05', 'tags', '03').out, /^ERROR: number 03 is already used/);
     assert.match(wb(p, 'renumber', 'P-05', 'nope').out, /^ERROR: no files of feature 05 "nope"/);
