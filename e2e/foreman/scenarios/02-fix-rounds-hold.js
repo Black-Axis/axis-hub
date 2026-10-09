@@ -1,5 +1,7 @@
 // Fix rounds up to the limit -> Hold -> resume -> run continues the task; round on a Done task; cancel; plan hold.
-const { feature, wb, wbOk, check, assertClean, trk, task, indexRow, appendRow, activity, today } = require('../lib');
+const fs = require('fs');
+const path = require('path');
+const { feature, wb, wbOk, check, assertClean, trk, task, indexRow, appendRow, activity, today, guard } = require('../lib');
 
 module.exports = {
   name: 'fix rounds, Hold, resume, round on a Done task, cancel, plan hold',
@@ -16,6 +18,12 @@ module.exports = {
     const same = wb(p, 'status', 'P-02', 'TASK-02', 'In Progress', '--by', 'Main agent', '--reason', 'x');
     assert.strictEqual(same.code, 1);
     assert.match(same.out, /^ERROR: TASK-02 is already In Progress/);
+
+    p.step('verification failed after the worker ran: the main agent reads fix-rounds.md now, without a prompt (#105)');
+    const fixRounds = path.join(p.pluginRoot, 'reference', 'fix-rounds.md');
+    assert.match(fs.readFileSync(path.join(p.pluginRoot, 'commands', 'run.md'), 'utf8'), /Read `\$\{CLAUDE_PLUGIN_ROOT\}\/reference\/fix-rounds\.md` now \(only when verification failed\)/);
+    assert.match(fs.readFileSync(fixRounds, 'utf8'), /^## Fix rounds\r?$/m);
+    assert.strictEqual(guard(p, 'Read', { file_path: fixRounds }), 'allow');
 
     p.step(`fix rounds 1..${limit} (INDEX Fix rounds): History and Activity rows by hand`);
     for (let n = 1; n <= limit; n++) {
