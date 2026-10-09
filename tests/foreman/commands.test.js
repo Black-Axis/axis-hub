@@ -384,3 +384,16 @@ test('worker model: setting, task override, passed to the Agent tool', () => {
   assert.match(settings, /\[worker-model sonnet\|opus\|haiku\]/);
   assert.match(fs.readFileSync(path.join(plugin, 'reference', 'setup.md'), 'utf8'), /^\| Worker model \(`sonnet` \/ `opus` \/ `haiku`\) \| Use the default \|/m);
 });
+
+// #102: command descriptions are in the context of every session: one short sentence each.
+test('command descriptions are short', () => {
+  let total = 0;
+  for (const file of fs.readdirSync(commandsDir).filter((f) => f.endsWith('.md'))) {
+    const d = /^description: (.+)$/m.exec(fs.readFileSync(path.join(commandsDir, file), 'utf8'))[1].trim();
+    assert.ok(d.length <= 70, `${file}: description has ${d.length} characters (max 70)`);
+    // An unquoted ": " or " #" breaks the YAML frontmatter, and Claude Code then drops every field.
+    assert.ok(/^["']/.test(d) || !/: | #/.test(d), `${file}: quote the description or avoid ": " and " #"`);
+    total += d.length;
+  }
+  assert.ok(total <= 1100, `command descriptions total ${total} characters (max 1100)`);
+});

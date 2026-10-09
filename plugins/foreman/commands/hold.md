@@ -1,5 +1,5 @@
 ---
-description: Put a task or a whole plan on hold, with a reason
+description: Put a task or plan on hold, with a reason
 argument-hint: <P-NN> [TASK-TT] <reason>
 allowed-tools: Read, Glob, Edit(workbench/**), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), AskUserQuestion
 ---

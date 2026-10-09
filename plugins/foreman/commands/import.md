@@ -1,5 +1,5 @@
 ---
-description: Import plans, tasks, and progress from another workflow's local files into workbench/ (originals are never changed)
+description: Import plans, tasks, and progress from another workflow's files
 argument-hint: <path(s) to old workflow files or folders>
 allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), PowerShell(git log:*), Bash(tf history:*), PowerShell(tf history:*), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), AskUserQuestion
 ---

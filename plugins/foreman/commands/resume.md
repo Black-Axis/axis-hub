@@ -1,5 +1,5 @@
 ---
-description: Resume a task or plan that is on hold
+description: Resume a task or plan on hold
 argument-hint: <P-NN> [TASK-TT] [note]
 allowed-tools: Read, Glob, Edit(workbench/**), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*)
 ---

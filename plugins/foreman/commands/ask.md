@@ -1,5 +1,5 @@
 ---
-description: Describe what you need in plain words and get the right foreman command for it, ready to run
+description: Describe a need in plain words; get the right foreman command
 argument-hint: "[what you want to do]"
 allowed-tools: Read, Glob, Grep, AskUserQuestion, Skill
 ---

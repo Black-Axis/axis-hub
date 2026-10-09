@@ -1,5 +1,5 @@
 ---
-description: Draw a Mermaid map of the features and their files (interview, plan, contract, tracking, tasks, doc, reports) to workbench/maps/
+description: Draw a Mermaid map of features and their files
 argument-hint: "[P-NN]"
 allowed-tools: Read, Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*)
 ---

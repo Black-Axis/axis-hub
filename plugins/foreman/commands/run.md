@@ -1,5 +1,5 @@
 ---
-description: Delegate one task (or all of a plan's tasks, one after another) to the Sonnet worker subagent, verify each result, then update tracking and docs
+description: Run a task (or all of a plan's) via the worker, verify, and track it
 argument-hint: "[P-NN] [TASK-TT | all]"
 allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git status:*), PowerShell(git status:*), Bash(git diff:*), PowerShell(git diff:*), Bash(git ls-files:*), PowerShell(git ls-files:*), Bash(git log:*), PowerShell(git log:*), Bash(git stash create:*), PowerShell(git stash create:*), Bash(tf status:*), PowerShell(tf status:*), Bash(tf diff:*), PowerShell(tf diff:*), Bash(tf history:*), PowerShell(tf history:*), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), Agent, SendMessage, AskUserQuestion
 ---

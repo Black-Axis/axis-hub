@@ -1,5 +1,5 @@
 ---
-description: Deep interview as a tech lead - grill the user on every part of a feature, challenge weak answers, agree the files to change, then create plan, contract, tracking, and subtasks
+description: Tech-lead interview on a feature idea, then create its plan and tasks
 argument-hint: "[feature idea | INT-NN]"
 allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git log:*), PowerShell(git log:*), Bash(tf history:*), PowerShell(tf history:*), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), AskUserQuestion
 ---

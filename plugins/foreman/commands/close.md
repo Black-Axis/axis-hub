@@ -1,5 +1,5 @@
 ---
-description: Close a feature - verify every contract acceptance criterion, run full tests, finalize the doc, mark the plan Done
+description: Verify acceptance criteria and full tests, then close a feature
 argument-hint: <P-NN>
 allowed-tools: Read, Glob, Grep, Edit(workbench/**), Write(workbench/**), Bash(git status:*), PowerShell(git status:*), Bash(git diff:*), PowerShell(git diff:*), Bash(git ls-files:*), PowerShell(git ls-files:*), Bash(tf status:*), PowerShell(tf status:*), Bash(git log:*), PowerShell(git log:*), Bash(tf diff:*), PowerShell(tf diff:*), Bash(tf history:*), PowerShell(tf history:*), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), AskUserQuestion
 ---

@@ -1,5 +1,5 @@
 ---
-description: Cancel a task or a whole plan, with a reason
+description: Cancel a task or plan, with a reason
 argument-hint: <P-NN> [TASK-TT] <reason>
 allowed-tools: Read, Glob, Edit(workbench/**), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), AskUserQuestion
 ---

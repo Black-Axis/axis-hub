@@ -20,6 +20,7 @@ Details: [foreman changelog](plugins/foreman/CHANGELOG.md).
 
 - Shared rules split into a core and topic files: fewer tokens per command (#103)
 - `/foreman:status` and `/foreman:map` load no rules file (#103)
+- Shorter command descriptions: about half the context they take in every session (#102)
 
 ### Marketplace
 
