@@ -9,6 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```
+node scripts/check-all.js [test files]       # all checks below (tests incl. e2e, validations): one line each + failures only
 claude plugin validate .                     # validate marketplace.json
 claude plugin validate plugins/<name>        # validate a plugin's plugin.json
 claude --plugin-dir plugins/<name>           # load a plugin without installing (restart to pick up edits)
