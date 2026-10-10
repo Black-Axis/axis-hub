@@ -11,12 +11,25 @@ const claude = path.resolve(__dirname, '..', '.claude');
 const list = (dir) => (fs.existsSync(dir) ? fs.readdirSync(dir) : []);
 
 // Returns { key: value } of the frontmatter; fails on lines a YAML parser would misread.
+// A key with an indented block below (`hooks:`) gets the block's text as its value.
 function frontmatter(file) {
   const text = fs.readFileSync(file, 'utf8');
   const m = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/.exec(text);
   assert.ok(m, `${file}: no frontmatter`);
   const fields = {};
+  let block = null;
   for (const line of m[1].split(/\r?\n/)) {
+    if (block && /^ {2}/.test(line)) {
+      fields[block] += `${line}\n`;
+      continue;
+    }
+    block = null;
+    const key = /^([A-Za-z-]+):$/.exec(line);
+    if (key) {
+      block = key[1];
+      fields[block] = '';
+      continue;
+    }
     const kv = /^([A-Za-z-]+): (.*)$/.exec(line);
     assert.ok(kv, `${file}: unexpected frontmatter line "${line}"`);
     let value = kv[2];
@@ -71,6 +84,23 @@ test('command-only subagents: Bash only, no CLAUDE.md, short description', () =>
     assert.strictEqual(fm.omitClaudeMd, 'true', `${name}: omitClaudeMd`);
     assert.strictEqual(fm.effort, 'low', `${name}: effort`);
     assert.ok(fm.description.length <= 130, `${name}: description is ${fm.description.length} characters`);
+  }
+});
+
+test('axis-e2e-writer: Sonnet, e2e/CLAUDE.md only, guarded by its hook', () => {
+  const file = path.join(claude, 'agents', 'axis-e2e-writer.md');
+  const fm = frontmatter(file);
+  assert.strictEqual(fm.model, 'sonnet');
+  assert.strictEqual(fm.omitClaudeMd, 'true');
+  assert.strictEqual(fm.effort, 'medium');
+  assert.strictEqual(fm.tools, 'Read, Grep, Edit, Write, Bash', 'tools: no Glob, Grep finds files');
+  assert.strictEqual(fm.disallowedTools, 'mcp__*', 'no MCP tools');
+  assert.ok(fm.description.length <= 130, `description is ${fm.description.length} characters`);
+  assert.match(fm.hooks, /PreToolUse:\n\s+- matcher: "Edit\|Write\|Bash"\n[\s\S]*\.claude\/hooks\/e2e-writer-guard\.js/);
+  assert.ok(fs.existsSync(path.join(claude, 'hooks', 'e2e-writer-guard.js')), 'hook script exists');
+  const text = fs.readFileSync(file, 'utf8');
+  for (const s of ['Read `e2e/CLAUDE.md` first', 'never read `e2e/lib/harness.js` or `e2e/<plugin>/lib.js` whole', 'git diff -- <changed paths>', 'read only the one scenario','Edit only files under `e2e/`', 'no `cd`, no chaining', 'e2e: pass', 'PLUGIN BUG']) {
+    assert.ok(text.includes(s), `axis-e2e-writer: ${s}`);
   }
 });
 

@@ -26,7 +26,7 @@ Marketplace-level test inside Claude Code: `/plugin marketplace add <repo path>`
 
 ## e2e scenarios
 
-`e2e/` plays each plugin's flows on a sample project without a model (`node e2e/run.js`; also part of `node --test` and CI). **Anything added to or changed in a plugin - command, agent, skill, hook script, `wb.js` subcommand, template, check, hook decision - gets an e2e scenario or scenario step in the same PR**; a coverage test fails for any component no scenario `covers`. Details: [e2e/CLAUDE.md](e2e/CLAUDE.md).
+`e2e/` plays each plugin's flows on a sample project without a model (`node e2e/run.js`; also part of `node --test` and CI). **Anything added to or changed in a plugin - command, agent, skill, hook script, `wb.js` subcommand, template, check, hook decision - gets an e2e scenario or scenario step in the same PR**; a coverage test fails for any component no scenario `covers`. Details: [e2e/CLAUDE.md](e2e/CLAUDE.md). Give the plugin, the changed file paths, and a one-line description (no pasted diff) to the `axis-e2e-writer` subagent: it writes the steps (edits only `e2e/`, guarded by `.claude/hooks/e2e-writer-guard.js`), runs them, and returns the changed files and a pass/fail line.
 
 ## Branches
 

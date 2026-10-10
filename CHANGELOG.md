@@ -17,6 +17,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 - `axis-issue-creator` subagent: creates confirmed issues and sets Priority and Effort (#131)
 - `/axis-open-pr` skill: proposes the commit and pull request with all their values and asks first (#119)
 - `axis-pr-opener` subagent: commits, pushes, and opens confirmed pull requests, then checks the linked issues (#133)
+- `axis-e2e-writer` subagent: writes and runs the e2e scenario steps for a plugin change, edits only `e2e/` (#111)
 
 #### Changed
 
