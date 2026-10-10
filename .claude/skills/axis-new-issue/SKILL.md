@@ -33,7 +33,7 @@ Name any likely duplicate. Then ask with `AskUserQuestion` (keeps this turn, so 
 
 ## 3. Create through the subagent
 
-Hand the confirmed issues to the `axis-issue-creator` subagent in one call. Prompt: per issue, `Title:`, `Labels:`, `Type:`, `Milestone:`, `Priority:`, `Effort:`, optional `Start:` / `Target:`, then `Body:` followed by the full body. Nothing else: its instructions are in its own file. It creates (assignee `krypton225`), sets the fields with `node .github/scripts/issue-fields.js`, and returns one line per issue. `gh issue create` asks the user for permission there: that is the final check.
+Hand the confirmed issues to the `axis-issue-creator` subagent in one call. Prompt: per issue, `Title:`, `Labels:`, `Type:`, `Assignee:`, `Milestone:`, `Priority:`, `Effort:`, optional `Start:` / `Target:`, then `Body:` followed by the full body. Nothing else: how it creates them is in its own file. Its `gh issue create` asks the user for permission: the final check.
 
 ## 4. Report
 

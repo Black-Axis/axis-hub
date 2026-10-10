@@ -50,6 +50,20 @@ test('axis-test-runner runs the allowed commands bare, never after a cd', () => 
   assert.match(text, /never prefix it with `cd`, never chain commands/);
 });
 
+test('axis-open-pr proposes and asks; axis-pr-opener commits, pushes, opens', () => {
+  const skill = fs.readFileSync(path.join(claude, 'skills', 'axis-open-pr', 'SKILL.md'), 'utf8');
+  for (const s of ['AskUserQuestion', 'Never mention GitLab', '`axis-pr-opener` subagent', 'never `documentation`', 'krypton225', 'never `gh pr merge`', '`Co-Authored-By` trailer of the model running this session', 'Never credit a model that only ran commands']) {
+    assert.ok(skill.includes(s), `axis-open-pr: ${s}`);
+  }
+  assert.ok(!/gh pr create --|git push -/.test(skill), 'axis-open-pr leaves committing and opening to the subagent');
+  const agent = fs.readFileSync(path.join(claude, 'agents', 'axis-pr-opener.md'), 'utf8');
+  for (const s of ['--assignee <assignee>', '--milestone', 'closingIssuesReferences', 'never change, add to, or guess', 'no `cd`, no chaining']) {
+    assert.ok(agent.includes(s), `axis-pr-opener: ${s}`);
+  }
+  // The texts come final from the main session: the subagent adds no trailer or footer of its own model.
+  assert.ok(!/Co-Authored-By|Generated with/.test(agent), 'axis-pr-opener adds no attribution');
+});
+
 test('skills: axis- names matching the folder, user-invoked only', () => {
   for (const d of list(path.join(claude, 'skills'))) {
     const fm = frontmatter(path.join(claude, 'skills', d, 'SKILL.md'));
@@ -77,7 +91,7 @@ test('axis-new-issue proposes and asks; axis-issue-creator creates', () => {
   }
   assert.ok(!/gh issue create --/.test(skill), 'axis-new-issue leaves creating to the subagent');
   const agent = fs.readFileSync(path.join(claude, 'agents', 'axis-issue-creator.md'), 'utf8');
-  for (const s of ['--assignee krypton225', '--milestone', 'node .github/scripts/issue-fields.js', 'never change, add, or guess', 'no `cd`, no chaining']) {
+  for (const s of ['--assignee <assignee>', '--milestone', 'node .github/scripts/issue-fields.js', 'never change, add, or guess', 'no `cd`, no chaining']) {
     assert.ok(agent.includes(s), `axis-issue-creator: ${s}`);
   }
 });
