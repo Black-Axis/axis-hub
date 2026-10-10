@@ -38,10 +38,10 @@ test('agents: axis- names matching the file, description, model, tools', () => {
   }
 });
 
-test('settings allow only the check scripts, never a broad tool', () => {
+test('settings allow only the check and issue fields scripts, never a broad tool or gh issue create', () => {
   const allow = JSON.parse(fs.readFileSync(path.join(claude, 'settings.json'), 'utf8')).permissions.allow;
   for (const rule of allow) {
-    assert.match(rule, /^(Bash|PowerShell)\(node (scripts\/check-all\.js|e2e\/run\.js)(:\*)?\)$/, rule);
+    assert.match(rule, /^(Bash|PowerShell)\(node (scripts\/check-all\.js|e2e\/run\.js|\.github\/scripts\/issue-fields\.js)(:\*)?\)$/, rule);
   }
 });
 
@@ -57,5 +57,27 @@ test('skills: axis- names matching the folder, user-invoked only', () => {
     assert.strictEqual(fm.name, d, `${d}: name`);
     assert.ok(fm.description, `${d}: description`);
     assert.strictEqual(fm['disable-model-invocation'], 'true', `${d}: disable-model-invocation keeps it out of the context`);
+  }
+});
+
+test('skills: allowed-tools only scoped command rules, never a whole tool', () => {
+  for (const d of list(path.join(claude, 'skills'))) {
+    const tools = frontmatter(path.join(claude, 'skills', d, 'SKILL.md'))['allowed-tools'];
+    if (!tools) continue;
+    for (const rule of tools.split(/,\s*/)) {
+      assert.match(rule, /^(Bash|PowerShell)\([a-z][^()*]*:\*\)$|^(Bash|PowerShell)\([a-z][^()*]*\)$/, `${d}: "${rule}" is too broad`);
+    }
+  }
+});
+
+test('axis-new-issue proposes and asks; axis-issue-creator creates', () => {
+  const skill = fs.readFileSync(path.join(claude, 'skills', 'axis-new-issue', 'SKILL.md'), 'utf8');
+  for (const s of ['AskUserQuestion', 'Never mention GitLab', '`axis-issue-creator` subagent', 'krypton225']) {
+    assert.ok(skill.includes(s), `axis-new-issue: ${s}`);
+  }
+  assert.ok(!/gh issue create --/.test(skill), 'axis-new-issue leaves creating to the subagent');
+  const agent = fs.readFileSync(path.join(claude, 'agents', 'axis-issue-creator.md'), 'utf8');
+  for (const s of ['--assignee krypton225', '--milestone', 'node .github/scripts/issue-fields.js', 'never change, add, or guess', 'no `cd`, no chaining']) {
+    assert.ok(agent.includes(s), `axis-issue-creator: ${s}`);
   }
 });
