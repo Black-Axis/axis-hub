@@ -18,6 +18,8 @@ node --test tests/foreman/session-start.test.js   # a single test file
 node e2e/run.js [plugin] [scenario]          # e2e flows on sample projects, no model
 ```
 
+Run these checks through the `axis-test-runner` subagent (`.claude/agents/`), which returns failures only. The repo's own subagents and skills use `axis-` names (`tests/repo-claude.test.js`).
+
 CI (`.github/workflows/validate.yml`) runs the validations and `node --test` on PRs and pushes to `main`, with Claude Code pinned by `CLAUDE_CODE_VERSION` (keep it equal in `validate.yml` and `release.yml`; a test enforces this). `release.yml` runs on `vX.Y.Z` tags, which must match `metadata.version` in `marketplace.json`, and builds release notes from the root `CHANGELOG.md` via `.github/scripts/release-notes.js`. `tests/links.test.js` fails on broken relative Markdown links (plugin templates are skipped). `examples/foreman/workbench/` is both user-facing sample and the hook test fixture — keep it in step with `plugins/foreman/templates/`.
 
 Marketplace-level test inside Claude Code: `/plugin marketplace add <repo path>`, `/plugin install <name>@axis-hub`; after edits `/plugin marketplace update axis-hub` and restart the session.
