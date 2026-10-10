@@ -18,6 +18,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 - `/axis-open-pr` skill: proposes the commit and pull request with all their values and asks first (#119)
 - `axis-pr-opener` subagent: commits, pushes, and opens confirmed pull requests, then checks the linked issues (#133)
 
+#### Changed
+
+- CLAUDE.md about a quarter of its size: foreman architecture in a path-scoped rule, issue and PR steps in skills (#126)
+
 ## [1.6.0] - 2026-10-09
 
 ### foreman 1.6.0
