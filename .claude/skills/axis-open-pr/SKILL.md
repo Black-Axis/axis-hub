@@ -20,20 +20,16 @@ Repository `Black-Axis/axis-hub`. Run each command on its own (no `cd`, no chain
 
 ## 2. Propose, then ask
 
-Show in a compact table plus the texts:
+Write each text once, with the Write tool, to a new file in your scratchpad directory; the user reviews it there (never paste it again in chat or in a prompt):
 
-- **Files** to stage.
-- **Commit message**: `<type>(<scope>): <summary>` (or `<type>: <summary>`), a short body in normal prose, the closing lines (`Closes #N`), and the closing attribution lines this session's instructions give for commits (the `Co-Authored-By` trailer of the model running this session; never a model name copied from elsewhere). Credit every model that wrote committed content: when a subagent wrote files in this change (e.g. `axis-e2e-writer`), add a `Co-Authored-By: Claude <its model name> <noreply@anthropic.com>` line for the model it ran on. Never credit a model that only ran commands (`axis-pr-opener`, `axis-test-runner`).
-- **PR title** and **body**: normal prose (not terse chat style), `## Summary` bullets, a closing keyword line per solved issue (`Closes #N`; `Part of #N` for a partial fix, which is not linked), `## Test plan` checkboxes, ending with the attribution line this session's instructions give for pull requests. Never mention GitLab or `.workbench`; no personal email addresses.
-- **Labels**: `bug` or `enhancement` (never `documentation`), plus `plugin: <name>` and/or `marketplace`.
-- **Milestone**: the issues' milestone.
-- **Assignee**: `krypton225`.
+- **Commit message file**: `<type>(<scope>): <summary>`, a short body in normal prose, `Closes #N` lines, then the `Co-Authored-By` trailer this session's instructions give for commits. Credit every model that wrote committed content (e.g. the model `axis-e2e-writer` ran on), never one that only ran commands.
+- **Body file**: normal prose, `## Summary` bullets, a closing keyword line per solved issue, `## Test plan` checkboxes, ending with this session's attribution line for pull requests. Never mention GitLab or `.workbench`; no personal email addresses.
 
-Ask with `AskUserQuestion` (keeps this turn, so the pre-approvals stay): open as proposed, or change values. Nothing is committed before the user's yes.
+Then show one compact table: files to stage, PR title, labels, assignee, milestone, linked issues (rules in CLAUDE.md "GitHub issues and pull requests"). Ask with `AskUserQuestion` (keeps this turn, so the pre-approvals stay): open as proposed, or change values. Nothing is committed before the user's yes.
 
 ## 3. Execute through the subagent
 
-Hand the confirmed values to the `axis-pr-opener` subagent in one call. Prompt: `Branch:`, `Files:`, `Title:`, `Labels:`, `Assignee:`, `Milestone:`, `Linked issues:`, then `Commit message:` and `Body:` each followed by the full, final text (it adds nothing). Nothing else: its instructions are in its own file. `git commit`, `git push`, and `gh pr create` ask the user for permission there: those are the final checks.
+One `axis-pr-opener` call, prompt lines only: `Branch:`, `Files:`, `Commit message file:`, `Title:`, `Body file:`, `Labels:`, `Assignee:`, `Milestone:`, `Linked issues:`. Its `git commit`, `git push`, and `gh pr create` ask the user for permission: the final checks.
 
 ## 4. Report
 

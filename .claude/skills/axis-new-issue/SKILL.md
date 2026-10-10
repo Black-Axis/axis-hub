@@ -18,22 +18,13 @@ Repository `Black-Axis/axis-hub`. Run each command on its own (no `cd`, no chain
 
 ## 2. Propose, then ask
 
-Draft each issue and show it in a compact table plus the body:
+Write each body once, with the Write tool, to a new file in your scratchpad directory; the user reviews it there (never paste it again in chat or in a prompt). Body: normal prose, sections `## Problem`, `## Proposal`, `## Acceptance` (a bug: steps, expected, actual). Never mention GitLab or `.workbench`; no personal email addresses.
 
-- **Title**: short, imperative, no prefix.
-- **Body**: normal prose (not terse chat style), sections `## Problem`, `## Proposal`, `## Acceptance`. For a bug: steps, expected, actual. Never mention GitLab or `.workbench`; no personal email addresses.
-- **Labels**: `bug` or `enhancement` (or another fitting label from the list; never `documentation` alone), plus `plugin: <name>` for a plugin or `marketplace` for the repo itself.
-- **Type**: `Bug`, `Feature`, or `Task`.
-- **Assignee**: `krypton225`.
-- **Milestone**: one of the open milestones.
-- **Priority**: `Urgent` / `High` / `Medium` / `Low`. **Effort**: `High` / `Medium` / `Low`.
-- **Start date** / **Target date**: only when the user gave them.
-
-Name any likely duplicate. Then ask with `AskUserQuestion` (keeps this turn, so the pre-approvals stay): create as proposed, or change values. Ask the milestone if no open one fits. Create nothing before the user's yes.
+Then show one compact table, a row per issue: title (short, imperative), labels, Type, assignee, milestone, Priority, Effort, dates only when the user gave them (rules in CLAUDE.md "GitHub issues and pull requests"). Name any likely duplicate. Ask with `AskUserQuestion` (keeps this turn, so the pre-approvals stay): create as proposed, or change values. Create nothing before the user's yes.
 
 ## 3. Create through the subagent
 
-Hand the confirmed issues to the `axis-issue-creator` subagent in one call. Prompt: per issue, `Title:`, `Labels:`, `Type:`, `Assignee:`, `Milestone:`, `Priority:`, `Effort:`, optional `Start:` / `Target:`, then `Body:` followed by the full body. Nothing else: how it creates them is in its own file. Its `gh issue create` asks the user for permission: the final check.
+One `axis-issue-creator` call, prompt lines only, per issue: `Title:`, `Body file:`, `Labels:`, `Type:`, `Assignee:`, `Milestone:`, `Priority:`, `Effort:`, optional `Start:` / `Target:`. Its `gh issue create` asks the user for permission: the final check.
 
 ## 4. Report
 
