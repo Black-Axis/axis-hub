@@ -78,7 +78,7 @@ test('axis-open-pr proposes and asks; axis-pr-opener commits, pushes, opens', ()
 });
 
 test('command-only subagents: Bash only, no CLAUDE.md, short description', () => {
-  for (const name of ['axis-test-runner', 'axis-issue-creator', 'axis-pr-opener']) {
+  for (const name of ['axis-test-runner', 'axis-issue-creator', 'axis-pr-opener', 'axis-live-check']) {
     const fm = frontmatter(path.join(claude, 'agents', `${name}.md`));
     assert.strictEqual(fm.tools, 'Bash', `${name}: tools`);
     assert.strictEqual(fm.omitClaudeMd, 'true', `${name}: omitClaudeMd`);
@@ -101,6 +101,15 @@ test('axis-e2e-writer: Sonnet, e2e/CLAUDE.md only, guarded by its hook', () => {
   const text = fs.readFileSync(file, 'utf8');
   for (const s of ['Read `e2e/CLAUDE.md` first', 'never read `e2e/lib/harness.js` or `e2e/<plugin>/lib.js` whole', 'git diff -- <changed paths>', 'read only the one scenario','Edit only files under `e2e/`', 'no `cd`, no chaining', 'e2e: pass', 'PLUGIN BUG']) {
     assert.ok(text.includes(s), `axis-e2e-writer: ${s}`);
+  }
+});
+
+test('axis-live-check: runs only confirmed checks through the script, one line each', () => {
+  const file = path.join(claude, 'agents', 'axis-live-check.md');
+  assert.strictEqual(frontmatter(file).disallowedTools, 'mcp__*');
+  const text = fs.readFileSync(file, 'utf8');
+  for (const s of ['the user already confirmed them', 'Never add, retry, or change a check', 'node scripts/live-check.js <name> --prompt-file <file>', 'No `cd`, no chaining', '<name>: pass|FAIL']) {
+    assert.ok(text.includes(s), `axis-live-check: ${s}`);
   }
 });
 
