@@ -46,13 +46,11 @@ gh issue create --title "<title>" --body-file <file> --label <label> --type <Bug
 
 The issue forms in `.github/ISSUE_TEMPLATE/` set labels, Type, and assignee for issues opened on the web; Priority and Effort are set afterwards.
 
-Fields are set through GraphQL. Look up the issue node ID (`gh issue view <n> --json id`) and the field and option IDs (`gh api graphql -f query='{ organization(login:"Black-Axis"){ issueFields(first:20){ nodes{ __typename ... on IssueFieldSingleSelect { id name options{ id name } } ... on IssueFieldDate { id name } } } } }'`), then:
+Set the fields by name (the script looks up the IDs and runs the GraphQL `setIssueFieldValue` mutation):
 
 ```
-gh api graphql -f query='mutation($issue:ID!){ setIssueFieldValue(input:{issueId:$issue, issueFields:[{fieldId:"<Priority id>", singleSelectOptionId:"<option id>"}, {fieldId:"<Effort id>", singleSelectOptionId:"<option id>"}]}){ clientMutationId } }' -f issue=<issue node id>
+node .github/scripts/issue-fields.js <n> --priority <name> --effort <name> [--start YYYY-MM-DD] [--target YYYY-MM-DD]
 ```
-
-Date fields use `dateValue: "YYYY-MM-DD"` instead of `singleSelectOptionId`.
 
 ## GitHub pull requests
 
