@@ -1,4 +1,16 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(node scripts/check-all.js)",
+      "Bash(node scripts/check-all.js:*)",
+      "Bash(node e2e/run.js)",
+      "Bash(node e2e/run.js:*)",
+      "PowerShell(node scripts/check-all.js)",
+      "PowerShell(node scripts/check-all.js:*)",
+      "PowerShell(node e2e/run.js)",
+      "PowerShell(node e2e/run.js:*)"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {
