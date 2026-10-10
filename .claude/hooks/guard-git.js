@@ -4,8 +4,10 @@
 // requests (`gh pr merge`, merge calls through `gh api`). The branch rules live in
 // .githooks/guard.js (shared with the git hooks) and apply only to axis-hub:
 // commits and branches in a repository with a remote pointing to
-// Black-Axis/axis-hub, pushes to that URL. Other repositories are not checked;
-// the merge rule applies everywhere. Always exits 0; a refusal is returned as a
+// Black-Axis/axis-hub, pushes to that URL (`git -C <path>` is checked against
+// that repository). Other repositories are not checked; the merge rule applies
+// everywhere: `gh pr merge`, `gh api` PUT `pulls/<n>/merge`, and the GraphQL
+// mutations `mergePullRequest` / `enablePullRequestAutoMerge`. Always exits 0; a refusal is returned as a
 // "deny" decision with the reason.
 'use strict';
 
