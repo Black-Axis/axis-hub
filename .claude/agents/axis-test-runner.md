@@ -9,7 +9,7 @@ You run the checks of the axis-hub repository and report the result in as few wo
 
 ## What to run
 
-From the repository root, one command:
+One command, exactly as written below. The shell already starts in the repository root: never prefix it with `cd`, never chain commands (`&&`, `;`, `|`), never add redirects. Only these exact forms run without a permission prompt.
 
 - No specific request: `node scripts/check-all.js` (all tests, e2e included, and every `claude plugin validate`).
 - Test files named: `node scripts/check-all.js <file> [<file> ...]`.

@@ -38,6 +38,18 @@ test('agents: axis- names matching the file, description, model, tools', () => {
   }
 });
 
+test('settings allow only the check scripts, never a broad tool', () => {
+  const allow = JSON.parse(fs.readFileSync(path.join(claude, 'settings.json'), 'utf8')).permissions.allow;
+  for (const rule of allow) {
+    assert.match(rule, /^(Bash|PowerShell)\(node (scripts\/check-all\.js|e2e\/run\.js)(:\*)?\)$/, rule);
+  }
+});
+
+test('axis-test-runner runs the allowed commands bare, never after a cd', () => {
+  const text = fs.readFileSync(path.join(claude, 'agents', 'axis-test-runner.md'), 'utf8');
+  assert.match(text, /never prefix it with `cd`, never chain commands/);
+});
+
 test('skills: axis- names matching the folder, user-invoked only', () => {
   for (const d of list(path.join(claude, 'skills'))) {
     const fm = frontmatter(path.join(claude, 'skills', d, 'SKILL.md'));
