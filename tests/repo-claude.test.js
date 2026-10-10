@@ -17,7 +17,7 @@ function frontmatter(file) {
   assert.ok(m, `${file}: no frontmatter`);
   const fields = {};
   for (const line of m[1].split(/\r?\n/)) {
-    const kv = /^([a-z-]+): (.*)$/.exec(line);
+    const kv = /^([A-Za-z-]+): (.*)$/.exec(line);
     assert.ok(kv, `${file}: unexpected frontmatter line "${line}"`);
     let value = kv[2];
     if (/^".*"$/.test(value)) value = value.slice(1, -1);
@@ -52,16 +52,26 @@ test('axis-test-runner runs the allowed commands bare, never after a cd', () => 
 
 test('axis-open-pr proposes and asks; axis-pr-opener commits, pushes, opens', () => {
   const skill = fs.readFileSync(path.join(claude, 'skills', 'axis-open-pr', 'SKILL.md'), 'utf8');
-  for (const s of ['AskUserQuestion', 'Never mention GitLab', '`axis-pr-opener` subagent', 'never `documentation`', 'krypton225', 'never `gh pr merge`', '`Co-Authored-By` trailer of the model running this session', 'Never credit a model that only ran commands']) {
+  for (const s of ['AskUserQuestion', 'Never mention GitLab', '`axis-pr-opener` call, prompt lines only', '`Commit message file:`', '`Body file:`', 'never paste it again', 'never `gh pr merge`', '`Co-Authored-By` trailer this session', 'never one that only ran commands']) {
     assert.ok(skill.includes(s), `axis-open-pr: ${s}`);
   }
   assert.ok(!/gh pr create --|git push -/.test(skill), 'axis-open-pr leaves committing and opening to the subagent');
   const agent = fs.readFileSync(path.join(claude, 'agents', 'axis-pr-opener.md'), 'utf8');
-  for (const s of ['--assignee <assignee>', '--milestone', 'closingIssuesReferences', 'never change, add to, or guess', 'no `cd`, no chaining']) {
+  for (const s of ['--assignee <assignee>', '--milestone', '-F <commit message file>', '--body-file <body file>', 'closingIssuesReferences', 'never change, add to, or guess', 'no `cd`, no chaining']) {
     assert.ok(agent.includes(s), `axis-pr-opener: ${s}`);
   }
   // The texts come final from the main session: the subagent adds no trailer or footer of its own model.
   assert.ok(!/Co-Authored-By|Generated with/.test(agent), 'axis-pr-opener adds no attribution');
+});
+
+test('command-only subagents: Bash only, no CLAUDE.md, short description', () => {
+  for (const name of ['axis-test-runner', 'axis-issue-creator', 'axis-pr-opener']) {
+    const fm = frontmatter(path.join(claude, 'agents', `${name}.md`));
+    assert.strictEqual(fm.tools, 'Bash', `${name}: tools`);
+    assert.strictEqual(fm.omitClaudeMd, 'true', `${name}: omitClaudeMd`);
+    assert.strictEqual(fm.effort, 'low', `${name}: effort`);
+    assert.ok(fm.description.length <= 130, `${name}: description is ${fm.description.length} characters`);
+  }
 });
 
 test('skills: axis- names matching the folder, user-invoked only', () => {
@@ -86,12 +96,12 @@ test('skills: allowed-tools only scoped command rules, never a whole tool', () =
 
 test('axis-new-issue proposes and asks; axis-issue-creator creates', () => {
   const skill = fs.readFileSync(path.join(claude, 'skills', 'axis-new-issue', 'SKILL.md'), 'utf8');
-  for (const s of ['AskUserQuestion', 'Never mention GitLab', '`axis-issue-creator` subagent', 'krypton225']) {
+  for (const s of ['AskUserQuestion', 'Never mention GitLab', '`axis-issue-creator` call, prompt lines only', '`Body file:`', 'never paste it again']) {
     assert.ok(skill.includes(s), `axis-new-issue: ${s}`);
   }
   assert.ok(!/gh issue create --/.test(skill), 'axis-new-issue leaves creating to the subagent');
   const agent = fs.readFileSync(path.join(claude, 'agents', 'axis-issue-creator.md'), 'utf8');
-  for (const s of ['--assignee <assignee>', '--milestone', 'node .github/scripts/issue-fields.js', 'never change, add, or guess', 'no `cd`, no chaining']) {
+  for (const s of ['--assignee <assignee>', '--milestone', '--body-file <body file>', 'node .github/scripts/issue-fields.js', 'never change, add to, or guess', 'no `cd`, no chaining']) {
     assert.ok(agent.includes(s), `axis-issue-creator: ${s}`);
   }
 });

@@ -21,6 +21,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 #### Changed
 
 - CLAUDE.md about a quarter of its size: foreman architecture in a path-scoped rule, issue and PR steps in skills (#126)
+- Repo skills write texts once to files; the command-only subagents get paths, skip CLAUDE.md, use Bash only and low effort (#135)
 
 ## [1.6.0] - 2026-10-09
 
