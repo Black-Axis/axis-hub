@@ -13,6 +13,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 - `.github/scripts/issue-fields.js`: sets an issue's Priority, Effort, and dates by name (#123)
 - `scripts/check-all.js`: all tests and plugin validations, one line per check plus the failures only (#124)
 - `axis-test-runner` subagent: runs the checks and returns failures only (#110)
+- `/axis-new-issue` skill: proposes issues with all their values and asks before creating (#118)
+- `axis-issue-creator` subagent: creates confirmed issues and sets Priority and Effort (#131)
 
 ## [1.6.0] - 2026-10-09
 

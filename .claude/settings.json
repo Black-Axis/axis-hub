@@ -8,7 +8,9 @@
       "PowerShell(node scripts/check-all.js)",
       "PowerShell(node scripts/check-all.js:*)",
       "PowerShell(node e2e/run.js)",
-      "PowerShell(node e2e/run.js:*)"
+      "PowerShell(node e2e/run.js:*)",
+      "Bash(node .github/scripts/issue-fields.js:*)",
+      "PowerShell(node .github/scripts/issue-fields.js:*)"
     ]
   },
   "hooks": {
