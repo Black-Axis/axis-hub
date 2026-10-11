@@ -22,6 +22,8 @@ Run these checks through the `axis-test-runner` subagent (`.claude/agents/`), wh
 
 CI (`.github/workflows/validate.yml`) runs the validations and `node --test` on PRs and pushes to `main`, with Claude Code pinned by `CLAUDE_CODE_VERSION` (keep it equal in `validate.yml` and `release.yml`; a test enforces this). `release.yml` runs on `vX.Y.Z` tags, which must match `metadata.version` in `marketplace.json`, and builds release notes from the root `CHANGELOG.md` via `.github/scripts/release-notes.js`. `tests/links.test.js` fails on broken relative Markdown links (plugin templates are skipped). `examples/foreman/workbench/` is both user-facing sample and the hook test fixture — keep it in step with `plugins/foreman/templates/`.
 
+Paid live checks (`claude -p` with a plugin from this repo, in a scratch project under the OS temp folder): ask the user before each run, then hand the checks (name, prompt file, expectation, options) to the `axis-live-check` subagent, which runs `node scripts/live-check.js` (budget cap, default model `haiku`; never allowed in settings, so each run prompts) and returns one verdict line per check.
+
 Marketplace-level test inside Claude Code: `/plugin marketplace add <repo path>`, `/plugin install <name>@axis-hub`; after edits `/plugin marketplace update axis-hub` and restart the session.
 
 ## e2e scenarios
