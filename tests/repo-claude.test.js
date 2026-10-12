@@ -168,7 +168,8 @@ test('axis-new-branch: proposes a guard-valid name, asks, branches from an up-to
   const { TYPES, BRANCH_PATTERN } = require('../.githooks/guard.js');
   for (const t of TYPES) assert.ok(skill.includes(`\`${t}\``), `axis-new-branch lists type ${t}`);
   assert.match('feat/foreman-bug-command', BRANCH_PATTERN, 'the example passes the guard');
-  for (const s of ['AskUserQuestion', '`git switch main`', '`git pull --ff-only`', '`git switch -c <name>`', 'never stash or discard']) {
+  assert.ok(!/git pull|git switch main/.test(skill), 'axis-new-branch leaves switching and pulling to finish.js');
+  for (const s of ['AskUserQuestion', '`node .githooks/finish.js`', '`git switch -c <name>`', 'never commit, stash, or discard']) {
     assert.ok(skill.includes(s), `axis-new-branch: ${s}`);
   }
 });
