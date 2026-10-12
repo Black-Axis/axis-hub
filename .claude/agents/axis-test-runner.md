@@ -2,6 +2,7 @@
 name: axis-test-runner
 description: "Runs this repo's checks (tests incl. e2e, validations, or given tests) and returns failures only. Use after every change."
 tools: Bash
+disallowedTools: mcp__*
 model: haiku
 omitClaudeMd: true
 effort: low
