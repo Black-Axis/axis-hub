@@ -36,7 +36,7 @@ Never commit on `main` or push to it; `main` changes only through pull requests 
 
 ## GitHub issues and pull requests
 
-The user opens them with `/axis-new-issue` and `/axis-open-pr`: both propose every value and ask first, then hand the confirmed values to the `axis-issue-creator` / `axis-pr-opener` subagents. The main agent may call those subagents itself after the user confirmed the values in chat. The rules:
+The user opens them with `/axis-new-issue` and `/axis-open-pr`: both propose every value and ask first, then hand the confirmed values to the `axis-issue-creator` / `axis-pr-opener` subagents. The main agent may call those subagents itself after the user confirmed the values in chat. Before a pull request, the `axis-reviewer` subagent reviews the branch against the repo rules (`/axis-open-pr` runs it). The rules:
 
 - **Issues**: labels `bug` or `enhancement` (or another fitting one) plus `plugin: <name>` or `marketplace`; Type `Bug` / `Feature` / `Task`; assignee `krypton225`; a milestone; fields `Priority` (`Urgent` / `High` / `Medium` / `Low`) and `Effort` (`High` / `Medium` / `Low`) always, `Start date` / `Target date` only when the user gives them (`node .github/scripts/issue-fields.js`). Propose the values and let the user correct them. The issue forms in `.github/ISSUE_TEMPLATE/` set labels, Type, and assignee for issues opened on the web.
 - **Pull requests**: assignee `krypton225`; labels as for issues, never `documentation`; the issues' milestone; a closing keyword line per solved issue (`Closes #24`; `Part of #24` for a partial fix, which is not linked), checked with `gh pr view <n> --json closingIssuesReferences`.

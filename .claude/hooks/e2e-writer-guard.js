@@ -14,20 +14,20 @@ const GIT = /^git (diff|status)( [^\s;&|<>`$]+)*$/;
 
 // Returns the deny reason for one tool call, or null to let it through.
 function decide(input, projectDir) {
-  const tool = input.tool_name;
-  const args = input.tool_input || {};
+  const tool = input && input.tool_name;
+  const args = (input && input.tool_input) || {};
   if (tool === 'Edit' || tool === 'Write') {
     const root = path.resolve(projectDir);
-    const file = path.resolve(root, args.file_path || '');
+    const file = path.resolve(root, String(args.file_path || ''));
     const rel = path.relative(path.join(root, 'e2e'), file);
     if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) return `axis-e2e-writer edits only files under e2e/, not ${args.file_path}.`;
     if (rel.split(path.sep)[0] === '.work') return 'axis-e2e-writer never edits e2e/.work/: scenarios build it.';
     return null;
   }
   if (tool === 'Bash') {
-    const command = (args.command || '').trim();
+    const command = String(args.command || '').trim();
     if (RUN.test(command)) return null;
-    if (GIT.test(command) && !/--output|--ext-diff/.test(command)) return null;
+    if (GIT.test(command) && !/--output|--ext-diff|--textconv|--no-index/.test(command)) return null;
     return `axis-e2e-writer runs only \`node e2e/run.js [plugin] [scenario]\`, \`git diff\`, or \`git status\`, one command without cd or chaining; not: ${command}`;
   }
   return null;

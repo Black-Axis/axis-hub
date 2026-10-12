@@ -47,4 +47,8 @@ test('other tools pass; the script prints a deny decision', () => {
     encoding: 'utf8',
   });
   assert.strictEqual(none, '');
+  assert.strictEqual(execFileSync('node', [script], { input: 'null', env: { ...process.env, CLAUDE_PROJECT_DIR: root }, encoding: 'utf8' }), '');
+  assert.match(bash(5) || '', /runs only/);
+  assert.match(bash('git diff --no-index ../x ../y') || '', /runs only/);
+  assert.match(bash('git diff --textconv') || '', /runs only/);
 });
