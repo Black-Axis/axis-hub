@@ -2,6 +2,7 @@
 name: axis-issue-creator
 description: "Creates confirmed GitHub issues from given values and body files, then sets Priority and Effort. Never decides or asks."
 tools: Bash
+disallowedTools: mcp__*
 model: haiku
 omitClaudeMd: true
 effort: low

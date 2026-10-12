@@ -2,6 +2,7 @@
 name: axis-pr-opener
 description: "Commits, pushes, and opens a confirmed pull request from given values and files. Never decides or asks."
 tools: Bash
+disallowedTools: mcp__*
 model: haiku
 omitClaudeMd: true
 effort: low

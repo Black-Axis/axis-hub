@@ -48,6 +48,7 @@ test('agents: axis- names matching the file, description, model, tools', () => {
     assert.ok(fm.description, `${f}: description`);
     assert.ok(['haiku', 'sonnet', 'opus'].includes(fm.model), `${f}: model`);
     assert.ok(fm.tools, `${f}: tools (smallest set)`);
+    assert.strictEqual(fm.disallowedTools, 'mcp__*', `${f}: disallowedTools mcp__* keeps MCP tools and server text out`);
   }
 });
 
@@ -174,6 +175,15 @@ test('axis-new-branch: proposes a guard-valid name, asks, branches from an up-to
   }
 });
 
+test('axis-changelog: proposes entries, asks, writes only the changelogs, never bumps', () => {
+  const skill = fs.readFileSync(path.join(claude, 'skills', 'axis-changelog', 'SKILL.md'), 'utf8');
+  const tools = frontmatter(path.join(claude, 'skills', 'axis-changelog', 'SKILL.md'))['allowed-tools'];
+  assert.deepStrictEqual(tools.split(/,\s*/).filter((r) => r.startsWith('Edit')), ['Edit(./CHANGELOG.md)', 'Edit(./plugins/*/CHANGELOG.md)']);
+  for (const s of ['AskUserQuestion', 'never bump a version or rename a section', 'at most 140 characters', '`(#N)`', 'never repeat one', 'Never mention GitLab or `.workbench`', 'tests/release.test.js']) {
+    assert.ok(skill.includes(s), `axis-changelog: ${s}`);
+  }
+});
+
 test('committed instructions never name a local git remote', () => {
   const files = ['../CLAUDE.md', ...list(path.join(claude, 'agents')).map((f) => `agents/${f}`), ...list(path.join(claude, 'skills')).map((d) => `skills/${d}/SKILL.md`)];
   for (const f of files) {
@@ -192,12 +202,13 @@ test('skills: axis- names matching the folder, user-invoked only', () => {
   }
 });
 
-test('skills: allowed-tools only scoped command rules, never a whole tool', () => {
+test('skills: allowed-tools only scoped command rules and edits of named files, never a whole tool', () => {
   for (const d of list(path.join(claude, 'skills'))) {
     const tools = frontmatter(path.join(claude, 'skills', d, 'SKILL.md'))['allowed-tools'];
     if (!tools) continue;
     for (const rule of tools.split(/,\s*/)) {
-      assert.match(rule, /^(Bash|PowerShell)\([a-z][^()*]*:\*\)$|^(Bash|PowerShell)\([a-z][^()*]*\)$/, `${d}: "${rule}" is too broad`);
+      // Edit only of files named from the project root (`./`), a `*` only for one folder level, never `**`.
+      assert.match(rule, /^(Bash|PowerShell)\([a-z][^()*]*:\*\)$|^(Bash|PowerShell)\([a-z][^()*]*\)$|^Edit\(\.\/(?!.*\*\*)[\w.*/-]+\.\w+\)$/, `${d}: "${rule}" is too broad`);
     }
   }
 });
