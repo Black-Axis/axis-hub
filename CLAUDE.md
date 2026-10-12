@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-`axis-hub` is a Claude Code plugin marketplace (owner Black-Axis). There is no build, lint, or test toolchain — plugins are Markdown instruction files plus JSON manifests. It is hosted on GitHub (`Black-Axis/axis-hub`, remote `repo`); contributions go there only.
+`axis-hub` is a Claude Code plugin marketplace (owner Black-Axis). There is no build, lint, or test toolchain — plugins are Markdown instruction files plus JSON manifests. It is hosted on GitHub (`Black-Axis/axis-hub`); contributions go there only. Committed files never name a git remote (clones differ): use the upstream, or the remote whose URL is `Black-Axis/axis-hub`.
 
 ## Commands
 
@@ -34,7 +34,7 @@ Marketplace-level test inside Claude Code: `/plugin marketplace add <repo path>`
 
 ## Branches
 
-Never commit on `main` or push to it; `main` changes only through pull requests (ruleset `.github/rulesets/main.json`, requires the `validate` check). Before changing anything, create a branch `<type>/<short-name>` (`feat`, `fix`, `docs`, `test`, `ci`, `chore`, `refactor`; kebab-case, e.g. `feat/foreman-bug-command`). The user merges: the PreToolUse hook `.claude/hooks/guard-git.js` denies Claude's git commands that break these rules and any pull request merge (the rules are in `.githooks/guard.js`, also used by the git hooks; details in both files' comments). After a merge, `git finish` (`.githooks/finish.js`, also run by the SessionStart hook `.claude/hooks/finish-on-start.js`) switches to `main`, pulls, and deletes merged branches. It must never delete unmerged work or act with uncommitted changes (`tests/git-finish.test.js`).
+Never commit on `main` or push to it; `main` changes only through pull requests (ruleset `.github/rulesets/main.json`, requires the `validate` check). Before changing anything, create a branch `<type>/<short-name>` from an up-to-date `main` (the user runs `/axis-new-branch`; types and naming in `.githooks/guard.js`, e.g. `feat/foreman-bug-command`). The user merges: the PreToolUse hook `.claude/hooks/guard-git.js` denies Claude's git commands that break these rules and any pull request merge (the rules are in `.githooks/guard.js`, also used by the git hooks; details in both files' comments). After a merge, `git finish` (`.githooks/finish.js`, also run by the SessionStart hook `.claude/hooks/finish-on-start.js`) switches to `main`, pulls, and deletes merged branches. It must never delete unmerged work or act with uncommitted changes (`tests/git-finish.test.js`).
 
 ## GitHub issues and pull requests
 
