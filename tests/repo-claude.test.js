@@ -127,6 +127,21 @@ test('axis-reviewer: Sonnet, read-only, repo checklist, one line per finding', (
   assert.ok(skill.includes('one `axis-reviewer` call'), 'axis-open-pr runs the reviewer');
 });
 
+test('axis-investigator: Haiku, Read and Grep only, file:line rows', () => {
+  const file = path.join(claude, 'agents', 'axis-investigator.md');
+  const fm = frontmatter(file);
+  assert.deepStrictEqual([fm.model, fm.omitClaudeMd, fm.effort, fm.tools, fm.disallowedTools], ['haiku', 'true', 'low', 'Read, Grep', 'mcp__*']);
+  assert.ok(fm.description.length <= 130, `description is ${fm.description.length} characters`);
+  const text = fs.readFileSync(file, 'utf8');
+  for (const s of ['never edit, never suggest fixes', 'Repository map', 'path:line | note', 'at most 20 rows', 'none: <what was searched>']) {
+    assert.ok(text.includes(s), `axis-investigator: ${s}`);
+  }
+  // Every folder in the map exists, so it never points to a moved path.
+  for (const p of ['plugins/foreman/commands', 'plugins/foreman/scripts/wb.js', 'e2e/lib/harness.js', 'e2e/foreman/fixtures/notes-api', '.githooks/guard.js', 'scripts/check-all.js', 'scripts/live-check.js', 'examples/foreman/workbench']) {
+    assert.ok(fs.existsSync(path.resolve(claude, '..', p)), `map path ${p}`);
+  }
+});
+
 test('skills: axis- names matching the folder, user-invoked only', () => {
   for (const d of list(path.join(claude, 'skills'))) {
     const fm = frontmatter(path.join(claude, 'skills', d, 'SKILL.md'));

@@ -20,6 +20,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 - `axis-e2e-writer` subagent: writes and runs the e2e scenario steps for a plugin change, edits only `e2e/` (#111)
 - `axis-live-check` subagent and `scripts/live-check.js`: paid `claude -p` checks outside the repo, one line each (#112)
 - `axis-reviewer` subagent: reviews the branch against the repo rules, one line per finding; `/axis-open-pr` runs it (#113)
+- `axis-investigator` subagent: answers locate questions with `file:line` rows, read-only (#114)
 
 #### Changed
 
