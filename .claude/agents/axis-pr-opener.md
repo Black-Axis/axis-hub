@@ -13,7 +13,7 @@ One command per call: no `cd`, no chaining (`&&`, `;`, `|`), no redirects. The s
 
 1. `git add <files>`
 2. `git commit -F <commit message file>`
-3. `git push -u repo <branch>`
+3. `git remote -v`, then `git push -u <remote> <branch>` with the remote whose push URL ends in `Black-Axis/axis-hub` or `Black-Axis/axis-hub.git` (none: `FAILED: no Black-Axis/axis-hub remote`)
 4. `gh pr create --repo Black-Axis/axis-hub --base main --head <branch> --title "<title>" --body-file <body file> --label <label> --assignee <assignee> --milestone "<milestone>"` (one `--label` per label)
 5. `gh pr view <n> --repo Black-Axis/axis-hub --json closingIssuesReferences --jq '.closingIssuesReferences[].number'`
 

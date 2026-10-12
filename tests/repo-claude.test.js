@@ -163,6 +163,24 @@ test('axis-ci-watcher: runs only the watch script; /axis-open-pr starts it', () 
   assert.ok(skill.includes('`axis-ci-watcher`'), 'axis-open-pr starts the CI watcher');
 });
 
+test('axis-new-branch: proposes a guard-valid name, asks, branches from an up-to-date main', () => {
+  const skill = fs.readFileSync(path.join(claude, 'skills', 'axis-new-branch', 'SKILL.md'), 'utf8');
+  const { TYPES, BRANCH_PATTERN } = require('../.githooks/guard.js');
+  for (const t of TYPES) assert.ok(skill.includes(`\`${t}\``), `axis-new-branch lists type ${t}`);
+  assert.match('feat/foreman-bug-command', BRANCH_PATTERN, 'the example passes the guard');
+  for (const s of ['AskUserQuestion', '`git switch main`', '`git pull --ff-only`', '`git switch -c <name>`', 'never stash or discard']) {
+    assert.ok(skill.includes(s), `axis-new-branch: ${s}`);
+  }
+});
+
+test('committed instructions never name a local git remote', () => {
+  const files = ['../CLAUDE.md', ...list(path.join(claude, 'agents')).map((f) => `agents/${f}`), ...list(path.join(claude, 'skills')).map((d) => `skills/${d}/SKILL.md`)];
+  for (const f of files) {
+    const text = fs.readFileSync(path.join(claude, f), 'utf8');
+    assert.ok(!/\b(push|pull|fetch)( -u| --ff-only)? (repo|origin)\b|remote `(repo|origin)`/.test(text), `${f} names a remote`);
+  }
+});
+
 test('skills: axis- names matching the folder, user-invoked only', () => {
   for (const d of list(path.join(claude, 'skills'))) {
     const fm = frontmatter(path.join(claude, 'skills', d, 'SKILL.md'));
