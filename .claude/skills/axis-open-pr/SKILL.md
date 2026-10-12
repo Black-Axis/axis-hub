@@ -17,6 +17,7 @@ Repository `Black-Axis/axis-hub`. Run each command on its own (no `cd`, no chain
 - The issues the change solves (from the notes or the conversation): `gh issue view <n> --json title,milestone,labels --jq '"\(.title) | \(.milestone.title) | \([.labels[].name] | join(","))"'`.
 - Open milestones: `gh api repos/Black-Axis/axis-hub/milestones --jq '.[] | "\(.number) \(.title)"'`.
 - Checks passed for the final state of the files (`axis-test-runner`); if not run yet, run them first.
+- Review: one `axis-reviewer` call (prompt: `Review this branch.`), after the last change. Fix `high` findings before proposing (then check again); show the other lines with the proposal for the user to fix or accept.
 
 ## 2. Propose, then ask
 

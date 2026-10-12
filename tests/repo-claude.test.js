@@ -113,6 +113,20 @@ test('axis-live-check: runs only confirmed checks through the script, one line e
   }
 });
 
+test('axis-reviewer: Sonnet, read-only, repo checklist, one line per finding', () => {
+  const file = path.join(claude, 'agents', 'axis-reviewer.md');
+  const fm = frontmatter(file);
+  assert.deepStrictEqual([fm.model, fm.omitClaudeMd, fm.effort, fm.tools, fm.disallowedTools], ['sonnet', 'true', 'medium', 'Read, Grep, Bash', 'mcp__*']);
+  assert.ok(fm.description.length <= 130, `description is ${fm.description.length} characters`);
+  assert.match(fm.hooks, /matcher: "Bash"\n[\s\S]*\.claude\/hooks\/reviewer-guard\.js/);
+  const text = fs.readFileSync(file, 'utf8');
+  for (const s of ['git diff main', 'never edit', 'always exit 0', 'Line endings kept', 'is quoted', '`marketplace.json`', 'CHANGELOG.md', 'e2e scenario step', 'never GitLab, never `.workbench`', '`path:line: high|medium|low: <problem>. <fix>.`', '`clean`', 'no introduction', 'relative to the repository root']) {
+    assert.ok(text.includes(s), `axis-reviewer: ${s}`);
+  }
+  const skill = fs.readFileSync(path.join(claude, 'skills', 'axis-open-pr', 'SKILL.md'), 'utf8');
+  assert.ok(skill.includes('one `axis-reviewer` call'), 'axis-open-pr runs the reviewer');
+});
+
 test('skills: axis- names matching the folder, user-invoked only', () => {
   for (const d of list(path.join(claude, 'skills'))) {
     const fm = frontmatter(path.join(claude, 'skills', d, 'SKILL.md'));
