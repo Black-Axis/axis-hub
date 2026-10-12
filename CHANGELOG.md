@@ -23,6 +23,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 - `axis-investigator` subagent: answers locate questions with `file:line` rows, read-only (#114)
 - `axis-docs-sync` subagent: lists docs that no longer match the branch, fixes them on request (#115)
 - `scripts/context-budget.js`: foreman commands near their context budget or changed against `main`, one line each (#116)
+- `axis-ci-watcher` subagent and `scripts/ci-watch.js`: waits for CI, one line per workflow and CodeQL alert (#117)
 
 #### Changed
 

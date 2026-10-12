@@ -34,4 +34,4 @@ One `axis-pr-opener` call, prompt lines only: `Branch:`, `Files:`, `Commit messa
 
 ## 4. Report
 
-The subagent's lines as they are, then: the user merges (never `gh pr merge`) and runs `git finish`. On a `FAILED`, `MISSING`, or `LINKS` line, say what failed; never retry with other values without asking.
+The subagent's lines as they are. Then start `axis-ci-watcher` in the background (prompt: `pr <n>`) and, when it finishes, report its lines; on a failure or an alert, say what to fix. The user merges (never `gh pr merge`) and runs `git finish`. On a `FAILED`, `MISSING`, or `LINKS` line, say what failed; never retry with other values without asking.

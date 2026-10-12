@@ -54,7 +54,7 @@ test('agents: axis- names matching the file, description, model, tools', () => {
 test('settings allow only the check and issue fields scripts, never a broad tool or gh issue create', () => {
   const allow = JSON.parse(fs.readFileSync(path.join(claude, 'settings.json'), 'utf8')).permissions.allow;
   for (const rule of allow) {
-    assert.match(rule, /^(Bash|PowerShell)\(node (scripts\/check-all\.js|scripts\/context-budget\.js|e2e\/run\.js|\.github\/scripts\/issue-fields\.js)(:\*)?\)$/, rule);
+    assert.match(rule, /^(Bash|PowerShell)\(node (scripts\/check-all\.js|scripts\/context-budget\.js|scripts\/ci-watch\.js|e2e\/run\.js|\.github\/scripts\/issue-fields\.js)(:\*)?\)$/, rule);
   }
 });
 
@@ -78,7 +78,7 @@ test('axis-open-pr proposes and asks; axis-pr-opener commits, pushes, opens', ()
 });
 
 test('command-only subagents: Bash only, no CLAUDE.md, short description', () => {
-  for (const name of ['axis-test-runner', 'axis-issue-creator', 'axis-pr-opener', 'axis-live-check']) {
+  for (const name of ['axis-test-runner', 'axis-issue-creator', 'axis-pr-opener', 'axis-live-check', 'axis-ci-watcher']) {
     const fm = frontmatter(path.join(claude, 'agents', `${name}.md`));
     assert.strictEqual(fm.tools, 'Bash', `${name}: tools`);
     assert.strictEqual(fm.omitClaudeMd, 'true', `${name}: omitClaudeMd`);
@@ -152,6 +152,15 @@ test('axis-docs-sync: Sonnet, docs only, edits on request', () => {
   for (const s of ['git diff main', 'Edit only when the prompt says `Edit: yes`', 'keep line endings', 'never mention GitLab or `.workbench`', 'no introduction', 'at most 30 words', '`docs in sync`']) {
     assert.ok(text.includes(s), `axis-docs-sync: ${s}`);
   }
+});
+
+test('axis-ci-watcher: runs only the watch script; /axis-open-pr starts it', () => {
+  const text = fs.readFileSync(path.join(claude, 'agents', 'axis-ci-watcher.md'), 'utf8');
+  for (const s of ['node scripts/ci-watch.js <target>', '600000', 'No `cd`, no chaining', 'Run nothing else', 'run the same command once more; then stop']) {
+    assert.ok(text.includes(s), `axis-ci-watcher: ${s}`);
+  }
+  const skill = fs.readFileSync(path.join(claude, 'skills', 'axis-open-pr', 'SKILL.md'), 'utf8');
+  assert.ok(skill.includes('`axis-ci-watcher`'), 'axis-open-pr starts the CI watcher');
 });
 
 test('skills: axis- names matching the folder, user-invoked only', () => {
