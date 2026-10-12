@@ -10,7 +10,11 @@
       "PowerShell(node e2e/run.js)",
       "PowerShell(node e2e/run.js:*)",
       "Bash(node .github/scripts/issue-fields.js:*)",
-      "PowerShell(node .github/scripts/issue-fields.js:*)"
+      "PowerShell(node .github/scripts/issue-fields.js:*)",
+      "Bash(node scripts/context-budget.js)",
+      "Bash(node scripts/context-budget.js:*)",
+      "PowerShell(node scripts/context-budget.js)",
+      "PowerShell(node scripts/context-budget.js:*)"
     ]
   },
   "hooks": {

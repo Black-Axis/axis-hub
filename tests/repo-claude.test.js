@@ -54,7 +54,7 @@ test('agents: axis- names matching the file, description, model, tools', () => {
 test('settings allow only the check and issue fields scripts, never a broad tool or gh issue create', () => {
   const allow = JSON.parse(fs.readFileSync(path.join(claude, 'settings.json'), 'utf8')).permissions.allow;
   for (const rule of allow) {
-    assert.match(rule, /^(Bash|PowerShell)\(node (scripts\/check-all\.js|e2e\/run\.js|\.github\/scripts\/issue-fields\.js)(:\*)?\)$/, rule);
+    assert.match(rule, /^(Bash|PowerShell)\(node (scripts\/check-all\.js|scripts\/context-budget\.js|e2e\/run\.js|\.github\/scripts\/issue-fields\.js)(:\*)?\)$/, rule);
   }
 });
 
@@ -149,7 +149,7 @@ test('axis-docs-sync: Sonnet, docs only, edits on request', () => {
   assert.ok(fm.description.length <= 130, `description is ${fm.description.length} characters`);
   assert.match(fm.hooks, /matcher: "Edit\|Bash"\n[\s\S]*\.claude\/hooks\/docs-sync-guard\.js/);
   const text = fs.readFileSync(file, 'utf8');
-  for (const s of ['git diff main', 'Edit only when the prompt says `Edit: yes`', 'keep line endings', 'never mention GitLab or `.workbench`', 'no introduction', '`docs in sync`']) {
+  for (const s of ['git diff main', 'Edit only when the prompt says `Edit: yes`', 'keep line endings', 'never mention GitLab or `.workbench`', 'no introduction', 'at most 30 words', '`docs in sync`']) {
     assert.ok(text.includes(s), `axis-docs-sync: ${s}`);
   }
 });

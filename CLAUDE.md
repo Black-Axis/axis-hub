@@ -16,9 +16,10 @@ claude --plugin-dir plugins/<name>           # load a plugin without installing 
 node --test                                  # all tests (manifest sync, changelog entries, foreman hook)
 node --test tests/foreman/session-start.test.js   # a single test file
 node e2e/run.js [plugin] [scenario]          # e2e flows on sample projects, no model
+node scripts/context-budget.js [--base main] # foreman commands near their context budget or changed vs main
 ```
 
-Run these checks through the `axis-test-runner` subagent (`.claude/agents/`), which returns failures only; `.claude/settings.json` allows `check-all.js`, `e2e/run.js`, and `issue-fields.js` without a prompt (nothing broader). For locate questions (where is X, what reads Y, which test covers Z) use the `axis-investigator` subagent: `file:line` rows instead of file dumps. After a change to documented behavior, `axis-docs-sync` lists the stale doc lines (and fixes them when the prompt says `Edit: yes`). The repo's own subagents and skills use `axis-` names (`tests/repo-claude.test.js`).
+Run these checks through the `axis-test-runner` subagent (`.claude/agents/`), which returns failures only; `.claude/settings.json` allows `check-all.js`, `e2e/run.js`, `context-budget.js`, and `issue-fields.js` without a prompt (nothing broader). For locate questions (where is X, what reads Y, which test covers Z) use the `axis-investigator` subagent: `file:line` rows instead of file dumps. After a change to documented behavior, `axis-docs-sync` lists the stale doc lines (and fixes them when the prompt says `Edit: yes`). The repo's own subagents and skills use `axis-` names (`tests/repo-claude.test.js`).
 
 CI (`.github/workflows/validate.yml`) runs the validations and `node --test` on PRs and pushes to `main`, with Claude Code pinned by `CLAUDE_CODE_VERSION` (keep it equal in `validate.yml` and `release.yml`; a test enforces this). `release.yml` runs on `vX.Y.Z` tags, which must match `metadata.version` in `marketplace.json`, and builds release notes from the root `CHANGELOG.md` via `.github/scripts/release-notes.js`. `tests/links.test.js` fails on broken relative Markdown links (plugin templates are skipped). `examples/foreman/workbench/` is both user-facing sample and the hook test fixture — keep it in step with `plugins/foreman/templates/`.
 
