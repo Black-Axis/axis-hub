@@ -7,11 +7,16 @@
 
 const GIT = /^git (diff|log|show|status)( [^\s;&|<>`$]+)*$/;
 
+// True for one read-only git command (also used by docs-sync-guard.js).
+function readOnlyGit(command) {
+  return GIT.test(command) && !/--output|--ext-diff|--textconv|--no-index/.test(command);
+}
+
 // Returns the deny reason for one tool call, or null to let it through.
 function decide(input) {
   if (!input || input.tool_name !== 'Bash') return null;
   const command = String((input.tool_input && input.tool_input.command) || '').trim();
-  if (GIT.test(command) && !/--output|--ext-diff|--textconv|--no-index/.test(command)) return null;
+  if (readOnlyGit(command)) return null;
   return `axis-reviewer runs only read-only \`git diff\`, \`git log\`, \`git show\`, or \`git status\`, one command without cd or chaining; not: ${command}`;
 }
 
@@ -35,4 +40,4 @@ if (require.main === module) {
   process.exit(0);
 }
 
-module.exports = { decide };
+module.exports = { decide, readOnlyGit };
