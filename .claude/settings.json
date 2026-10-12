@@ -14,7 +14,9 @@
       "Bash(node scripts/context-budget.js)",
       "Bash(node scripts/context-budget.js:*)",
       "PowerShell(node scripts/context-budget.js)",
-      "PowerShell(node scripts/context-budget.js:*)"
+      "PowerShell(node scripts/context-budget.js:*)",
+      "Bash(node scripts/ci-watch.js:*)",
+      "PowerShell(node scripts/ci-watch.js:*)"
     ]
   },
   "hooks": {
