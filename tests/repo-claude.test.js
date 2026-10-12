@@ -142,6 +142,18 @@ test('axis-investigator: Haiku, Read and Grep only, file:line rows', () => {
   }
 });
 
+test('axis-docs-sync: Sonnet, docs only, edits on request', () => {
+  const file = path.join(claude, 'agents', 'axis-docs-sync.md');
+  const fm = frontmatter(file);
+  assert.deepStrictEqual([fm.model, fm.omitClaudeMd, fm.effort, fm.tools, fm.disallowedTools], ['sonnet', 'true', 'medium', 'Read, Grep, Edit, Bash', 'mcp__*']);
+  assert.ok(fm.description.length <= 130, `description is ${fm.description.length} characters`);
+  assert.match(fm.hooks, /matcher: "Edit\|Bash"\n[\s\S]*\.claude\/hooks\/docs-sync-guard\.js/);
+  const text = fs.readFileSync(file, 'utf8');
+  for (const s of ['git diff main', 'Edit only when the prompt says `Edit: yes`', 'keep line endings', 'never mention GitLab or `.workbench`', 'no introduction', '`docs in sync`']) {
+    assert.ok(text.includes(s), `axis-docs-sync: ${s}`);
+  }
+});
+
 test('skills: axis- names matching the folder, user-invoked only', () => {
   for (const d of list(path.join(claude, 'skills'))) {
     const fm = frontmatter(path.join(claude, 'skills', d, 'SKILL.md'));
