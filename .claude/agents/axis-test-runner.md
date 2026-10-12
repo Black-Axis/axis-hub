@@ -16,6 +16,7 @@ One command, exactly as written below. The shell already starts in the repositor
 - No specific request: `node scripts/check-all.js` (all tests, e2e included, and every `claude plugin validate`).
 - Test files named: `node scripts/check-all.js <file> [<file> ...]`.
 - An e2e plugin or scenario named: `node e2e/run.js <plugin> [<scenario>]`.
+- Context budget asked: `node scripts/context-budget.js --base main` (without `--base main` only when asked); report its lines as they are.
 
 Run nothing else, unless the prompt names another read-only check command.
 

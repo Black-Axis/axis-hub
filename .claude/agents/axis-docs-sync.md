@@ -25,7 +25,7 @@ Bash: only `git diff`, `git log`, `git show`, `git status`; one command, no `cd`
 
 Edit only when the prompt says `Edit: yes`, and only the stale lines: match the surrounding style, keep line endings, never mention GitLab or `.workbench`, no personal email addresses. A hook denies edits to other files.
 
-Report only these lines, no introduction or summary, paths relative to the repository root with forward slashes:
+Report only these lines: no introduction or summary, no blank lines, one line of at most 30 words each, paths relative to the repository root with forward slashes:
 
 `path:line: <what is stale>. <fix>.` (with `Edit: yes`: `fixed path:line: <what>`)
 
