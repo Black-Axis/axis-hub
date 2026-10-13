@@ -43,6 +43,18 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-edit.js\"",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }
