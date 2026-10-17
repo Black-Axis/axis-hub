@@ -6,7 +6,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
-const { unreleasedLines, rootAreas, pluginTypes, bumpOf, bump, compare, milestoneVersion, kindOf, propose, releaseChangelog, setJsonVersion, setReadmeRow, setVersionLine, prepareEdits, pushRemote } = require('../scripts/release.js');
+const { unreleasedLines, rootAreas, pluginTypes, bumpOf, bump, compare, milestoneVersion, kindOf, phaseOf, propose, releaseChangelog, setJsonVersion, setReadmeRow, setVersionLine, prepareEdits, pushRemote } = require('../scripts/release.js');
 
 const ROOT_LOG = [
   '# Changelog',
@@ -89,6 +89,16 @@ test('bumps: Removed major, Added minor, others patch, none null', () => {
   assert.strictEqual(kindOf('1.6.0', '2.0.0'), 'major');
   assert.strictEqual(kindOf('1.6.0', '1.7.0'), 'minor');
   assert.strictEqual(kindOf('1.6.0', '1.6.1'), 'patch');
+});
+
+test('phaseOf: an untagged or unclosed release before new Unreleased entries', () => {
+  const yes = () => true;
+  const no = () => false;
+  assert.strictEqual(phaseOf({ hasUnreleased: true, tagged: false, hasSection: true, closable: no }), 'tag');
+  assert.strictEqual(phaseOf({ hasUnreleased: true, tagged: true, hasSection: true, closable: yes }), 'close');
+  assert.strictEqual(phaseOf({ hasUnreleased: true, tagged: true, hasSection: true, closable: no }), 'prepare');
+  assert.strictEqual(phaseOf({ hasUnreleased: false, tagged: true, hasSection: true, closable: no }), 'none');
+  assert.strictEqual(phaseOf({ hasUnreleased: true, tagged: false, hasSection: false, closable: no }), 'prepare');
 });
 
 test('milestoneVersion: lowest vX.Y.Z milestone above the current version', () => {

@@ -248,6 +248,15 @@ function milestoneVersion(titles, current) {
     .filter((v) => compare(v, current) > 0).sort(compare)[0] || null;
 }
 
+// The release phase. A released metadata.version without its tag (or with its milestone
+// still open) comes first, also when new entries landed under Unreleased after the merge.
+// `closable()` = the GitHub release exists and the milestone is open (asked only when tagged).
+function phaseOf({ hasUnreleased, tagged, hasSection, closable }) {
+  if (!tagged && hasSection) return 'tag';
+  if (tagged && closable()) return 'close';
+  return hasUnreleased ? 'prepare' : 'none';
+}
+
 // The bump kind from one version to the next (major, minor, patch).
 function kindOf(from, to) {
   const a = SEMVER.exec(from).slice(1).map(Number);
@@ -276,12 +285,14 @@ function status(arg) {
   const current = files.marketplace.metadata.version;
   const hasUnreleased = (unreleasedLines(files.root) || []).some((l) => l.trim());
   const tagged = remoteTag(current);
-  const fromMilestone = hasUnreleased && !arg ? milestoneVersion(milestones('open').map((m) => m.title), current) : null;
-  const version = arg || (hasUnreleased ? fromMilestone : current);
-  let phase = 'none';
-  if (hasUnreleased) phase = 'prepare';
-  else if (!tagged && changelogSection(files.root, current)) phase = 'tag';
-  else if (tagged && ghRelease(current) && (milestone(current) || {}).state === 'open') phase = 'close';
+  const phase = phaseOf({
+    hasUnreleased,
+    tagged,
+    hasSection: !!changelogSection(files.root, current),
+    closable: () => ghRelease(current) && (milestone(current) || {}).state === 'open',
+  });
+  const fromMilestone = phase === 'prepare' && !arg ? milestoneVersion(milestones('open').map((m) => m.title), current) : null;
+  const version = arg || (phase === 'prepare' ? fromMilestone : current);
   const branch = git('branch', '--show-current');
   const dirty = git('status', '--porcelain') ? 'uncommitted changes' : 'clean';
   const lines = [`phase: ${phase}`, `branch: ${branch} (${dirty})`];
@@ -295,7 +306,7 @@ function status(arg) {
     const kind = kindOf(current, version);
     const short = mk.kind && KINDS.indexOf(kind) < KINDS.indexOf(mk.kind) ? `, changes need ${mk.kind}: ${mk.types.join(', ')}` : '';
     lines.push(`marketplace: ${current} -> ${version} (${kind}${kind === 'major' ? ', confirm' : ''}${short})`);
-  } else lines.push(`marketplace: ${current}, no release version (changes need ${mk.kind})`);
+  } else lines.push(`marketplace: ${current}, no release version${mk.kind ? ` (changes need ${mk.kind})` : ''}`);
   for (const p of proposal.plugins) {
     lines.push(p.kind && phase === 'prepare'
       ? `${p.name}: ${p.from} -> ${p.to} (${p.kind}${p.kind === 'major' ? ', confirm' : ''}: ${p.types.join(', ')})`
@@ -326,7 +337,16 @@ function prepare(args) {
   const version = rest[0];
   const result = prepareEdits(readRel, version, versions, date);
   if (result.error) throw new Error(result.error);
-  for (const [rel, text] of Object.entries(result.files)) fs.writeFileSync(path.join(ROOT, rel), text);
+  const before = {};
+  try {
+    for (const [rel, text] of Object.entries(result.files)) {
+      before[rel] = readRel(rel);
+      fs.writeFileSync(path.join(ROOT, rel), text);
+    }
+  } catch (e) {
+    for (const [rel, text] of Object.entries(before)) fs.writeFileSync(path.join(ROOT, rel), text);
+    throw e;
+  }
   const notes = releaseNotes(`v${version}`, ROOT);
   return [...Object.keys(result.files).map((rel) => `changed: ${rel}`), notes.error ? `notes: ${notes.error}` : `notes: v${version} ok`];
 }
@@ -354,7 +374,12 @@ function tag(version) {
   if (git('tag', '--list', name)) throw new Error(`tag ${name} already exists locally`);
   if (remoteTag(version)) throw new Error(`tag ${name} already exists on GitHub`);
   git('tag', '-a', name, '-m', name);
-  git('push', remote, `refs/tags/${name}`);
+  try {
+    git('push', remote, `refs/tags/${name}`);
+  } catch (e) {
+    git('tag', '-d', name); // so the next run can tag again
+    throw e;
+  }
   return [`tagged: ${name} at ${head.slice(0, 7)}, pushed to ${REPO}`];
 }
 
@@ -390,4 +415,4 @@ function main(argv) {
 
 if (require.main === module) process.exitCode = main(process.argv.slice(2));
 
-module.exports = { unreleasedLines, rootAreas, pluginTypes, bumpOf, bump, compare, milestoneVersion, kindOf, propose, releaseChangelog, setJsonVersion, setReadmeRow, setVersionLine, prepareEdits, pushRemote };
+module.exports = { unreleasedLines, rootAreas, pluginTypes, bumpOf, bump, compare, milestoneVersion, kindOf, phaseOf, propose, releaseChangelog, setJsonVersion, setReadmeRow, setVersionLine, prepareEdits, pushRemote };
