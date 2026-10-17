@@ -27,6 +27,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 - `/axis-new-branch` skill: proposes a `<type>/<short-name>` branch, asks, runs `git finish`, then creates it (#122)
 - `/axis-changelog` skill: proposes a branch's root and plugin CHANGELOG entries, asks, then writes them (#121)
 - `check-edit` hook: warns right after an edit that changed a file's line endings or broke its frontmatter YAML (#125)
+- `/axis-release` skill and `scripts/release.js`: release PR with versions and dated changelogs, then tag, CI, milestone close (#120)
 
 #### Changed
 
