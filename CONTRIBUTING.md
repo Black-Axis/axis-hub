@@ -151,7 +151,9 @@ Then check in a Claude Code session that the plugin loads: its commands appear w
 
 ## Releasing
 
-A release is a git tag `vX.Y.Z` that matches `metadata.version` in `.claude-plugin/marketplace.json`. Users can pin it (`/plugin marketplace add https://github.com/Black-Axis/axis-hub.git#vX.Y.Z`).
+A release is a git tag `vX.Y.Z` that matches `metadata.version` in `.claude-plugin/marketplace.json`. Users can pin it (`/plugin marketplace add https://github.com/Black-Axis/axis-hub.git#vX.Y.Z`). Release only when every issue of the version's milestone (`vX.Y.Z`) is closed.
+
+In Claude Code, maintainers run `/axis-release` twice: first it proposes the versions and opens a `chore/release-X-Y-Z` pull request with steps 1-4; after the merge it does step 5, waits for the Release workflow, and closes the milestone. The steps by hand (`node scripts/release.js status | prepare | tag | close` does each of them):
 
 1. Bump the versions of the changed plugins (both manifests) and `metadata.version` in `marketplace.json`.
 2. In each changed plugin's `CHANGELOG.md` and in the root `CHANGELOG.md`, rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD` and add a new empty `## [Unreleased]` above it.
