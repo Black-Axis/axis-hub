@@ -124,7 +124,7 @@ There are two levels. You normally only touch the second.
 
 | Setting | Values | Meaning |
 |---------|--------|---------|
-| Version control | `git`, `tfvc`, `none` | Detected from the project (`.git`, TFVC `$tf` / `.tfignore`); asked when nothing is found. See [Version control](#version-control-git-tfvc-or-none) |
+| Version control | `git`, `tfvc`, `none` | Detected from the project (`.git`, TFVC `$tf` / `.tfignore`); `/foreman:init` always asks, with the detected value recommended, the other commands only when nothing is found. See [Version control](#version-control-git-tfvc-or-none) |
 | Workbench | `tracked`, `ignored` | Whether `workbench/` is kept in version control (default choice `ask` = asked once per project). Called `Git: committed / ignored` before 1.3.0; old lines keep working |
 | Output | `Concise` (default), `Normal` | `Concise` keeps all foreman replies, worker reports, and files short and token-efficient - no other plugin needed. Affects foreman only. |
 | Fix rounds | `0`-`10` (default `4`) | Automatic fix rounds before a failing task goes on `Hold` |
