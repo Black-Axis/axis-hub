@@ -4,6 +4,10 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 
 ## [Unreleased]
 
+### Fixed
+
+- README `/foreman:settings` row (#152): now lists `[worker-model ...]`, so the direct form `/foreman:settings worker-model sonnet|opus|haiku` is documented next to the other arguments.
+
 ## [1.6.0] - 2026-10-09
 
 ### Added

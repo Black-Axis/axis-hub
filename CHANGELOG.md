@@ -6,6 +6,14 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ## [Unreleased]
 
+### foreman 1.6.0
+
+Details: [foreman changelog](plugins/foreman/CHANGELOG.md).
+
+#### Fixed
+
+- README lists the `worker-model` argument of `/foreman:settings` (#152)
+
 ### Marketplace
 
 #### Changed
