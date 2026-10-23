@@ -9,7 +9,7 @@ permissions:
 
 env:
   # Keep equal to CLAUDE_CODE_VERSION in validate.yml.
-  CLAUDE_CODE_VERSION: 2.1.283
+  CLAUDE_CODE_VERSION: 2.1.295
 
 jobs:
   release:

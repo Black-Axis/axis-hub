@@ -6,6 +6,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ## [Unreleased]
 
+### Marketplace
+
+#### Changed
+
+- CI pins Claude Code 2.1.295, the minimum version the README requires (#151)
+
 ## [1.7.0] - 2026-10-17
 
 ### Marketplace
