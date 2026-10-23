@@ -7,6 +7,7 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 ### Fixed
 
 - README `/foreman:settings` row (#152): now lists `[worker-model ...]`, so the direct form `/foreman:settings worker-model sonnet|opus|haiku` is documented next to the other arguments.
+- `/foreman:init` repair (#153): on an existing `workbench/` whose INDEX has no `Worker model` line, init now asks for it and adds the line after `Fix rounds`, like the other missing settings.
 
 ## [1.6.0] - 2026-10-09
 

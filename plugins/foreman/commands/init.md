@@ -23,7 +23,7 @@ If `workbench/INDEX.md` does not exist: follow `${CLAUDE_PLUGIN_ROOT}/reference/
 If `workbench/INDEX.md` exists, never overwrite anything. Check and fill only what is missing:
 
 1. Missing subfolders from setup.md step 3.1: create them as in that step (git: `Write` an empty `.gitkeep`; tfvc and none: the `mkdir` / `New-Item` form).
-2. Missing settings lines (Version control, Workbench, Output, Fix rounds, CLAUDE.md): ask for those only, as in setup.md step 1 (Ask all), and add them; apply their side effects as in `/foreman:settings`. An old `Git:` line counts as Workbench; offer to rename it.
+2. Missing settings lines (Version control, Workbench, Output, Fix rounds, Worker model, CLAUDE.md): ask for those only, as in setup.md step 1 (Ask all), and add them; apply their side effects as in `/foreman:settings`. An old `Git:` line counts as Workbench; offer to rename it.
 3. Missing `Working Rules Defaults` section: ask whether to set it now; on yes, follow setup.md step 2 and add the section after `Settings`.
 
 Report in one line what was added, or that nothing was missing. For changing existing values point to `/foreman:settings`; for consistency checks, to `/foreman:doctor`.
