@@ -104,7 +104,7 @@ Not sure which command you need? Type `/foreman:ask <what you want>`.
 | `/foreman:doctor [P-NN]` | Find inconsistencies in `workbench/`; fix them after your confirmation |
 | `/foreman:report <P-NN>` | Write a stakeholder report to `workbench/reports/REP-NN-<slug>.md` (by the `foreman-reporter` subagent) |
 | `/foreman:map [P-NN]` | Draw a Mermaid diagram of all features (or one) with their interview, plan, contract, tracking, tasks and dependencies, doc, and reports to `workbench/maps/MAP.md` (`MAP-NN.md` for one); open it in GitHub, GitLab, or VS Code to see it. Needs Node.js |
-| `/foreman:settings [vcs ...] [workbench ...] [output ...] [fix-rounds N] [claude-md ...] [rules] [reset]` | Settings menu: every setting with current value and default; change by choosing, or directly by argument; reset to defaults |
+| `/foreman:settings [vcs ...] [workbench ...] [output ...] [fix-rounds N] [worker-model ...] [claude-md ...] [rules] [reset]` | Settings menu: every setting with current value and default; change by choosing, or directly by argument; reset to defaults |
 
 **Help**
 
