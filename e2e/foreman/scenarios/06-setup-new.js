@@ -24,6 +24,18 @@ module.exports = {
   fixture: 'notes-api',
   covers: ['command:init', 'command:new', 'command:interview', 'command:import', 'command:settings', 'wb:next-number'],
   run(p, assert) {
+    p.step('init Ask all: two question calls, at most 4 each, Version control always asked, Workbench skipped for none');
+    const setup = require('fs').readFileSync(require('path').join(__dirname, '../../../plugins/foreman/reference/setup.md'), 'utf8');
+    const plan = (vcs) => [['Version control', 'Output', 'Fix rounds', 'Worker model'], [...(vcs === 'none' ? [] : ['Workbench']), 'CLAUDE.md']];
+    for (const vcs of ['git', 'tfvc', 'none']) {
+      const calls = plan(vcs);
+      assert.ok(calls.every((c) => c.length <= 4), 'at most 4 questions per call');
+      assert.strictEqual(calls[0][0], 'Version control', 'asked even when detection found a value');
+      assert.strictEqual(calls[1].includes('Workbench'), vcs !== 'none');
+    }
+    assert.match(setup, /Ask all mode, always ask, with the detected value as the recommended option/);
+    assert.match(setup, /Ask all mode asks Version control, Output, Fix rounds, Worker model in the first call, then Workbench \(skipped when Version control is `none`\) and CLAUDE\.md in the second/);
+
     p.step('init: fresh project without workbench/');
     p.remove('workbench');
     p.commit('no workbench');

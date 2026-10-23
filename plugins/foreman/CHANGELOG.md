@@ -8,6 +8,7 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 
 - README `/foreman:settings` row (#152): now lists `[worker-model ...]`, so the direct form `/foreman:settings worker-model sonnet|opus|haiku` is documented next to the other arguments.
 - `/foreman:init` repair (#153): on an existing `workbench/` whose INDEX has no `Worker model` line, init now asks for it and adds the line after `Fix rounds`, like the other missing settings.
+- `/foreman:init` Version control question (#154): init now always asks it, with the detected value recommended, instead of only when nothing was detected. The settings come in two calls: Version control, Output, Fix rounds, Worker model, then Workbench (skipped for `none`) and CLAUDE.md. `/foreman:new`, `interview`, and `import` still ask only when detection finds nothing.
 
 ## [1.6.0] - 2026-10-09
 

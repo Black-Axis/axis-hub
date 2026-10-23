@@ -207,7 +207,10 @@ test('AskUserQuestion limits: rule in rules.md, no instruction outside them', ()
     for (const m of text.matchAll(/\b(\d+)-(\d+) (?:focused )?questions\b/g)) assert.ok(Number(m[2]) <= 4, `${f.join('/')}: "${m[0]}"`);
     assert.doesNotMatch(text, /settings together in one `AskUserQuestion` call/, f.join('/'));
   }
-  assert.match(read('reference', 'setup.md'), /at most 4 questions per call[^\n]*first call, then Worker model and CLAUDE\.md in the second/);
+  const setup = read('reference', 'setup.md');
+  assert.match(setup, /at most 4 questions per call[^\n]*asks Version control, Output, Fix rounds, Worker model in the first call, then Workbench[^\n]*and CLAUDE\.md in the second/);
+  assert.match(setup, /In Ask all mode, always ask, with the detected value as the recommended option/);
+  assert.doesNotMatch(setup, /only when detection gave/);
   const settings = read('commands', 'settings.md');
   assert.match(settings, /Fix rounds: the current value, the default, then `4`, `2`, `6`[^\n]*up to 4 options/);
   assert.match(settings, /When both are the same[^\n]*offer the current value and `—`/);
