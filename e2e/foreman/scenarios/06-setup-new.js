@@ -115,5 +115,21 @@ module.exports = {
     p.edit('workbench/INDEX.md', /- Worker model: gpt\n(  <!--[^\n]*\n)?/, '');
     p.edit(task1, '| Worker model | fast |\n', '');
     assert.deepStrictEqual(check(p).findings, [], 'missing setting and row (older projects) mean sonnet');
+
+    p.step('init repair: INDEX without the Worker model line gets it after Fix rounds, other lines untouched');
+    const before = p.read('workbench/INDEX.md');
+    assert.ok(!/^- Worker model:/m.test(before), 'older INDEX has no Worker model line');
+    const settingLines = (s) => s.split('\n').filter((l) => /^- [A-Za-z .]+: /.test(l));
+    // the repair writes the answer after the Fix rounds line (and its comment), before CLAUDE.md
+    p.edit('workbench/INDEX.md', /(- Fix rounds: [^\n]*\n(  <!--[^\n]*\n)?)(- CLAUDE\.md:)/, '$1- Worker model: sonnet\n$3');
+    const after = p.read('workbench/INDEX.md');
+    const lines = after.split('\n');
+    const fi = lines.findIndex((l) => /^- Fix rounds:/.test(l));
+    const wi = lines.findIndex((l) => /^- Worker model: sonnet$/.test(l));
+    const ci = lines.findIndex((l) => /^- CLAUDE\.md:/.test(l));
+    assert.ok(fi < wi && wi < ci, 'Worker model sits between Fix rounds and CLAUDE.md');
+    assert.deepStrictEqual(settingLines(after).filter((l) => !/^- Worker model:/.test(l)), settingLines(before), 'existing lines unchanged');
+    assert.strictEqual(after.replace('- Worker model: sonnet\n', ''), before, 'nothing else changed');
+    assertClean(p);
   },
 };

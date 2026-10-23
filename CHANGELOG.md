@@ -13,6 +13,7 @@ Details: [foreman changelog](plugins/foreman/CHANGELOG.md).
 #### Fixed
 
 - README lists the `worker-model` argument of `/foreman:settings` (#152)
+- `/foreman:init` repair adds a missing `Worker model` settings line (#153)
 
 ### Marketplace
 
