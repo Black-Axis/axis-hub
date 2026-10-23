@@ -10,7 +10,7 @@ permissions:
 
 env:
   # Pinned so a new Claude Code release cannot break CI. Bump it on purpose.
-  CLAUDE_CODE_VERSION: 2.1.283
+  CLAUDE_CODE_VERSION: 2.1.295
 
 jobs:
   validate:
