@@ -1,7 +1,7 @@
 ---
 description: Resume a task or plan on hold
 argument-hint: <P-NN> [TASK-TT] [note]
-allowed-tools: Read, Glob, Edit(workbench/**), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*)
+allowed-tools: Read, Glob, Edit(workbench/**), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), PowerShell(node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js":*), AskUserQuestion
 ---
 
 # /foreman:resume
@@ -16,5 +16,5 @@ State script: `node "${CLAUDE_PLUGIN_ROOT}/scripts/wb.js"` ("State script" in ru
 2. The target must currently be `Hold`; otherwise say so and stop.
 3. Find in the TRK History the most recent `-> Hold` entry for the target and restore the status it had before (`Not Started` or `In Progress`).
    - For a plan target: restore the Plan Status by the derivation rule in the shared rules.
-4. Record the change with `wb.js status P-NN [TASK-TT] <restored status> --by User --reason "resumed<: note>"` (TRK table, History with reason "resumed" plus the note, task file Status, INDEX). For a plan target, `<restored status>` is the derived status (step 3).
+4. Record the change with `wb.js status P-NN [TASK-TT] <restored status> --by User --reason "resumed<: note>"` (TRK table, History with reason "resumed" plus the note, task file Status, INDEX). For a plan target, `<restored status>` is the derived status (step 3). Restoring `In Progress` fails with `ERROR: ... outside this session` when another session runs a task of the plan: ask the user with `AskUserQuestion`; only on yes run it again with `--confirmed`.
 5. If a task was restored to `In Progress`, tell the user to continue it with `/foreman:run P-NN TASK-TT` (the run continues the `In Progress` task).

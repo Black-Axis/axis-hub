@@ -47,7 +47,18 @@ module.exports = {
     p.step('resume: back to the status before Hold');
     const before = trk(p, '02').history.filter((h) => h.target === 'TASK-02' && / -> Hold$/.test(h.change)).pop();
     assert.strictEqual(before.change, 'In Progress -> Hold');
-    wbOk(p, 'status', 'P-02', 'TASK-02', 'In Progress', '--by', 'User', '--reason', 'resumed: fixed by hand');
+    p.session('session-b', process.ppid, () => {
+      wbOk(p, 'status', 'P-02', 'TASK-03', 'In Progress', '--by', 'User', '--reason', '/foreman:run P-02 TASK-03');
+    });
+    const refused = wb(p, 'status', 'P-02', 'TASK-02', 'In Progress', '--by', 'User', '--reason', 'resumed');
+    assert.strictEqual(refused.code, 1);
+    assert.match(refused.out, /^ERROR: P-02 has a task In Progress outside this session: TASK-03 \(another Claude Code session/);
+    assert.strictEqual(task(p, '02', 'TASK-02').status, 'Hold', 'nothing written');
+    wbOk(p, 'status', 'P-02', 'TASK-02', 'In Progress', '--by', 'User', '--reason', 'resumed', '--confirmed');
+    assert.strictEqual(task(p, '02', 'TASK-02').status, 'In Progress');
+    p.session('session-b', process.ppid, () => {
+      wbOk(p, 'status', 'P-02', 'TASK-03', 'Not Started', '--by', 'User', '--reason', 'test cleanup');
+    });
 
     p.step('run after resume: status refuses (already In Progress, points to continue); continue starts the new run');
     const again = wb(p, 'status', 'P-02', 'TASK-02', 'In Progress', '--by', 'User', '--reason', '/foreman:run P-02 TASK-02');
