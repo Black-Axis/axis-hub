@@ -140,7 +140,7 @@ If a project's settings are missing, the session start summary tells you to run 
 With `CLAUDE.md: yes`, foreman adds a short block to your project instructions, so Claude knows about `workbench/` in every session, even when you don't run a foreman command: it changes `workbench/` only through foreman commands, checks the active plan before feature work, stays within the contract's scope, and suggests the matching `/foreman:*` command.
 
 - **Where**: `CLAUDE.md` when `workbench/` is tracked (shared with your team), `CLAUDE.local.md` when it is ignored (only you; foreman adds it to `.gitignore` or `.tfignore`). Changing Workbench with `/foreman:settings` moves the block.
-- **Yours to control**: the block sits between `<!-- foreman:start -->` and `<!-- foreman:end -->` markers (Claude Code hides these comments from Claude). Foreman never touches anything outside them. `/foreman:settings claude-md no` removes it; `/foreman:doctor` refreshes it after a foreman update.
+- **Yours to control**: the block sits between a marker starting with `<!-- foreman:start` and `<!-- foreman:end -->` (Claude Code hides these comments from Claude). Foreman never touches anything outside them. `/foreman:settings claude-md no` removes it; `/foreman:doctor` refreshes it after a foreman update.
 - **Projects with `AGENTS.md` only**: creating a CLAUDE file would make Claude Code stop reading `AGENTS.md`, so foreman asks first and, if you agree, starts the file with `@AGENTS.md` to keep it loaded.
 - The block starts with "If the foreman plugin is installed", so Claude ignores it once the plugin is gone. It still stays in the file: run `/foreman:settings claude-md no` before you uninstall foreman to remove it.
 
@@ -207,7 +207,7 @@ workbench/
 └─ maps/MAP.md                                # only after /foreman:map (MAP-01.md for one feature)
 ```
 
-- One feature = one plan, contract, tracking file, doc, and subtasks folder, all sharing the same 2-digit number and slug.
+- One feature = one plan, contract, tracking file, doc, and subtasks folder, all sharing the same number (2 digits, 3 from `100`) and slug.
 - Task numbers restart at `TASK-01` for each plan.
 
 ## Files

@@ -62,7 +62,7 @@ If `workbench/INDEX.md` has a `Working Rules Defaults` section, show those value
 ## 7. Write the files
 
 Pick the `<slug>` from the feature name. Create, from templates:
-1. `workbench/plans/P-NN-<slug>.md` - all sections filled; Source lists every working file and contains the user's text verbatim (and the interview Q&A, if any); Requirements hold the final agreed requirements; Feature Review Findings contain every finding and its agreed resolution.
+1. `workbench/plans/P-NN-<slug>.md` - all sections filled; Source lists every working file and contains the user's text verbatim (and, after an interview, its `### Interview` subsection: the link and key decisions); Requirements hold the final agreed requirements; Feature Review Findings contain every finding and its agreed resolution.
 2. `workbench/contracts/CONT-NN-<slug>.md` - Status `Draft`; Scope, Out of Scope, Acceptance Criteria, Working Rules filled.
 3. `workbench/subtasks/P-NN-<slug>/TASK-TT-<task-slug>.md` - one file per task. Every section is mandatory: Problem, Evidence, Required Outcome, Files Expected to Change, Out of Scope, Implementation, Report Requirements. Each task follows "Task size" in tasks.md. Leave the header `Worker model` at `—` (the INDEX setting) unless the user asks for another model for that task. Set the header `Baseline` ("Task baseline" in version-control.md) and `Tests` ("Test runs" in tasks.md: the targeted command for the task's files when the project has an obvious one, else `—`).
 4. `workbench/tracking/TRK-NN-<slug>.md` - one row per task, all `Not Started`; History row "Plan created".

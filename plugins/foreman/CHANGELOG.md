@@ -9,6 +9,7 @@ All notable changes to this plugin. Format: [Keep a Changelog](https://keepachan
 - README `/foreman:settings` row (#152): now lists `[worker-model ...]`, so the direct form `/foreman:settings worker-model sonnet|opus|haiku` is documented next to the other arguments.
 - `/foreman:init` repair (#153): on an existing `workbench/` whose INDEX has no `Worker model` line, init now asks for it and adds the line after `Fix rounds`, like the other missing settings.
 - `/foreman:init` Version control question (#154): init now always asks it, with the detected value recommended, instead of only when nothing was detected. The settings come in two calls: Version control, Output, Fix rounds, Worker model, then Workbench (skipped for `none`) and CLAUDE.md. `/foreman:new`, `interview`, and `import` still ask only when detection finds nothing.
+- Docs match the scripts (#172): `/foreman:resume` now says that restoring `In Progress` is refused while another session runs a task of the plan, asks you, and continues only after a yes (`/foreman:round` says the same for both of its calls). The README, `rules.md`, `new.md`, `import.md`, and `/foreman:status` now describe feature numbers from `100`, the CLAUDE.md block start marker, how the next number is found, the plan's Interview subsection, and the "all tasks Done" line as foreman writes them.
 
 ## [1.6.0] - 2026-10-09
 

@@ -25,7 +25,7 @@ Run `wb.js overview` alone (one call; it also lists open interviews) and show it
 ## With `P-NN`
 
 From `workbench/tracking/TRK-NN-<slug>.md` show:
-1. Plan status and contract status. If every non-canceled task is `Done` but the plan is not, add: `All tasks Done - waiting for /foreman:close P-NN`.
+1. Plan status and contract status. If every non-canceled task is `Done` but the plan is not, add: `all tasks Done - /foreman:close P-NN` (as `wb.js overview` prints it).
 2. The task table (task, title, status, updated, note).
 3. Counts per status.
 4. Ready tasks: `wb.js ready P-NN` (`Not Started` tasks whose `Depends On` tasks are all `Done`).

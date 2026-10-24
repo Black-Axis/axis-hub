@@ -22,7 +22,7 @@ workbench/
 ## Naming
 
 - One feature = one plan, one contract, one tracking file, one doc, one subtasks folder. All share the same number `NN` and the same `<slug>`.
-- `NN` is the feature number, zero-padded to 2 digits (`01`, `02`, ... `99`, then `100`). Next number = highest number in `INDEX.md` or in `workbench/interviews/` + 1, with git also on the other local and fetched branches (`wb.js next-number`, "State script"; its first line is the number). A collision found after a merge is fixed by `/foreman:doctor` (renumber).
+- `NN` is the feature number, zero-padded to 2 digits (`01`, `02`, ... `99`, then `100`). Next number = highest feature or interview number in `workbench/` (INDEX and the feature and interview files) + 1, with git also on the other local and fetched branches (`wb.js next-number`, "State script"; its first line is the number). A collision found after a merge is fixed by `/foreman:doctor` (renumber).
 - An interview `INT-NN-<slug>` reserves its number and slug: the plan it creates uses the same `NN` and `<slug>`. A canceled interview's number stays used.
 - `TT` is the task number inside its plan, zero-padded to 2 digits, starting at `01` for every plan.
 - `<slug>` is lowercase kebab-case, ASCII letters, digits and hyphens only, max ~40 characters (e.g. `user-login`). For a feature name in a non-Latin script (Arabic, Chinese, Cyrillic, ...), propose a short English slug from its meaning (not a transliteration) and confirm it with the user in the command's next question; the original name stays the feature title (file headings, INDEX). The same for task slugs.
