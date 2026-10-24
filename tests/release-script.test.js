@@ -161,7 +161,8 @@ test('prepareEdits: every file, or an error', () => {
   assert.match(prepareEdits(read, '1.7.0', { foreman: '1.6.1' }, '13.10.2026').error, /not a date/);
   const noPluginEntries = (rel) => (rel === 'plugins/foreman/CHANGELOG.md' ? '## [Unreleased]\n\n## [1.6.0]\n' : rel === 'CHANGELOG.md' ? '## [Unreleased]\n\n### Marketplace\n\n#### Fixed\n\n- x (#3)\n' : read(rel));
   assert.match(prepareEdits(noPluginEntries, '1.6.1', { foreman: '1.6.1' }, '2026-10-13').error, /foreman has no Unreleased entries/);
-  assert.deepStrictEqual(Object.keys(prepareEdits(noPluginEntries, '1.6.1', {}, '2026-10-13').files).sort(), ['.claude-plugin/marketplace.json', 'CHANGELOG.md', 'README.md']);
+  // #150: no plugin version, so the README stays unchanged and is not listed.
+  assert.deepStrictEqual(Object.keys(prepareEdits(noPluginEntries, '1.6.1', {}, '2026-10-13').files).sort(), ['.claude-plugin/marketplace.json', 'CHANGELOG.md']);
 });
 
 test('prepare: writes every file, or restores them all when the release notes fail', () => {
@@ -183,6 +184,14 @@ test('prepare: writes every file, or restores them all when the release notes fa
     const lines = prepare(['1.7.0', 'foreman=1.6.1', '--date', '2026-10-13'], dir);
     assert.strictEqual(lines[lines.length - 1], 'notes: v1.7.0 ok');
     assert.match(fs.readFileSync(path.join(dir, 'CHANGELOG.md'), 'utf8'), /## \[1\.7\.0\] - 2026-10-13/);
+    // #150: without plugin versions only the two changed files are printed and written.
+    write();
+    fs.writeFileSync(path.join(dir, 'plugins/foreman/CHANGELOG.md'), '## [Unreleased]\n\n## [1.6.0]\n');
+    fs.writeFileSync(path.join(dir, 'CHANGELOG.md'), '## [Unreleased]\n\n### Marketplace\n\n#### Fixed\n\n- x (#3)\n');
+    const readmeMtime = fs.statSync(path.join(dir, 'README.md')).mtimeMs;
+    const marketplaceOnly = prepare(['1.7.0', '--date', '2026-10-13'], dir);
+    assert.deepStrictEqual(marketplaceOnly, ['changed: .claude-plugin/marketplace.json', 'changed: CHANGELOG.md', 'notes: v1.7.0 ok']);
+    assert.strictEqual(fs.statSync(path.join(dir, 'README.md')).mtimeMs, readmeMtime);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
