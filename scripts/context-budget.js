@@ -85,7 +85,8 @@ function gitReader(ref, repo = REPO) {
 function measure(r) {
   const size = (rel) => Buffer.byteLength(r.text(rel));
   const vcs = ['vcs-git.md', 'vcs-tfvc.md', 'vcs-none.md'].map((f) => `reference/${f}`).filter(r.exists);
-  const largestVcs = vcs.reduce((a, b) => (size(a) >= size(b) ? a : b));
+  // null on a base revision from before the vcs files (#171): nothing to add for them.
+  const largestVcs = vcs.reduce((a, b) => (a && size(a) >= size(b) ? a : b), null);
   const templates = r.list('templates');
 
   // Every plugin file a text names: ${CLAUDE_PLUGIN_ROOT}/... paths, `vcs-<value>.md` or
@@ -101,10 +102,11 @@ function measure(r) {
       return out;
     }
     for (const m of body.matchAll(/\$\{CLAUDE_PLUGIN_ROOT\}\/([\w./<>-]+\.(?:md|json))/g)) {
-      if (m[1].includes('<value>')) out.add(largestVcs);
-      else if (r.exists(m[1])) out.add(m[1]);
+      if (m[1].includes('<value>')) {
+        if (largestVcs) out.add(largestVcs);
+      } else if (r.exists(m[1])) out.add(m[1]);
     }
-    if (/the vcs file/.test(body)) out.add(largestVcs);
+    if (largestVcs && /the vcs file/.test(body)) out.add(largestVcs);
     if (/template/i.test(body)) for (const t of templates) if (body.includes(`\`${t}\``)) out.add(`templates/${t}`);
     return out;
   }

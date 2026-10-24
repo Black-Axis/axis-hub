@@ -12,7 +12,8 @@
 //     table, plugin README Version line), renames Unreleased to `[X.Y.Z] - date` in the
 //     root and those plugins' changelogs (new empty Unreleased above), and sets the
 //     root `### <plugin> X.Y.Z` headings. Every plugin with Unreleased entries needs a
-//     version. All files or none; each keeps its line endings.
+//     version. All files or none (also when the release notes then fail); each keeps
+//     its line endings.
 //   node scripts/release.js tag X.Y.Z
 //     On a clean `main` equal to GitHub's, with no open milestone issues and valid
 //     release notes: creates the annotated tag vX.Y.Z and pushes only that tag to the
@@ -322,7 +323,9 @@ function status(arg) {
   return lines;
 }
 
-function prepare(args) {
+// Writes the release edits into `root`; on a write or release notes error, restores the files and throws.
+function prepare(args, root = ROOT, notesOf = releaseNotes) {
+  const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
   let date = today();
   const versions = {};
   const rest = [];
@@ -335,20 +338,32 @@ function prepare(args) {
   }
   if (rest.length !== 1) throw new Error('usage: prepare X.Y.Z [<plugin>=X.Y.Z ...] [--date YYYY-MM-DD]');
   const version = rest[0];
-  const result = prepareEdits(readRel, version, versions, date);
+  const result = prepareEdits(read, version, versions, date);
   if (result.error) throw new Error(result.error);
   const before = {};
+  const restore = () => {
+    for (const [rel, text] of Object.entries(before)) fs.writeFileSync(path.join(root, rel), text);
+  };
   try {
     for (const [rel, text] of Object.entries(result.files)) {
-      before[rel] = readRel(rel);
-      fs.writeFileSync(path.join(ROOT, rel), text);
+      before[rel] = read(rel);
+      fs.writeFileSync(path.join(root, rel), text);
     }
   } catch (e) {
-    for (const [rel, text] of Object.entries(before)) fs.writeFileSync(path.join(ROOT, rel), text);
+    restore();
     throw e;
   }
-  const notes = releaseNotes(`v${version}`, ROOT);
-  return [...Object.keys(result.files).map((rel) => `changed: ${rel}`), notes.error ? `notes: ${notes.error}` : `notes: v${version} ok`];
+  let notes;
+  try {
+    notes = notesOf(`v${version}`, root);
+  } catch (e) {
+    notes = { error: e.message };
+  }
+  if (notes.error) {
+    restore();
+    throw new Error(`notes: ${notes.error} (files restored)`);
+  }
+  return [...Object.keys(result.files).map((rel) => `changed: ${rel}`), `notes: v${version} ok`];
 }
 
 function tag(version) {
@@ -415,4 +430,4 @@ function main(argv) {
 
 if (require.main === module) process.exitCode = main(process.argv.slice(2));
 
-module.exports = { unreleasedLines, rootAreas, pluginTypes, bumpOf, bump, compare, milestoneVersion, kindOf, phaseOf, propose, releaseChangelog, setJsonVersion, setReadmeRow, setVersionLine, prepareEdits, pushRemote };
+module.exports = { unreleasedLines, rootAreas, pluginTypes, bumpOf, bump, compare, milestoneVersion, kindOf, phaseOf, propose, releaseChangelog, setJsonVersion, setReadmeRow, setVersionLine, prepareEdits, prepare, pushRemote };

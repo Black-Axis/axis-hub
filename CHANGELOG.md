@@ -25,6 +25,11 @@ Details: [foreman changelog](plugins/foreman/CHANGELOG.md).
 - CI pins Claude Code 2.1.295, the minimum version the README requires (#151)
 - `/axis-new-branch` asks whether to start fixing the issue right after creating its branch (#174)
 
+#### Fixed
+
+- `release.js prepare` restores its files and exits 1 when the release notes fail (#171)
+- `context-budget.js --base` works on revisions from before the vcs reference files (#171)
+
 ## [1.7.0] - 2026-10-17
 
 ### Marketplace
