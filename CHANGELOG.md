@@ -29,6 +29,7 @@ Details: [foreman changelog](plugins/foreman/CHANGELOG.md).
 
 - `release.js prepare` restores its files and exits 1 when the release notes fail (#171)
 - `context-budget.js --base` works on revisions from before the vcs reference files (#171)
+- `release.js prepare` lists and writes only the files whose text changes, no unchanged `README.md` (#150)
 
 ## [1.7.0] - 2026-10-17
 

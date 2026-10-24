@@ -200,6 +200,8 @@ function prepareEdits(read, version, versions, date) {
     return { error: e.message };
   }
   if (!changelogSection(out['CHANGELOG.md'], version)) return { error: `CHANGELOG.md: no [${version}] section after the rename` };
+  // Only the files whose text changes (#150): the README without a plugin version stays as it is.
+  for (const rel of Object.keys(out)) if (out[rel] === read(rel)) delete out[rel];
   return { files: out };
 }
 
