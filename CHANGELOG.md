@@ -23,6 +23,7 @@ Details: [foreman changelog](plugins/foreman/CHANGELOG.md).
 #### Changed
 
 - CI pins Claude Code 2.1.295, the minimum version the README requires (#151)
+- `/axis-new-branch` asks whether to start fixing the issue right after creating its branch (#174)
 
 ## [1.7.0] - 2026-10-17
 
