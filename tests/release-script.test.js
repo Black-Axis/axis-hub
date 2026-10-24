@@ -6,7 +6,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
-const { unreleasedLines, rootAreas, pluginTypes, bumpOf, bump, compare, milestoneVersion, kindOf, phaseOf, propose, releaseChangelog, setJsonVersion, setReadmeRow, setVersionLine, prepareEdits, pushRemote } = require('../scripts/release.js');
+const { unreleasedLines, rootAreas, pluginTypes, bumpOf, bump, compare, milestoneVersion, kindOf, phaseOf, propose, releaseChangelog, setJsonVersion, setReadmeRow, setVersionLine, prepareEdits, prepare, pushRemote } = require('../scripts/release.js');
 
 const ROOT_LOG = [
   '# Changelog',
@@ -162,6 +162,30 @@ test('prepareEdits: every file, or an error', () => {
   const noPluginEntries = (rel) => (rel === 'plugins/foreman/CHANGELOG.md' ? '## [Unreleased]\n\n## [1.6.0]\n' : rel === 'CHANGELOG.md' ? '## [Unreleased]\n\n### Marketplace\n\n#### Fixed\n\n- x (#3)\n' : read(rel));
   assert.match(prepareEdits(noPluginEntries, '1.6.1', { foreman: '1.6.1' }, '2026-10-13').error, /foreman has no Unreleased entries/);
   assert.deepStrictEqual(Object.keys(prepareEdits(noPluginEntries, '1.6.1', {}, '2026-10-13').files).sort(), ['.claude-plugin/marketplace.json', 'CHANGELOG.md', 'README.md']);
+});
+
+test('prepare: writes every file, or restores them all when the release notes fail', () => {
+  const os = require('os');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'axis-release-'));
+  const write = () => {
+    for (const [rel, text] of Object.entries(FILES)) {
+      fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true });
+      fs.writeFileSync(path.join(dir, rel), text);
+    }
+  };
+  const snapshot = () => Object.fromEntries(Object.keys(FILES).map((rel) => [rel, fs.readFileSync(path.join(dir, rel), 'utf8')]));
+  try {
+    write();
+    assert.throws(() => prepare(['1.7.0', 'foreman=1.6.1', '--date', '2026-10-13'], dir, () => ({ error: 'broken' })), /notes: broken \(files restored\)/);
+    assert.deepStrictEqual(snapshot(), FILES);
+    assert.throws(() => prepare(['1.7.0', 'foreman=1.6.1', '--date', '2026-10-13'], dir, () => { throw new Error('unreadable'); }), /notes: unreadable \(files restored\)/);
+    assert.deepStrictEqual(snapshot(), FILES);
+    const lines = prepare(['1.7.0', 'foreman=1.6.1', '--date', '2026-10-13'], dir);
+    assert.strictEqual(lines[lines.length - 1], 'notes: v1.7.0 ok');
+    assert.match(fs.readFileSync(path.join(dir, 'CHANGELOG.md'), 'utf8'), /## \[1\.7\.0\] - 2026-10-13/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('pushRemote: by Black-Axis/axis-hub URL, never by name', () => {

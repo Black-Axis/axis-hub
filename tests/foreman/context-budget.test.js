@@ -52,6 +52,20 @@ test('report: only commands near budget or changed, with the changed files', () 
   assert.deepStrictEqual(report(small, small), ['context budget: ok']);
 });
 
+test('measure works on a plugin without vcs files (a base revision from before them)', () => {
+  const files = {
+    'commands/run.md': '---\ndescription: Run\n---\nRead `${CLAUDE_PLUGIN_ROOT}/reference/vcs-<value>.md`, then the vcs file.\n',
+    'templates/claude-md.md': 'block',
+  };
+  const r = {
+    text: (rel) => files[rel],
+    exists: (rel) => rel in files,
+    list: (rel) => (rel === 'commands' ? ['run.md'] : []),
+  };
+  const m = measure(r);
+  assert.deepStrictEqual(Object.keys(m.commands.run.files), ['commands/run.md']);
+});
+
 test('the git reader on HEAD measures what the tree measures when nothing is changed', () => {
   // A throwaway clone of HEAD: the working tree there is HEAD, so both readers must agree.
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'axis-context-budget-'));
