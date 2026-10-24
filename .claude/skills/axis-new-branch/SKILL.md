@@ -30,3 +30,7 @@ Ask with `AskUserQuestion`: the proposed name first (Recommended), one or two al
 2. `git switch -c <name>`
 
 With uncommitted changes that belong to the new branch, skip step 1 when already on `main` (the branch then starts from the local `main`; say so); on another branch, stop and ask the user to commit or stash first. The PreToolUse hook denies a name that breaks the rules; then fix the name and ask again. Report one line: `On <name>, from main at <short hash>` (`git log -1 --format=%h`).
+
+## 4. Continue with the issue
+
+For a branch made for an issue, ask with `AskUserQuestion` whether to start fixing it now: `Start fixing #N` (Recommended) or `Not now`. On yes, read the issue body (`gh issue view <n> --repo Black-Axis/axis-hub --json body --jq .body`) and fix it in the same turn by the rules in CLAUDE.md: checks through `axis-test-runner`, an e2e step for a plugin change, nothing committed (the user opens the pull request with `/axis-open-pr`). The fix's edits and commands ask for permission as usual: this skill's `allowed-tools` cover only the branch steps. On no, or for a branch made from a description, stop after the report line.

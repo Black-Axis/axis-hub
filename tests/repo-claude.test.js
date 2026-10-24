@@ -170,7 +170,8 @@ test('axis-new-branch: proposes a guard-valid name, asks, branches from an up-to
   for (const t of TYPES) assert.ok(skill.includes(`\`${t}\``), `axis-new-branch lists type ${t}`);
   assert.match('feat/foreman-bug-command', BRANCH_PATTERN, 'the example passes the guard');
   assert.ok(!/git pull|git switch main/.test(skill), 'axis-new-branch leaves switching and pulling to finish.js');
-  for (const s of ['AskUserQuestion', '`node .githooks/finish.js`', '`git switch -c <name>`', 'never commit, stash, or discard']) {
+  for (const s of ['AskUserQuestion', '`node .githooks/finish.js`', '`git switch -c <name>`', 'never commit, stash, or discard',
+    '## 4. Continue with the issue', '`Start fixing #N` (Recommended)', 'nothing committed', 'for a branch made from a description, stop']) {
     assert.ok(skill.includes(s), `axis-new-branch: ${s}`);
   }
 });
